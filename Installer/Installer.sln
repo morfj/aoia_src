@@ -1,0 +1,23 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{A49CE20D-CE64-4A08-9F24-92A6443D6699}") = "Installer", "Installer.wixproj", "{A4F7DB74-59CD-45FB-89E1-19670BF1723C}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{A4F7DB74-59CD-45FB-89E1-19670BF1723C}.Debug.ActiveCfg = Debug
+		{A4F7DB74-59CD-45FB-89E1-19670BF1723C}.Debug.Build.0 = Debug
+		{A4F7DB74-59CD-45FB-89E1-19670BF1723C}.Release.ActiveCfg = Release
+		{A4F7DB74-59CD-45FB-89E1-19670BF1723C}.Release.Build.0 = Release
+	EndGlobalSection
+	GlobalSection(SolutionItems) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
