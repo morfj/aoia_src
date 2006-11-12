@@ -8,7 +8,7 @@
 #include "InventoryView.h"
 #include "MainFrm.h"
 #include "shared/aopackets.h"
-#include <madCodeHookLibL/Dll/MadCodeHookLib.h>
+#include <MadCodeHookLib/Dll/MadCodeHookLib.h>
 
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)

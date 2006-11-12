@@ -23,7 +23,7 @@
         </Configurations>
         <WixlibReferences>
             <WixlibReference
-                RelativePath="..\..\..\..\Program%20Files\Windows%20Installer%20XML\bin\WixUI.wixlib"
+                RelativePath="..\..\..\Program%20Files\Windows%20Installer%20XML\bin\WixUI.wixlib"
             />
         </WixlibReferences>
         <Files>

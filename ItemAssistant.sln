@@ -2,6 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 8.00
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ItemAssistant", "ItemAssistant\ItemAssistant.vcproj", "{93E190D1-3E5B-4B19-BE87-5A820D7A8B14}"
 	ProjectSection(ProjectDependencies) = postProject
 		{370E1E96-79A9-4C9D-83B2-6E8298A90655} = {370E1E96-79A9-4C9D-83B2-6E8298A90655}
+		{CE5A4E99-9463-4DD4-B0F4-A4C36168B0C2} = {CE5A4E99-9463-4DD4-B0F4-A4C36168B0C2}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ItemAssistantHook", "ItemAssistantHook\ItemAssistantHook.vcproj", "{CF2ED5B5-5E2B-4BB5-8A68-A95AE576599C}"
@@ -17,6 +18,10 @@ Project("{A49CE20D-CE64-4A08-9F24-92A6443D6699}") = "Installer", "Installer\Inst
 	ProjectSection(ProjectDependencies) = postProject
 		{CF2ED5B5-5E2B-4BB5-8A68-A95AE576599C} = {CF2ED5B5-5E2B-4BB5-8A68-A95AE576599C}
 		{93E190D1-3E5B-4B19-BE87-5A820D7A8B14} = {93E190D1-3E5B-4B19-BE87-5A820D7A8B14}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tinyxmlSTL", "Externals\TinyXml\tinyxmlSTL.vcproj", "{CE5A4E99-9463-4DD4-B0F4-A4C36168B0C2}"
+	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
 Global
@@ -41,6 +46,10 @@ Global
 		{A4F7DB74-59CD-45FB-89E1-19670BF1723C}.Debug.Build.0 = Debug
 		{A4F7DB74-59CD-45FB-89E1-19670BF1723C}.Release.ActiveCfg = Release
 		{A4F7DB74-59CD-45FB-89E1-19670BF1723C}.Release.Build.0 = Release
+		{CE5A4E99-9463-4DD4-B0F4-A4C36168B0C2}.Debug.ActiveCfg = Debug|Win32
+		{CE5A4E99-9463-4DD4-B0F4-A4C36168B0C2}.Debug.Build.0 = Debug|Win32
+		{CE5A4E99-9463-4DD4-B0F4-A4C36168B0C2}.Release.ActiveCfg = Release|Win32
+		{CE5A4E99-9463-4DD4-B0F4-A4C36168B0C2}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)boost_1_33_1&quot;;&quot;$(SolutionDir)WTL\include&quot;;&quot;$(SolutionDir)tinyxml&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)Externals\&quot;;&quot;$(SolutionDir)Externals\WTL\include\&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -34,10 +34,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="&quot;madCodeHookLib - microsoft.lib&quot; shared.lib tinyxmld_STL.lib sqlite3.lib"
+				AdditionalDependencies="&quot;madCodeHookLib - microsoft.lib&quot; shared.lib tinyxml.lib sqlite3.lib"
 				OutputFile="$(OutDir)/ItemAssistant.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;$(SolutionDir)$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)$(ConfigurationName)&quot;;&quot;$(SolutionDir)Externals\MadCodeHookLib\Dll\&quot;;&quot;$(SolutionDir)Externals\SQLite\&quot;"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/ItemAssistant.pdb"
 				SubSystem="2"
@@ -46,7 +46,10 @@
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="xcopy /Y $(SolutionDir)\..\SQLite\sqlite3.dll $(OutDir)"/>
+				CommandLine="xcopy /Y $(SolutionDir)\Externals\SQLite\sqlite3.dll $(OutDir)
+xcopy /Y $(SolutionDir)\Externals\MadCodeHookLib\Dll\madCodeHookLib.dll $(OutDir)
+xcopy /Y aoitems.db $(OutDir)
+xcopy /Y empty.db $(OutDir)ItemAssistant.db"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -66,14 +69,14 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)Release"
-			IntermediateDirectory="Release"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)..\&quot;;&quot;$(SolutionDir)\..\WTL\include&quot;;&quot;$(SolutionDir)\..\tinyxml&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)Externals\&quot;;&quot;$(SolutionDir)Externals\WTL\include\&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="0"
@@ -85,10 +88,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="&quot;madCodeHookLib - microsoft.lib&quot; shared.lib tinyxml_STL.lib sqlite3.lib"
+				AdditionalDependencies="&quot;madCodeHookLib - microsoft.lib&quot; shared.lib tinyxml.lib sqlite3.lib"
 				OutputFile="$(OutDir)/ItemAssistant.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(SolutionDir)..\SQLite&quot;;&quot;$(SolutionDir)madCodeHookLibL\Dll&quot;;&quot;$(SolutionDir)..\tinyxml\Release_STL&quot;;&quot;$(SolutionDir)release&quot;"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)$(ConfigurationName)&quot;;&quot;$(SolutionDir)Externals\MadCodeHookLib\Dll\&quot;;&quot;$(SolutionDir)Externals\SQLite\&quot;"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/ItemAssistant.pdb"
 				SubSystem="2"
@@ -99,7 +102,10 @@
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="xcopy /Y $(SolutionDir)\..\SQLite\sqlite3.dll $(OutDir)"/>
+				CommandLine="xcopy /Y $(SolutionDir)\Externals\SQLite\sqlite3.dll $(OutDir)
+xcopy /Y $(SolutionDir)\Externals\MadCodeHookLib\Dll\madCodeHookLib.dll $(OutDir)
+xcopy /Y aoitems.db $(OutDir)
+xcopy /Y empty.db $(OutDir)ItemAssistant.db"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool

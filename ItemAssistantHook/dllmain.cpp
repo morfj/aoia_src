@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "dllmain.h"
 #include <shared/aopackets.h>
-#include <madCodeHookLibL/Dll/MadCodeHookLib.h>
+#include <madCodeHookLib/Dll/MadCodeHookLib.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <set>

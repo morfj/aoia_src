@@ -2,7 +2,7 @@
 #include "SharedServices.h"
 
 #define TIXML_USE_STL
-#include <tinyxml.h>
+#include <TinyXml/tinyxml.h>
 
 #include <sstream>
 #include <boost/algorithm/string/trim.hpp>
