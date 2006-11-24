@@ -121,8 +121,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,8,0,0
- PRODUCTVERSION 0,8,0,0
+ FILEVERSION 0,8,1,0
+ PRODUCTVERSION 0,8,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -138,12 +138,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "Anarchy Online Item Assistant"
-            VALUE "FileVersion", "0, 8, 0, 0"
+            VALUE "FileVersion", "0, 8, 1, 0"
             VALUE "InternalName", "IA"
             VALUE "LegalCopyright", "Copyright 2006"
             VALUE "OriginalFilename", "ItemAssistant.exe"
             VALUE "ProductName", "Item Assistant"
-            VALUE "ProductVersion", "0, 8, 0, 0"
+            VALUE "ProductVersion", "0, 8, 1, 0"
         END
     END
     BLOCK "VarFileInfo"
@@ -343,17 +343,6 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDR_MAINFRAME           ICON                    "res\\ico120.ico"
-IDR_INVENTORY_VIEW      ICON                    "res\\inventory.ico"
-IDR_DEBUG_VIEW          ICON                    "res\\debug.ico"
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // Dialog
 //
 
@@ -365,7 +354,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,192,6,30,11,WS_GROUP
     LTEXT           "Anarchy Online Item Assistant (AO:IA)",IDC_STATIC,30,18,
                     129,8
-    LTEXT           "Version 0.8.0",IDC_STATIC,180,60,45,8
+    LTEXT           "Version 0.8.1",IDC_STATIC,180,60,45,8
     LTEXT           "Homepage:  http://ia.frellu.net",IDC_STATIC,42,36,104,8
 END
 
@@ -492,6 +481,17 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\ico120.ico"
+IDR_INVENTORY_VIEW      ICON                    "res\\inventory.ico"
+IDR_DEBUG_VIEW          ICON                    "res\\debug.ico"
 #endif    // Neutral (Sys. Default) resources
 /////////////////////////////////////////////////////////////////////////////
 

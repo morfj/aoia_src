@@ -359,7 +359,7 @@ void InventoryView::UpdateListView(std::tstring const& where)
 
    std::tstringstream sql;
    //sql << "SELECT substr(name,0,length(name)-1) AS Name, tItems.ql AS QL, stack AS Stack, owner AS Character, parent AS Container FROM tItems JOIN tblAO ON keylow = aoid";
-   sql << _T("SELECT tItems.itemidx, owner, substr(name,0,length(name)-1) AS Name, tItems.ql AS QL, stack AS Stack, ")
+   sql << _T("SELECT tItems.itemidx, owner, name AS Name, tItems.ql AS QL, stack AS Stack, ")
        << _T("(SELECT tToons.charname FROM tToons WHERE tToons.charid = owner) AS Character, ")
        << _T("parent AS Container FROM tItems JOIN tblAO ON keylow = aoid");
 
