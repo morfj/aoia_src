@@ -351,10 +351,10 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_CAPTION | WS_SYSMENU
 CAPTION "About - Item Assistant"
 FONT 10, "Verdana", 400, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,192,6,30,11,WS_GROUP
+    DEFPUSHBUTTON   "OK",IDOK,195,6,30,11,WS_GROUP
     LTEXT           "Anarchy Online Item Assistant (AO:IA)",IDC_STATIC,30,18,
                     129,8
-    LTEXT           "Version 0.8.1",IDC_STATIC,180,60,45,8
+    LTEXT           "Internal Version",IDC_VERSION,172,60,53,8
     LTEXT           "Homepage:  http://ia.frellu.net",IDC_STATIC,42,36,104,8
 END
 
@@ -439,6 +439,13 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO 
 BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        RIGHTMARGIN, 225
+        TOPMARGIN, 6
+        BOTTOMMARGIN, 68
+    END
+
     IDD_MSG_FORM, DIALOG
     BEGIN
         LEFTMARGIN, 2

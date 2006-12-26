@@ -24,6 +24,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tinyxmlSTL", "Externals\Tin
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PluginSDK", "PluginSDK\PluginSDK.vcproj", "{27846E26-FA81-4B43-997D-62B0338F1A37}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -43,13 +47,15 @@ Global
 		{370E1E96-79A9-4C9D-83B2-6E8298A90655}.Release.ActiveCfg = Release|Win32
 		{370E1E96-79A9-4C9D-83B2-6E8298A90655}.Release.Build.0 = Release|Win32
 		{A4F7DB74-59CD-45FB-89E1-19670BF1723C}.Debug.ActiveCfg = Debug
-		{A4F7DB74-59CD-45FB-89E1-19670BF1723C}.Debug.Build.0 = Debug
 		{A4F7DB74-59CD-45FB-89E1-19670BF1723C}.Release.ActiveCfg = Release
-		{A4F7DB74-59CD-45FB-89E1-19670BF1723C}.Release.Build.0 = Release
 		{CE5A4E99-9463-4DD4-B0F4-A4C36168B0C2}.Debug.ActiveCfg = Debug|Win32
 		{CE5A4E99-9463-4DD4-B0F4-A4C36168B0C2}.Debug.Build.0 = Debug|Win32
 		{CE5A4E99-9463-4DD4-B0F4-A4C36168B0C2}.Release.ActiveCfg = Release|Win32
 		{CE5A4E99-9463-4DD4-B0F4-A4C36168B0C2}.Release.Build.0 = Release|Win32
+		{27846E26-FA81-4B43-997D-62B0338F1A37}.Debug.ActiveCfg = Debug|Win32
+		{27846E26-FA81-4B43-997D-62B0338F1A37}.Debug.Build.0 = Debug|Win32
+		{27846E26-FA81-4B43-997D-62B0338F1A37}.Release.ActiveCfg = Release|Win32
+		{27846E26-FA81-4B43-997D-62B0338F1A37}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

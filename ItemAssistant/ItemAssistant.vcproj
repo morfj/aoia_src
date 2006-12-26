@@ -49,7 +49,8 @@
 				CommandLine="xcopy /Y $(SolutionDir)\Externals\SQLite\sqlite3.dll $(OutDir)
 xcopy /Y $(SolutionDir)\Externals\MadCodeHookLib\Dll\madCodeHookLib.dll $(OutDir)
 xcopy /Y aoitems.db $(OutDir)
-xcopy /Y ItemAssistant.db $(OutDir)"/>
+xcopy /Y ItemAssistant.db $(OutDir)
+"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -105,7 +106,8 @@ xcopy /Y ItemAssistant.db $(OutDir)"/>
 				CommandLine="xcopy /Y $(SolutionDir)\Externals\SQLite\sqlite3.dll $(OutDir)
 xcopy /Y $(SolutionDir)\Externals\MadCodeHookLib\Dll\madCodeHookLib.dll $(OutDir)
 xcopy /Y aoitems.db $(OutDir)
-xcopy /Y ItemAssistant.db $(OutDir)"/>
+xcopy /Y ItemAssistant.db $(OutDir)
+"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -218,9 +220,6 @@ xcopy /Y ItemAssistant.db $(OutDir)"/>
 				RelativePath=".\ItemAssistant.h">
 			</File>
 			<File
-				RelativePath=".\ItemAssistView.h">
-			</File>
-			<File
 				RelativePath=".\MainFrm.h">
 			</File>
 			<File
@@ -252,6 +251,9 @@ xcopy /Y ItemAssistant.db $(OutDir)"/>
 			</File>
 			<File
 				RelativePath=".\UnicodeSupport.h">
+			</File>
+			<File
+				RelativePath=".\Version.h">
 			</File>
 		</Filter>
 		<Filter
