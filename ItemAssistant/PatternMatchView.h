@@ -4,7 +4,7 @@
 #include "shared/aopackets.h"
 #include "shared/Thread.h"
 #include "shared/Mutex.h"
-#include "ItemAssistView.h"
+#include <PluginSDK/ItemAssistView.h>
 #include "resource.h"
 
 

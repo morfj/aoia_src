@@ -2,7 +2,7 @@
 
 
 #include "shared/aopackets.h"
-#include "ItemAssistView.h"
+#include <PluginSDK/ItemAssistView.h>
 
 
 class BotExportView

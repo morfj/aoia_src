@@ -2,7 +2,7 @@
 
 #include "shared/aopackets.h"
 #include "shared/localdb.h"
-#include "ItemAssistView.h"
+#include <PluginSDK/ItemAssistView.h>
 #include "TreeListView.h"
 #include <atlsplit.h>
 #include <vector>

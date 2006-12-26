@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PluginViewInterface.h"
+#include <PluginSDK/PluginViewInterface.h>
 
 
 template < class T >
@@ -26,13 +26,13 @@ public:
 
    virtual bool PreTranslateMsg(MSG* pMsg)
    {
-      // Override in derive classes
+      // Override in derived classes
       return false;
    }
 
    virtual void OnAOMessage(AO::Header *pMsg)
    {
-      // Override in derive classes
+      // Override in derived classes
    }
 
    virtual HWND GetWindow() const
@@ -42,5 +42,6 @@ public:
 
    virtual void OnActive(bool doActivation)
    {
+      // Override in derived classes
    }
 };

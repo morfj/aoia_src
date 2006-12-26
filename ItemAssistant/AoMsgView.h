@@ -1,8 +1,8 @@
 #pragma once
 
 #include <set>
+#include <PluginSDK/ItemAssistView.h>
 #include "shared/aopackets.h"
-#include "ItemAssistView.h"
 
 
 class DlgView
