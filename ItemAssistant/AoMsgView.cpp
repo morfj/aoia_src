@@ -1,6 +1,8 @@
 #include "StdAfx.h"
 #include "aomsgview.h"
 #include "AOMessageParsers.h"
+#include <iostream>
+#include <fstream>
 
 
 AoMsgView::AoMsgView(void)
@@ -9,6 +11,7 @@ AoMsgView::AoMsgView(void)
    m_mask.insert(AO::MSG_UNKNOWN_1);
    m_mask.insert(AO::MSG_UNKNOWN_2);
    m_mask.insert(AO::MSG_UNKNOWN_3);
+   m_mask.insert(AO::MSG_UNKNOWN_4);
 }
 
 
@@ -72,6 +75,57 @@ void AoMsgView::OnAOMessage(AO::Header* pMsg)
    CString msgString, sizeStr;
    unsigned int msgid = _byteswap_ulong(pMsg->msgid);
 
+   // Dump all character names to a file.
+   if (msgid == AO::MSG_MOB_SYNC) {
+      AO::MobInfo* pMobInfo = (AO::MobInfo*)pMsg;
+      std::string name(&(pMobInfo->characterName.str), pMobInfo->characterName.strLen); 
+
+      std::ofstream ofs;
+      ofs.open("c:\\character_names.txt", std::ios_base::out | std::ios_base::app);
+      ofs << pMsg->target.high << "\t" << name << "\r\n";
+   }
+
+   // Dump all mob info messages to file
+   if (msgid == AO::MSG_MOB_SYNC) {
+      AO::MobInfo* pMobInfo = (AO::MobInfo*)pMsg;
+      std::string name(&(pMobInfo->characterName.str), pMobInfo->characterName.strLen - 1); 
+      std::string filename = "c:\\temp\\info_msg_";
+      filename += name;
+      filename += ".bin";
+
+      std::ofstream ofs;
+      ofs.open(filename.c_str(), std::ios_base::out | std::ios_base::binary);
+
+      // Dump message to stream
+      for (char* p = (char*)pMsg; p <= (char*)pMsg + _byteswap_ushort(pMsg->msgsize); ++p) {
+         ofs << *p;
+      }
+   }
+
+   // Dump all messages with the string "Oddworld" to a file
+   //for (char * payload = (char*)pMsg + AO::HeaderSize; payload <= (char*)pMsg + (_byteswap_ushort(pMsg->msgsize) - 8); ++payload) {
+   //   if (strnicmp(payload, "Oddworld", 8) == 0) {
+   //      std::ofstream ofs;
+   //      ofs.open("c:\\oddworld_messages.bin", std::ios_base::out | std::ios_base::binary/* | std::ios_base::ate*/);
+
+   //      // Dump message to stream
+   //      for (char* p = (char*)pMsg; p <= (char*)pMsg + _byteswap_ushort(pMsg->msgsize); ++p) {
+   //         ofs << *p;
+   //      }
+   //   }
+   //}
+
+   //if (msgid == AO::MSG_POS_SYNC) {
+   //   std::stringstream str;
+   //   str << "Pos: ";
+   //   for (char * payload = (char*)pMsg + AO::HeaderSize; payload <= (char*)pMsg + 55; ++payload)
+   //   {
+   //      str << *payload;
+   //   }
+   //   str << std::endl << std::flush;
+
+   //}
+
    if (m_mask.find(msgid) != m_mask.end())
    {
       return;
@@ -107,6 +161,7 @@ LRESULT DlgView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	DlgResize_Init(false, true, WS_CLIPCHILDREN);
 	return 0;
 }
+
 
 LRESULT DlgView::OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
 {

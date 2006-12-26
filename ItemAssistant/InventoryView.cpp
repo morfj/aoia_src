@@ -321,6 +321,24 @@ void InventoryView::OnAOMessage(AO::Header* pMsg)
          CleanupDB(equip.charid());
       }
       break;
+
+   case AO::MSG_MOB_SYNC:
+      {
+         // Make sure this is the message for the currently playing toon (and not other mobs in vicinity).
+         if (pMsg->charid == pMsg->target.high)
+         {
+            AO::MobInfo* pMobInfo = (AO::MobInfo*)pMsg;
+            std::string name(&(pMobInfo->characterName.str), pMobInfo->characterName.strLen - 1);
+
+            Native::AOMessageHeader header(pMsg);
+            
+            g_DBManager.Lock();
+            g_DBManager.SetToonName(header.charid(), from_ascii_copy(name));
+            g_DBManager.UnLock();
+         }
+      }
+      break;
+
    }
 }
 

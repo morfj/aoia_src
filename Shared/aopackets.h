@@ -1,8 +1,5 @@
 #pragma once
 
-#include <strstream>
-
-
 namespace AO {
 
 	// USe these instead of sizeof(...) or you will get wrong results due to alignment errors.
@@ -96,6 +93,25 @@ namespace AO {
       char           unknown2[1];   // 0x12 ??
       unsigned int   mass;          // 1009*items+1009
    };
+
+   struct AoString
+   {
+      unsigned char  strLen;        // Number of bytes allocated to 'str'
+      const char     str;           // array of strLen number of bytes.
+   };
+
+   struct MobInfo
+   {
+      Header         header;
+      unsigned int   unknown1;
+      unsigned int   unknown2;
+      unsigned int   unknown3;
+      unsigned int   unknown4;
+      unsigned int   unknown5;
+      unsigned short unknown6;
+      AoString       characterName;
+   };
+
 #pragma pack(pop)
 
 
@@ -115,6 +131,8 @@ namespace AO {
       MSG_UNKNOWN_2  =  0x00000001,    // size = 40 bytes
       MSG_UNKNOWN_3  =  0x0000000b,    // size = 548 bytes
       MSG_FULLSYNC   =  0x29304349,    // size 4252.. dynamic?  Contains equip and inv + atribs (?) +++
+      MSG_UNKNOWN_4  =  0x54111123,
+      MSG_MOB_SYNC   =  0x271B3A6B,
 	};
 
    enum ToonAtribIds
