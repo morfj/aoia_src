@@ -210,9 +210,10 @@ LRESULT CMainFrame::OnTimer(UINT wParam, TIMERPROC lParam)
 void CMainFrame::OnSysCommand(UINT wParam, CPoint mousePos)
 {
    switch (wParam) {
+      case SC_CLOSE:
       case SC_MINIMIZE:
          {
-            DefWindowProc(WM_SYSCOMMAND, wParam, NULL);
+            DefWindowProc(WM_SYSCOMMAND, SC_MINIMIZE, NULL);
             ShowWindow(SW_HIDE); // Hides the task bar button.
             m_minimized = true;
          }
