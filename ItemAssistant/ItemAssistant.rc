@@ -271,6 +271,23 @@ LANGUAGE LANG_NORWEGIAN, SUBLANG_NORWEGIAN_BOKMAL
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Menu
+//
+
+IDR_TRAY_POPUP MENU 
+BEGIN
+    POPUP "Show / Hide"
+    BEGIN
+        MENUITEM "Show / Hide",                 ID_TRAY_SHOW
+        MENUITEM "About Item Assistant",        ID_APP_ABOUT
+        MENUITEM SEPARATOR
+        MENUITEM "Exit",                        ID_APP_EXIT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Dialog
 //
 

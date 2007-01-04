@@ -1,7 +1,3 @@
-// MainFrm.cpp : implmentation of the CMainFrame class
-//
-/////////////////////////////////////////////////////////////////////////////
-
 #include "stdafx.h"
 
 #include "aboutdlg.h"
@@ -44,6 +40,8 @@ BOOL CMainFrame::OnIdle()
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
+   m_minimized = false;
+
 	// create command bar window
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE);
 	// attach menu
@@ -99,6 +97,15 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	pLoop->AddMessageFilter(this);
 	pLoop->AddIdleHandler(this);
 
+   // Load a tray icon
+   HICON hIconSmall = (HICON)::LoadImage(_Module.GetResourceInstance(), MAKEINTRESOURCE(IDR_MAINFRAME), 
+      IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
+   // Install tray icon
+   InstallIcon(_T("Item Assistant"), hIconSmall, IDR_TRAY_POPUP);
+
+   // Double-clicking the tray icon will maximize/minimize application
+   SetDefaultItem(ID_TRAY_SHOW);
+
    Inject();
    SetTimer(1, 10000);
 
@@ -108,6 +115,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
+   RemoveIcon();
 	PostMessage(WM_CLOSE);
 	return 0;
 }
@@ -146,9 +154,27 @@ LRESULT CMainFrame::OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 
 LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	CAboutDlg dlg;
-	dlg.DoModal();
+   static bool isInside = false;
+
+   if (!isInside) {
+      isInside = true;
+	   CAboutDlg dlg;
+	   dlg.DoModal();
+      isInside = false;
+   }
 	return 0;
+}
+
+
+LRESULT CMainFrame::OnTrayShow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+   if (m_minimized) {
+      SendMessage(WM_SYSCOMMAND, SC_RESTORE, NULL);
+   }
+   else {
+      SendMessage(WM_SYSCOMMAND, SC_MINIMIZE, NULL);
+   }
+   return 0;
 }
 
 
@@ -178,6 +204,32 @@ LRESULT CMainFrame::OnTimer(UINT wParam, TIMERPROC lParam)
       SetTimer(1, 10000);
    }
    return 0;
+}
+
+
+void CMainFrame::OnSysCommand(UINT wParam, CPoint mousePos)
+{
+   switch (wParam) {
+      case SC_MINIMIZE:
+         {
+            DefWindowProc(WM_SYSCOMMAND, wParam, NULL);
+            ShowWindow(SW_HIDE); // Hides the task bar button.
+            m_minimized = true;
+         }
+         break;
+      case SC_RESTORE:
+         {
+            if (m_minimized) {
+               ShowWindow(SW_SHOW);
+               m_minimized = false;
+            }
+            DefWindowProc(WM_SYSCOMMAND, wParam, NULL);
+         }
+         break;
+      default:
+         SetMsgHandled(FALSE);
+         break;
+   }
 }
 
 

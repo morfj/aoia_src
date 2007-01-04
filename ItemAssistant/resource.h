@@ -22,6 +22,7 @@
 #define IDD_WEB                         140
 #define IDR_HTML1                       141
 #define IDR_HTML2                       142
+#define IDR_TRAY_POPUP                  143
 #define IDC_EDIT2                       1001
 #define IDC_LIST1                       1002
 #define IDC_EDIT1                       1003
@@ -58,6 +59,10 @@
 #define ID_PB_FILTER                    32786
 #define ID_PB_FILTER_HIDE               32787
 #define ID_INFO                         32789
+#define ID_TRAYMENU_SHOW                32791
+#define ID_TRAYMENU_                    32792
+#define ID_TRAYMENU_ABOUTITEMASSISTANT  32793
+#define ID_TRAY_TOGLE                   32795
 #define ATL_IDS_IDLEMESSAGE             0xE001
 #define ID_FILE_NEW                     0xE100
 #define ID_FILE_OPEN                    0xE101
@@ -91,6 +96,7 @@
 #define ID_PREV_PANE                    0xE151
 #define ID_VIEW_TOOLBAR                 0xE800
 #define ID_VIEW_STATUS_BAR              0xE801
+#define ID_TRAY_SHOW                    0xE802
 #define ATL_IDS_SCSIZE                  0xEF00
 #define ATL_IDS_SCMOVE                  0xEF01
 #define ATL_IDS_SCMINIMIZE              0xEF02
@@ -109,8 +115,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        143
-#define _APS_NEXT_COMMAND_VALUE         32791
+#define _APS_NEXT_RESOURCE_VALUE        144
+#define _APS_NEXT_COMMAND_VALUE         32800
 #define _APS_NEXT_CONTROL_VALUE         1032
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
