@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PluginViewInterface.h"
+#include <PluginSDK/PluginViewInterface.h>
 #include "InventoryView.h"
 #include "AoMsgView.h"
 #include "PatternMatchView.h"
