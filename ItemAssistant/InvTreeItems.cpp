@@ -252,7 +252,7 @@ void CharacterTreeViewItem::OnSelected()
 
 bool CharacterTreeViewItem::CanEdit() const
 {
-   return true;
+   return false;
 }
 
 
@@ -304,8 +304,8 @@ std::vector<MFTreeViewItem*> CharacterTreeViewItem::GetChildren() const
 
 unsigned int CharacterTreeViewItem::AppendMenuCmd(HMENU hMenu, unsigned int firstID, WTL::CTreeItem item) const
 {
-   m_commands[firstID] = InternalCommand::CMD_EDIT;
-   AppendMenu(hMenu, MF_STRING, firstID++, _T("Edit Toon Name"));
+   //m_commands[firstID] = InternalCommand::CMD_EDIT;
+   //AppendMenu(hMenu, MF_STRING, firstID++, _T("Edit Toon Name"));
    m_commands[firstID] = InternalCommand::CMD_DELETE;
    AppendMenu(hMenu, MF_STRING, firstID++, _T("Delete Items From DB"));
    return firstID;
