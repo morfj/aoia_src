@@ -64,31 +64,9 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	m_tabbedChildWindow.SetTabStyles(CTCS_TOOLTIPS | CTCS_DRAGREARRANGE);
    m_hWndClient = m_tabbedChildWindow.Create(m_hWnd, rcDefault, 0, style | WS_VISIBLE);
 
-//   m_InventoryView.Create(m_tabbedChildWindow, 0, 0, style);
-//   m_PatternView.Create(m_tabbedChildWindow, 0, 0, style);
-//   //m_BotExportView.Create(m_tabbedChildWindow, 0, 0, style);
-//#ifdef _DEBUG
-//   m_MsgView.Create(m_tabbedChildWindow, 0, 0, style);
-//#endif
-//
-//   m_tabbedChildWindow.AddTab(m_InventoryView, "Inventory");
-//   m_tabbedChildWindow.AddTab(m_PatternView, "Pattern Matcher");
-//   //m_tabbedChildWindow.AddTab(m_BotExportView, "Bot Export");
-//#ifdef _DEBUG
-//   m_tabbedChildWindow.AddTab(m_MsgView, "Messages (Debug)");
-//#endif
-//
-//   m_tabbedChildWindow.DisplayTab(m_InventoryView);
-//
-//	m_viewPlugins.push_back(&m_InventoryView);
-//   m_viewPlugins.push_back(&m_PatternView);
-//   //m_viewPlugins.push_back(&m_BotExportView);
-//#ifdef _DEBUG
-//   m_viewPlugins.push_back(&m_MsgView);
-//#endif
-
 	UIAddToolBar(hWndToolBar);
-	UISetCheck(ID_VIEW_TOOLBAR, 1);
+
+   SetToolbarVisibility(false);
 	UISetCheck(ID_VIEW_STATUS_BAR, 1);
 
    // register object for message filtering and idle updates
@@ -129,15 +107,21 @@ LRESULT CMainFrame::OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 }
 
 
-LRESULT CMainFrame::OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+void CMainFrame::SetToolbarVisibility(bool visible)
 {
-	static BOOL bVisible = TRUE;	// initially visible
-	bVisible = !bVisible;
 	CReBarCtrl rebar = m_hWndToolBar;
 	int nBandIndex = rebar.IdToIndex(ATL_IDW_BAND_FIRST + 1);	// toolbar is 2nd added band
-	rebar.ShowBand(nBandIndex, bVisible);
-	UISetCheck(ID_VIEW_TOOLBAR, bVisible);
+	rebar.ShowBand(nBandIndex, visible);
+	UISetCheck(ID_VIEW_TOOLBAR, visible);
 	UpdateLayout();
+}
+
+
+LRESULT CMainFrame::OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	static BOOL bVisible = FALSE;	// initially not visible
+	bVisible = !bVisible;
+   SetToolbarVisibility(bVisible);
 	return 0;
 }
 

@@ -57,6 +57,9 @@ public:
    LRESULT OnEraseBkgnd(HDC dc) { return 1; }
    void OnSysCommand(UINT wParam, CPoint mousePos);
 
+protected:
+   void SetToolbarVisibility(bool visible);
+
 private:
    void Inject();
 
