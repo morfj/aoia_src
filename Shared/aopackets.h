@@ -4,11 +4,11 @@ namespace AO {
 
 	// USe these instead of sizeof(...) or you will get wrong results due to alignment errors.
 	// Maybe redo structs with proper #pragma pack and/or __declspec(align(#))?
-	const AoObjectIdSize		= 8;
-	const HeaderSize			= 28;
-	const ContainerBeginSize	= 9;
-	const ContainerItemSize		= 32;
-	const ContainerEndSize		= 16;
+	const int AoObjectIdSize		= 8;
+	const int HeaderSize			= 28;
+	const int ContainerBeginSize	= 9;
+	const int ContainerItemSize		= 32;
+	const int ContainerEndSize		= 16;
 
 #pragma pack(push, 1)
 	struct AoObjectId

@@ -18,7 +18,7 @@ namespace Shared
             return instance_;
         }
 
-        static DestroyInstance()
+        static void DestroyInstance()
         {
             delete instance_;
             instance_ = NULL;
