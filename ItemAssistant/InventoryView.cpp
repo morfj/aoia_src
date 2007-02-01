@@ -5,6 +5,7 @@
 #include "resource.h"
 #include "shared/AODB.h"
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/replace.hpp>
 
 #define TIXML_USE_STL
 #include <TinyXml/tinyxml.h>
@@ -150,12 +151,11 @@ LRESULT InventoryView::OnItemContextMenu(LPNMHDR lParam)
         SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());
         g_DBManager.UnLock();
 
-        unsigned int itemloid, itemhiid, itemql;
-        std::tstring itemname, itemlocation;
+        std::tstring itemloid, itemhiid, itemql, itemname, itemlocation;
         if (pT && pT->Rows() > 0) {
-            itemloid = boost::lexical_cast<int>(pT->Data(0, 0));
-            itemhiid = boost::lexical_cast<int>(pT->Data(0, 1));
-            itemql = boost::lexical_cast<int>(pT->Data(0, 2));
+            itemloid = from_ascii_copy(pT->Data(0, 0));
+            itemhiid = from_ascii_copy(pT->Data(0, 1));
+            itemql = from_ascii_copy(pT->Data(0, 2));
             itemname = from_ascii_copy(pT->Data(0, 3));
             unsigned int owner = boost::lexical_cast<int>(pT->Data(0, 6));
             unsigned int containerid = boost::lexical_cast<int>(pT->Data(0, 5));
@@ -168,27 +168,30 @@ LRESULT InventoryView::OnItemContextMenu(LPNMHDR lParam)
             return 0; 
         }
 
+        TCHAR buffer[1024];
+        if (cmd == ID_COPY_AUNO_ITEMREF || cmd == ID_COPY_AUNO_ITEMREF_VBB) {
+            ATL::AtlLoadString(IDS_AUNO_ITEMREF_URL, buffer, 1024);
+        }
+        else if (cmd == ID_COPY_JAYDEE_ITEMREF || cmd == ID_COPY_JAYDEE_ITEMREF_VBB) {
+            ATL::AtlLoadString(IDS_JAYDEE_ITEMREF_URL, buffer, 1024);
+        }
+        std::tstring url(buffer);
+
+        if (!url.empty()) {
+            boost::replace_all(url, _T("%lowid%"), itemloid);
+            boost::replace_all(url, _T("%hiid%"), itemhiid);
+            boost::replace_all(url, _T("%ql%"), itemql);
+        }
+
         std::tstringstream clip;
         switch (cmd) {
         case ID_COPY_AUNO_ITEMREF:
-            clip << _T("<a href=\"http://auno.org/ao/db.php?id=") << itemloid 
-                << _T("&ql=") << itemql 
-                << _T("\">") << itemname << _T("</a> [QL") << itemql << _T("] [") << itemlocation << _T("]");
-            break;
         case ID_COPY_JAYDEE_ITEMREF:
-            clip << _T("<a href=\"http://aomainframe.net/showitem.asp?LowID=") << itemloid << _T("&HiID=") << itemhiid
-                << _T("&QL=") << itemql
-                << _T("\">") << itemname << _T("</a> [QL") << itemql << _T("] [") << itemlocation << _T("]");
+            clip << _T("<a href=\"") << url << _T("\">") << itemname << _T("</a> [QL") << itemql << _T("] [") << itemlocation << _T("]");
             break;
         case ID_COPY_AUNO_ITEMREF_VBB:
-            clip << _T("[url=http://auno.org/ao/db.php?id=") << itemloid 
-                << _T("&ql=") << itemql 
-                << _T("]") << itemname << _T("[/url] {QL") << itemql << _T("} {") << itemlocation << _T("}");
-            break;
         case ID_COPY_JAYDEE_ITEMREF_VBB:
-            clip << _T("[url=http://aomainframe.net/showitem.asp?LowID=") << itemloid << _T("&HiID=") << itemhiid
-                << _T("&QL=") << itemql
-                << _T("]") << itemname << _T("[/url] {QL") << itemql << _T("} {") << itemlocation << _T("}");
+            clip << _T("[url=") << url << _T("]") << itemname << _T("[/url] {QL") << itemql << _T("} {") << itemlocation << _T("}");
             break;
         case ID_COPY_AO_ITEMREF:
             clip << _T("<a href=\"text://<a href=itemref://") << itemloid << _T("/") << itemhiid << _T("/") 

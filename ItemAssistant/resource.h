@@ -14,7 +14,9 @@
 #define IDD_MSG_FORM                    130
 #define IDD_MSG_FORM1                   131
 #define IDD_BOT_FORM                    131
+#define IDS_AUNO_ITEMREF_URL            131
 #define IDD_INV_FIND                    132
+#define IDS_JAYDEE_ITEMREF_URL          132
 #define IDR_INV_ACCEL                   133
 #define IDD_PATTERN_MATCHER             134
 #define IDR_PB_ACCEL                    135

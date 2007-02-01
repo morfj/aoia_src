@@ -139,8 +139,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,8,2,0
- PRODUCTVERSION 0,8,2,0
+ FILEVERSION 0,8,3,0
+ PRODUCTVERSION 0,8,3,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -155,13 +155,15 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
+            VALUE "Comments", "Homepage is located at http://ia.frellu.net"
+            VALUE "CompanyName", "http://ia.frellu.net"
             VALUE "FileDescription", "Anarchy Online Item Assistant"
-            VALUE "FileVersion", "0, 8, 2, 0"
-            VALUE "InternalName", "IA"
-            VALUE "LegalCopyright", "Copyright 2006"
+            VALUE "FileVersion", "0, 8, 3, 0"
+            VALUE "InternalName", "AOIA"
+            VALUE "LegalCopyright", "Copyright 2006, 2007"
             VALUE "OriginalFilename", "ItemAssistant.exe"
             VALUE "ProductName", "Item Assistant"
-            VALUE "ProductVersion", "0, 8, 2, 0"
+            VALUE "ProductVersion", "0, 8, 3, 0"
         END
     END
     BLOCK "VarFileInfo"
@@ -188,6 +190,8 @@ BEGIN
     IDR_MAINFRAME           "AO Item Assistant"
     IDR_INVENTORY_VIEW      "Inventory"
     IDR_DEBUG_VIEW          "Debug Messages"
+    IDS_AUNO_ITEMREF_URL    "http://auno.org/ao/db.php?id=%lowid%&ql=%ql%"
+    IDS_JAYDEE_ITEMREF_URL  "http://aomainframe.net/showitem.asp?LowID=%lowid%&HiID=%hiid%&QL=%ql%"
 END
 
 STRINGTABLE 
