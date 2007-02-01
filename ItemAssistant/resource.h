@@ -23,6 +23,7 @@
 #define IDR_HTML1                       141
 #define IDR_HTML2                       142
 #define IDR_TRAY_POPUP                  143
+#define IDR_ITEM_POPUP                  144
 #define IDC_EDIT2                       1001
 #define IDC_LIST1                       1002
 #define IDC_EDIT1                       1003
@@ -63,6 +64,19 @@
 #define ID_TRAYMENU_                    32792
 #define ID_TRAYMENU_ABOUTITEMASSISTANT  32793
 #define ID_TRAY_TOGLE                   32795
+#define ID_COPY_AUNO_ITEMREF            32800
+#define ID_COPY_JAYDEE_ITEMREF          32801
+#define ID_COPY_BB_ITEMREF              32802
+#define ID_COPY_AO_ITEMREF              32803
+#define ID_COPYITEMASLINKTOAUNO_COPYITEMASLINKTOAUNO 32804
+#define ID_ITEMCONTEXTMENU_COPYITEMHTLMLINK 32805
+#define ID_COPYITEMHTLMLINK_AUNO        32806
+#define ID_COPYITEMHTLMLINK_AOMAINFRAME 32807
+#define ID_ITEMCONTEXTMENU_COPYITEMVBBLINK 32808
+#define ID_COPYITEMVBBLINK_AUNO         32809
+#define ID_COPYITEMVBBLINK_AOMAINFRAME  32810
+#define ID_COPY_AUNO_ITEMREF_VBB        32811
+#define ID_COPY_JAYDEE_ITEMREF_VBB      32812
 #define ATL_IDS_IDLEMESSAGE             0xE001
 #define ID_FILE_NEW                     0xE100
 #define ID_FILE_OPEN                    0xE101
@@ -115,8 +129,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        144
-#define _APS_NEXT_COMMAND_VALUE         32800
+#define _APS_NEXT_RESOURCE_VALUE        145
+#define _APS_NEXT_COMMAND_VALUE         32813
 #define _APS_NEXT_CONTROL_VALUE         1032
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
