@@ -5,7 +5,7 @@
 #include "AoMsgView.h"
 #include "PatternMatchView.h"
 #include "BotExportView.h"
-
+#include "PlayershopView.h"
 
 class TabFrame
    : public CTabbedChildWindow< CDotNetTabCtrl<CTabViewTabItem> >
@@ -34,5 +34,6 @@ private:
    InventoryView              m_InventoryView;
 	AoMsgView                  m_MsgView;
    PatternMatchView           m_PatternView;
+   PlayershopView             m_PlayershopView;
    BotExportView              m_BotExportView;
 };

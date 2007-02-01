@@ -3,6 +3,8 @@
 // Used by ItemAssistant.rc
 //
 #define IDC_MYICON                      2
+#define IDD_FORMVIEW                    101
+#define IDD_PLAYERSHOP                  101
 #define IDD_ITEMASSISTANT_DIALOG        102
 #define IDS_APP_TITLE                   103
 #define IDD_ABOUTBOX                    103
@@ -53,6 +55,7 @@
 #define IDC_PROGRESS                    1030
 #define IDC_SHOW_PARTIALS               1031
 #define IDC_VERSION                     1031
+#define IDC_TREE1                       1032
 #define ID_Menu                         32771
 #define ID_VIEW_INVENTORY               32772
 #define ID_VIEW_MESSAGES                32773
@@ -133,7 +136,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        145
 #define _APS_NEXT_COMMAND_VALUE         32813
-#define _APS_NEXT_CONTROL_VALUE         1032
+#define _APS_NEXT_CONTROL_VALUE         1033
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif
