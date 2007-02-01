@@ -3,7 +3,6 @@
 #include "shared/aopackets.h"
 #include "shared/localdb.h"
 #include <PluginSDK/ItemAssistView.h>
-#include "TreeListView.h"
 #include <atlsplit.h>
 #include <vector>
 #include "MFTreeView.h"
@@ -164,7 +163,6 @@ protected:
     static int CALLBACK CompareStr(LPARAM param1, LPARAM param2, LPARAM sort);
 
 private:
-    //CTreeListViewCtrl m_treeList;
     CSplitterWindow   m_splitter;
     MFTreeView        m_treeview;
     WTL::CListViewCtrl     m_listview;
