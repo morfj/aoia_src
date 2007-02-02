@@ -6,9 +6,7 @@
 #include "PsmTreeItems.h"
 
 class PlayershopView :
-   public ItemAssistView<PlayershopView>//,
-   //CDialogImpl<PlayershopView>,
-   //public CDialogResize<PlayershopView>
+   public ItemAssistView<PlayershopView>
 {
    typedef ItemAssistView<PlayershopView> inherited;
 public:
@@ -22,6 +20,12 @@ public:
 	{
 		WM_POSTCREATE = WM_APP + 1,
 	};
+
+    enum {
+        IDW_PSMLISTVIEW = 1,
+        IDW_PSMTREEVIEW
+    };
+
    BEGIN_MSG_MAP_EX(InventoryView)
 		MSG_WM_CREATE(OnCreate)
 		MSG_WM_SIZE(OnSize)
@@ -38,7 +42,9 @@ public:
 
 	LRESULT OnCreate(LPCREATESTRUCT createStruct);
 	LRESULT OnSize(UINT wParam, CSize newSize);
-   LRESULT OnPostCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+    LRESULT OnPostCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnColumnClick(LPNMHDR lParam);
+	LRESULT OnItemActivate(LPNMHDR lParam);
 
    void UpdateListView(std::tstring const& where);
 
