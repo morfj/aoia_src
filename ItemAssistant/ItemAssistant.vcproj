@@ -227,6 +227,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\NTRAY.CPP"
+				>
+			</File>
+			<File
 				RelativePath=".\PatternMatchView.cpp"
 				>
 			</File>
@@ -325,6 +329,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\NTRAY.H"
+				>
+			</File>
+			<File
 				RelativePath=".\PatternMatchView.h"
 				>
 			</File>
@@ -334,10 +342,6 @@
 			</File>
 			<File
 				RelativePath=".\PlayershopView.h"
-				>
-			</File>
-			<File
-				RelativePath=".\PluginViewInterface.h"
 				>
 			</File>
 			<File
@@ -365,6 +369,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\trayiconimpl.h"
+				>
+			</File>
+			<File
 				RelativePath=".\UnicodeSupport.h"
 				>
 			</File>
@@ -380,6 +388,16 @@
 			>
 			<File
 				RelativePath=".\res\debug.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\html1.htm"
+				DeploymentContent="true"
+				>
+			</File>
+			<File
+				RelativePath=".\res\html2.htm"
+				DeploymentContent="true"
 				>
 			</File>
 			<File
@@ -411,16 +429,6 @@
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath=".\res\html1.htm"
-			DeploymentContent="true"
-			>
-		</File>
-		<File
-			RelativePath=".\res\html2.htm"
-			DeploymentContent="true"
-			>
-		</File>
 	</Files>
 	<Globals>
 		<Global

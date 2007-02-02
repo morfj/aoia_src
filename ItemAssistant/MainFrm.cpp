@@ -5,6 +5,7 @@
 #include "MainFrm.h"
 #include "shared/aopackets.h"
 #include <MadCodeHookLib/Dll/MadCodeHookLib.h>
+#include "ntray.h"
 
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
@@ -78,11 +79,9 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
     // Load a tray icon
     HICON hIconSmall = (HICON)::LoadImage(_Module.GetResourceInstance(), MAKEINTRESOURCE(IDR_MAINFRAME), 
         IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
-    // Install tray icon
-    InstallIcon(_T("Item Assistant"), hIconSmall, IDR_TRAY_POPUP);
 
-    // Double-clicking the tray icon will maximize/minimize application
-    SetDefaultItem(ID_TRAY_SHOW);
+    m_trayIcon = boost::shared_ptr<CTrayNotifyIcon>(new CTrayNotifyIcon());
+    m_trayIcon->Create(this, IDR_TRAY_POPUP, _T("AO Item Assistant"), hIconSmall, WM_TRAYICON);
 
     Inject();
     SetTimer(1, 10000);
@@ -93,7 +92,10 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-    RemoveIcon();
+    if (m_trayIcon) {
+        m_trayIcon->RemoveIcon();
+        m_trayIcon.reset();
+    }
     PostMessage(WM_CLOSE);
     return 0;
 }
@@ -146,6 +148,7 @@ LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
         dlg.DoModal();
         isInside = false;
     }
+
     return 0;
 }
 
@@ -250,4 +253,13 @@ void CMainFrame::Inject()
             CloseHandle( AOProcessHnd );
         }
     }
+}
+
+
+LRESULT CMainFrame::OnTrayIcon(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
+{
+    if (m_trayIcon) {
+        return m_trayIcon->OnTrayNotification(wParam, lParam);
+    }
+    return 0;
 }
