@@ -81,15 +81,15 @@ LRESULT PlayershopView::OnCreate(LPCREATESTRUCT createStruct)
 
 void PlayershopView::UpdateLayout(CSize newSize)
 {
-   CRect r( CPoint( 0, 0 ), newSize );
+    CRect r( CPoint( 0, 0 ), newSize );
 
-   m_splitter.SetWindowPos(NULL, r.left, r.top, r.Width(), r.Height(), SWP_NOZORDER | SWP_NOACTIVATE | SWP_DEFERERASE | SWP_NOSENDCHANGING);
+    m_splitter.SetWindowPos(NULL, r.left, r.top, r.Width(), r.Height(), SWP_NOZORDER | SWP_NOACTIVATE | SWP_DEFERERASE | SWP_NOSENDCHANGING);
 }
 
 
 LRESULT PlayershopView::OnSize(UINT wParam, CSize newSize)
 {
-   UpdateLayout(newSize);
+    UpdateLayout(newSize);
 	return 0;
 }
 
@@ -150,4 +150,12 @@ int PlayershopView::CompareStr(LPARAM param1, LPARAM param2, LPARAM sort)
    }
 */
    return result;
+}
+
+
+void PlayershopView::OnActive(bool doActivation)
+{
+    if (doActivation && m_splitter.GetSplitterPos() < 0) {
+        m_splitter.SetSplitterPos(200);
+    }
 }
