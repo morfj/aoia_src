@@ -2,96 +2,96 @@
 #include "dbmanager.h"
 #include <shared/localdb.h>
 #include <sstream>
-
+#include <boost/lexical_cast.hpp>
 
 namespace SQLite {
 
 
-Db::Db()
- : m_pDb(NULL)
-{
-}
+    Db::Db()
+        : m_pDb(NULL)
+    {
+    }
 
 
-Db::~Db()
-{
-   sqlite3_close(m_pDb);
-}
+    Db::~Db()
+    {
+        sqlite3_close(m_pDb);
+    }
 
 
-bool Db::Init(std::tstring const& filename)
-{
-   if (SQLITE_OK == sqlite3_open(to_ascii_copy(filename).c_str(), &m_pDb))
-   {
-      return true;
-   }
-   sqlite3_close(m_pDb);
-   m_pDb = NULL;
-   return false;
-}
+    bool Db::Init(std::tstring const& filename)
+    {
+        if (SQLITE_OK == sqlite3_open(to_ascii_copy(filename).c_str(), &m_pDb))
+        {
+            return true;
+        }
+        sqlite3_close(m_pDb);
+        m_pDb = NULL;
+        return false;
+    }
 
 
-void Db::Term()
-{
-   if (m_pDb != NULL)
-   {
-      sqlite3_close(m_pDb);
-      m_pDb = NULL;
-   }
-}
+    void Db::Term()
+    {
+        if (m_pDb != NULL)
+        {
+            sqlite3_close(m_pDb);
+            m_pDb = NULL;
+        }
+    }
 
 
-TablePtr Db::ExecTable(std::tstring const& sql)
-{
-   TablePtr pRes;
-   char **result;
-   int nrow;
-   int ncol;
+    TablePtr Db::ExecTable(std::tstring const& sql)
+    {
+        TablePtr pRes;
+        char **result;
+        int nrow;
+        int ncol;
 
-   std::string sql_utf8 = to_utf8_copy(sql);
+        std::string sql_utf8 = to_utf8_copy(sql);
 
-   int retval = sqlite3_get_table(m_pDb, 
-      sql_utf8.c_str(), 
-      &result,          /* Result written to a char *[]  that this points to */
-      &nrow,            /* Number of result rows written here */
-      &ncol,            /* Number of result columns written here */
-      NULL);
+        int retval = sqlite3_get_table(m_pDb, 
+            sql_utf8.c_str(), 
+            &result,          /* Result written to a char *[]  that this points to */
+            &nrow,            /* Number of result rows written here */
+            &ncol,            /* Number of result columns written here */
+            NULL);
 
-   if (SQLITE_OK == retval)
-   {
-      pRes = TablePtr(new Table(nrow, ncol, result));
-   }
-   else {
-      assert(false);
-   }
+        if (SQLITE_OK == retval)
+        {
+            pRes = TablePtr(new Table(nrow, ncol, result));
+        }
+        else {
+            assert(false);
+        }
 
-   sqlite3_free_table(result);
-   return pRes;
-}
-
-
-bool Db::Exec(std::tstring const& sql) 
-{
-   return (SQLITE_OK == sqlite3_exec(m_pDb, to_ascii_copy(sql).c_str(), NULL, NULL, NULL)) ? true : false;
-}
+        sqlite3_free_table(result);
+        return pRes;
+    }
 
 
-void Db::Begin()
-{
-   Exec(_T("BEGIN TRANSACTION"));
-}
+    bool Db::Exec(std::tstring const& sql) 
+    {
+        return (SQLITE_OK == sqlite3_exec(m_pDb, to_ascii_copy(sql).c_str(), NULL, NULL, NULL)) ? true : false;
+    }
 
 
-void Db::Commit()
-{
-   Exec(_T("COMMIT TRANSACTION"));
-}
+    void Db::Begin()
+    {
+        Exec(_T("BEGIN TRANSACTION"));
+    }
 
 
-void Db::Rollback()
-{
-   Exec(_T("ROLLBACK TRANSACTION"));
-}
+    void Db::Commit()
+    {
+        Exec(_T("COMMIT TRANSACTION"));
+    }
+
+
+    void Db::Rollback()
+    {
+        Exec(_T("ROLLBACK TRANSACTION"));
+    }
 
 
 }  // namespace SQLite
@@ -114,119 +114,119 @@ DBManager::~DBManager(void)
 
 bool DBManager::Init(std::tstring dbfile)
 {
-   // Init the Copy of AO DB
+    // Init the Copy of AO DB
 
-   std::tstring AODir;
-   bool requestFolder = true;
+    std::tstring AODir;
+    bool requestFolder = true;
 
-   ATL::CRegKey regKey;
-   if (regKey.Open(HKEY_CURRENT_USER, _T("Software\\AOItemAssistant"), KEY_ALL_ACCESS) == ERROR_SUCCESS)
-   {
-      TCHAR ao_dir[MAX_PATH];
-      ULONG ao_dir_size = MAX_PATH;
-      ZeroMemory(ao_dir, MAX_PATH * sizeof(TCHAR));
+    ATL::CRegKey regKey;
+    if (regKey.Open(HKEY_CURRENT_USER, _T("Software\\AOItemAssistant"), KEY_ALL_ACCESS) == ERROR_SUCCESS)
+    {
+        TCHAR ao_dir[MAX_PATH];
+        ULONG ao_dir_size = MAX_PATH;
+        ZeroMemory(ao_dir, MAX_PATH * sizeof(TCHAR));
 
-      if (regKey.QueryStringValue(_T("AOPath"), ao_dir, &ao_dir_size) == ERROR_SUCCESS)
-      {
-         AODir = std::tstring(ao_dir);
-         std::tstringstream AOExePath;
-         AOExePath << AODir << _T("\\anarchy.exe");
+        if (regKey.QueryStringValue(_T("AOPath"), ao_dir, &ao_dir_size) == ERROR_SUCCESS)
+        {
+            AODir = std::tstring(ao_dir);
+            std::tstringstream AOExePath;
+            AOExePath << AODir << _T("\\anarchy.exe");
 
-         FILE* fp;
-         //char AOExePath[300];
-         //sprintf( AOExePath, "%s\\anarchy.exe", AODir.c_str() );
-         if( fp = fopen( to_ascii_copy(AOExePath.str()).c_str(), "r" ) )
-         {
-            requestFolder = false;
-            fclose( fp );
-         }
-      }
-      regKey.Close();
-   }
-   else
-   {
-      if (regKey.Create(HKEY_CURRENT_USER, _T("Software\\AOItemAssistant")) == ERROR_SUCCESS)
-      {
-         regKey.Close();
-      }
-   }
+            FILE* fp;
+            //char AOExePath[300];
+            //sprintf( AOExePath, "%s\\anarchy.exe", AODir.c_str() );
+            if( fp = fopen( to_ascii_copy(AOExePath.str()).c_str(), "r" ) )
+            {
+                requestFolder = false;
+                fclose( fp );
+            }
+        }
+        regKey.Close();
+    }
+    else
+    {
+        if (regKey.Create(HKEY_CURRENT_USER, _T("Software\\AOItemAssistant")) == ERROR_SUCCESS)
+        {
+            regKey.Close();
+        }
+    }
 
-   if (requestFolder)
-   {
-	   AODir = GetFolder(NULL, _T("Please locate the AO directory:"));
-      if (AODir.empty()) {
-         return false;
-      }
-      FILE* fp;
+    if (requestFolder)
+    {
+        AODir = GetFolder(NULL, _T("Please locate the AO directory:"));
+        if (AODir.empty()) {
+            return false;
+        }
+        FILE* fp;
 
-      std::tstringstream pathOfExe;
-      pathOfExe << AODir << _T("\\anarchy.exe");
+        std::tstringstream pathOfExe;
+        pathOfExe << AODir << _T("\\anarchy.exe");
 
-      if( !( fp = fopen(to_ascii_copy(pathOfExe.str()).c_str(), "r") ) ) {
-         MessageBox( NULL, _T("This is not AO's directory."), _T("ERROR"), MB_OK | MB_ICONERROR);
-         return false;
-      }
-      fclose( fp );
+        if( !( fp = fopen(to_ascii_copy(pathOfExe.str()).c_str(), "r") ) ) {
+            MessageBox( NULL, _T("This is not AO's directory."), _T("ERROR"), MB_OK | MB_ICONERROR);
+            return false;
+        }
+        fclose( fp );
 
-      if (regKey.Open(HKEY_CURRENT_USER, _T("Software\\AOItemAssistant"), KEY_ALL_ACCESS) == ERROR_SUCCESS)
-      {
-         regKey.SetStringValue(_T("AOPath"), AODir.c_str());
-         regKey.Close();
-      }
-   }
+        if (regKey.Open(HKEY_CURRENT_USER, _T("Software\\AOItemAssistant"), KEY_ALL_ACCESS) == ERROR_SUCCESS)
+        {
+            regKey.SetStringValue(_T("AOPath"), AODir.c_str());
+            regKey.Close();
+        }
+    }
 
-   m_aofolder = std::tstring(AODir);
+    m_aofolder = std::tstring(AODir);
 
-   if (dbfile.empty())
-   {
-      dbfile = _T("ItemAssistant.db");
-   }
+    if (dbfile.empty())
+    {
+        dbfile = _T("ItemAssistant.db");
+    }
 
-   if (!SQLite::Db::Init(dbfile))
-   {
-      return false;
-   }
+    if (!SQLite::Db::Init(dbfile))
+    {
+        return false;
+    }
 
-   Exec(_T("ATTACH DATABASE \"aoitems.db\" AS aodb"));
+    Exec(_T("ATTACH DATABASE \"aoitems.db\" AS aodb"));
 
-   return true;
+    return true;
 }
 
 
 void DBManager::Term()
 {
-   SQLite::Db::Term();
+    SQLite::Db::Term();
 }
 
 
 /* Prompt user for folder
-   (from AOMD)
- */
+(from AOMD)
+*/
 std::tstring DBManager::GetFolder(HWND hWndOwner, std::tstring const& title)
 {
-	BROWSEINFO udtBI;
-	ITEMIDLIST *udtIDList;
+    BROWSEINFO udtBI;
+    ITEMIDLIST *udtIDList;
 
-	/* Initialise */
-	udtBI.hwndOwner = hWndOwner;
-	udtBI.pidlRoot = NULL;
-	udtBI.pszDisplayName = NULL;
-   udtBI.lpszTitle = title.c_str();
-	udtBI.ulFlags = BIF_RETURNONLYFSDIRS;
-	udtBI.lpfn = NULL;
-	udtBI.lParam = NULL;
-	udtBI.iImage = 0;
+    /* Initialise */
+    udtBI.hwndOwner = hWndOwner;
+    udtBI.pidlRoot = NULL;
+    udtBI.pszDisplayName = NULL;
+    udtBI.lpszTitle = title.c_str();
+    udtBI.ulFlags = BIF_RETURNONLYFSDIRS;
+    udtBI.lpfn = NULL;
+    udtBI.lParam = NULL;
+    udtBI.iImage = 0;
 
-	/* Prompt user for folder */
-	udtIDList = SHBrowseForFolder(&udtBI);
+    /* Prompt user for folder */
+    udtIDList = SHBrowseForFolder(&udtBI);
 
-	/* Extract pathname */
-   TCHAR strPath[MAX_PATH];
-   if (!SHGetPathFromIDList(udtIDList, (TCHAR*)&strPath)) {
-		strPath[0] = 0;	// Zero-length if failure
-   }
+    /* Extract pathname */
+    TCHAR strPath[MAX_PATH];
+    if (!SHGetPathFromIDList(udtIDList, (TCHAR*)&strPath)) {
+        strPath[0] = 0;	// Zero-length if failure
+    }
 
-   return std::tstring(strPath);
+    return std::tstring(strPath);
 }
 
 
@@ -280,56 +280,85 @@ std::tstring DBManager::GetFolder(HWND hWndOwner, std::tstring const& title)
 
 
 void DBManager::InsertItem(unsigned int keylow,
-                              unsigned int keyhigh,
-                              unsigned short ql,
-                              unsigned short stack,
-                              unsigned int parent,
-                              unsigned short slot,
-                              unsigned int children,
-                              unsigned int owner)
+                           unsigned int keyhigh,
+                           unsigned short ql,
+                           unsigned short stack,
+                           unsigned int parent,
+                           unsigned short slot,
+                           unsigned int children,
+                           unsigned int owner)
 {
-   std::tstringstream sql;
-   sql << _T("INSERT INTO tItems (keylow, keyhigh, ql, stack, parent, slot, children, owner) VALUES (")
-         << (unsigned int) keylow      << _T(", ")
-         << (unsigned int) keyhigh     << _T(", ")
-         << (unsigned int) ql          << _T(", ")
-         << (unsigned int) stack       << _T(", ")
-         << (unsigned int) parent      << _T(", ")
-         << (unsigned int) slot        << _T(", ")
-         << (unsigned int) children    << _T(", ")
-         << (unsigned int) owner       << _T(")");
-   Exec(sql.str());
+    std::tstringstream sql;
+    sql << _T("INSERT INTO tItems (keylow, keyhigh, ql, stack, parent, slot, children, owner) VALUES (")
+        << (unsigned int) keylow      << _T(", ")
+        << (unsigned int) keyhigh     << _T(", ")
+        << (unsigned int) ql          << _T(", ")
+        << (unsigned int) stack       << _T(", ")
+        << (unsigned int) parent      << _T(", ")
+        << (unsigned int) slot        << _T(", ")
+        << (unsigned int) children    << _T(", ")
+        << (unsigned int) owner       << _T(")");
+    Exec(sql.str());
 }
 
 
 std::tstring DBManager::GetToonName(unsigned int charid) const
 {
-   std::tstring result;
+    std::tstring result;
 
-   SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR("SELECT charid, charname FROM tToons WHERE charid = " << charid));
+    SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR("SELECT charid, charname FROM tToons WHERE charid = " << charid));
 
-   if (pT != NULL && pT->Rows())
-   {
-      if (!pT->Data()[1].empty())
-      {
-         result = from_ascii_copy(pT->Data()[1]);
-      }
-   }
+    if (pT != NULL && pT->Rows())
+    {
+        if (!pT->Data()[1].empty())
+        {
+            result = from_ascii_copy(pT->Data()[1]);
+        }
+    }
 
-   return result;
+    return result;
 }
 
 
 void DBManager::SetToonName(unsigned int charid, std::tstring const& newName)
 {
-   g_DBManager.Begin();
+    g_DBManager.Begin();
 
-   {
-      g_DBManager.Exec(STREAM2STR("DELETE FROM tToons WHERE charid = " << charid));
-   }
-   {
-      g_DBManager.Exec(STREAM2STR("INSERT INTO tToons (charid, charname) VALUES (" << charid << ", '" << newName.c_str() << "')"));
-   }
+    {
+        g_DBManager.Exec(STREAM2STR("DELETE FROM tToons WHERE charid = " << charid));
+    }
+    {
+        g_DBManager.Exec(STREAM2STR("INSERT INTO tToons (charid, charname) VALUES (" << charid << ", '" << newName.c_str() << "')"));
+    }
 
-   g_DBManager.Commit();
+    g_DBManager.Commit();
+}
+
+
+OwnedItemInfoPtr DBManager::GetOwnedItemInfo(unsigned int itemID)
+{
+    OwnedItemInfoPtr pRetVal(new OwnedItemInfo());
+
+    std::tstringstream sql;
+    sql << _T("SELECT tItems.keylow AS itemloid, tItems.keyhigh AS itemhiid, tItems.ql AS itemql, name AS itemname, ")
+        << _T("(SELECT tToons.charname FROM tToons WHERE tToons.charid = owner) AS ownername, owner AS ownerid, ")
+        << _T("parent AS containerid ")
+        << _T("FROM tItems JOIN tblAO ON keylow = aoid WHERE itemidx = ") << (int)itemID;
+
+    SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());
+
+    pRetVal->itemloid = from_ascii_copy(pT->Data(0, 0));
+    pRetVal->itemhiid = from_ascii_copy(pT->Data(0, 1));
+    pRetVal->itemql = from_ascii_copy(pT->Data(0, 2));
+    pRetVal->itemname = from_ascii_copy(pT->Data(0, 3));
+    pRetVal->ownername = from_ascii_copy(pT->Data(0, 4));
+    pRetVal->ownerid = from_ascii_copy(pT->Data(0, 5));
+    pRetVal->containerid = from_ascii_copy(pT->Data(0, 6));
+    unsigned int containerid = boost::lexical_cast<int>(pRetVal->containerid);
+    unsigned int ownerid = boost::lexical_cast<int>(pRetVal->ownerid);
+    pRetVal->containername = ServicesSingleton::Instance()->GetContainerName(ownerid, containerid);
+    //pRetVal->inventoryname;
+    //pRetVal->inventoryid;
+
+    return pRetVal;
 }
