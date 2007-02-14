@@ -2,6 +2,8 @@
 #include "PsmTreeItems.h"
 #include "PlayershopView.h"
 #include <sstream>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
 
 
 
@@ -84,7 +86,26 @@ std::vector<PsmTreeViewItem*> AccountTreeViewItem::GetChildren() const
 {
    std::vector<PsmTreeViewItem*> result;
 
-   result.push_back(new CharacterTreeViewItem1(m_pOwner, _T("Senlee")));
+   std::tstring filename;
+   filename = STREAM2STR( g_DBManager.AOFolder() << _T("\\Prefs\\") << m_label);
+   boost::filesystem::path p(to_utf8_copy(filename));
+
+   boost::filesystem::path account(to_utf8_copy(filename));
+   boost::filesystem::directory_iterator character(account), filesEnd;
+
+   for (; character != filesEnd; ++character)
+   {
+      if(is_directory(*character)){
+         boost::filesystem::path logFile = (*character).root_path() / boost::filesystem::path("\\PlayerShopLog.html");
+         
+         result.push_back(new CharacterTreeViewItem1(m_pOwner, from_ascii_copy((*character).leaf())));
+
+         if(boost::filesystem::exists(logFile) && !boost::filesystem::is_directory(logFile)){
+            //we have a playershop file!!
+            //m_hasLogFile = true;
+         }
+      }
+   }
 
    return result;
 }
@@ -208,10 +229,28 @@ bool PlayershopTreeRoot::HasChildren() const
 std::vector<PsmTreeViewItem*> PlayershopTreeRoot::GetChildren() const
 {
    std::vector<PsmTreeViewItem*> result;
+   
+   std::tstring filename;
+   filename = STREAM2STR( g_DBManager.AOFolder() << _T("\\Prefs\\") );
+   boost::filesystem::path p(to_utf8_copy(filename));
 
-   result.push_back(new AccountTreeViewItem(m_pOwner,_T("kenneth")));
-   result.push_back(new AccountTreeViewItem(m_pOwner,_T("morten")));
- 
+   boost::filesystem::directory_iterator account(p), dir_end;
+
+   if(!is_directory(p))
+   {
+      return result;
+   }
+
+   for (;account != dir_end; ++account)
+   {
+      boost::filesystem::path acc = *account;
+      if (is_directory(acc))
+	   { // we found an account ?
+         
+         result.push_back(new AccountTreeViewItem(m_pOwner, from_ascii_copy(acc.leaf())));
+	   }
+   }
+	
    return result;
 }
 

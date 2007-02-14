@@ -1,5 +1,8 @@
 #include "StdAfx.h"
 #include "PlayershopView.h"
+//#include <boost/filesystem/path.hpp>
+//#include <boost/filesystem/fstream.hpp>
+//#include <boost/filesystem/operations.hpp>
 
 
 enum ColumnID
@@ -69,7 +72,6 @@ LRESULT PlayershopView::OnCreate(LPCREATESTRUCT createStruct)
    m_treeview.SetRootItem(&m_treeRoot);
    
    m_splitter.SetSplitterPanes(m_treeview, m_listview);
-//   m_splitter.SetSplitterPanes(m_treeview, NULL);
    m_splitter.SetActivePane(SPLIT_PANE_LEFT);
 
    PostMessage(WM_POSTCREATE);
@@ -93,21 +95,11 @@ LRESULT PlayershopView::OnSize(UINT wParam, CSize newSize)
 	return 0;
 }
 
+
 LRESULT PlayershopView::OnPostCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	//SetSplitterPos works best after the default WM_CREATE has been handled
-	m_splitter.SetSplitterPos(200);
-
-   CTreeItem item = m_treeview.GetRootItem();
-   item = m_treeview.GetChildItem(item);
-   if (!item.IsNull())
-   {
-      item = m_treeview.GetChildItem(item);
-   }
-   if (!item.IsNull())
-   {
-      m_treeview.SelectItem(item);
-   }
+//	m_splitter.SetSplitterPos(200);
 
 	return 0;
 }
@@ -158,4 +150,17 @@ void PlayershopView::OnActive(bool doActivation)
     if (doActivation && m_splitter.GetSplitterPos() < 0) {
         m_splitter.SetSplitterPos(200);
     }
+
+   CTreeItem item = m_treeview.GetRootItem();
+   item = m_treeview.GetChildItem(item);
+   if (!item.IsNull())
+   {
+      item = m_treeview.GetChildItem(item);
+   }
+   if (!item.IsNull())
+   {
+      m_treeview.SelectItem(item);
+   }
+
+
 }
