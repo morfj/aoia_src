@@ -108,8 +108,19 @@ LRESULT PlayershopView::OnPostCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 void PlayershopView::UpdateListView(std::tstring const& where)
 {
    m_listview.DeleteAllItems();
-
+   m_listview.AddItem(0,0,where.c_str());
 }
+
+// Updates the list view with the results of the SQL query. 'where' is used as the expression after the WHERE keyword.
+void PlayershopView::UpdateListView(std::vector<std::tstring> v)
+{
+   m_listview.DeleteAllItems();
+
+   for(unsigned int i=0; i<v.size();i++){
+      m_listview.AddItem(0,0,v[i].c_str());
+   }
+}
+
 
 // Static callback function for sorting items.
 int PlayershopView::CompareStr(LPARAM param1, LPARAM param2, LPARAM sort)

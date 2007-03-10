@@ -19,6 +19,7 @@ public:
    virtual void SetLabel(std::tstring const& newLabel);
    virtual unsigned int AppendMenuCmd(HMENU hMenu, unsigned int firstID, WTL::CTreeItem item) const;
    virtual bool HandleMenuCmd(unsigned int commandID, WTL::CTreeItem item);
+   virtual void OnSelected();
 
 protected:
    PlayershopView* m_pOwner;
@@ -47,7 +48,7 @@ public:
    virtual bool HasChildren() const;
    virtual unsigned int AppendMenuCmd(HMENU hMenu, unsigned int firstID, WTL::CTreeItem item) const;
    virtual bool HandleMenuCmd(unsigned int commandID, WTL::CTreeItem item);
-
+   std::vector<std::tstring> GetAllSoldItems();
 private:
    std::tstring m_label;
 };
@@ -56,7 +57,7 @@ private:
 class CharacterTreeViewItem1 : public PsmTreeViewItemBase
 {
 public:
-   CharacterTreeViewItem1(PlayershopView* pOwner, std::tstring charName);
+   CharacterTreeViewItem1(PlayershopView* pOwner, unsigned int charID, const AccountTreeViewItem* pParent);
    virtual ~CharacterTreeViewItem1();
 
    virtual void OnSelected();
@@ -68,10 +69,12 @@ public:
    virtual bool HasChildren() const;
    virtual unsigned int AppendMenuCmd(HMENU hMenu, unsigned int firstID, WTL::CTreeItem item) const;
    virtual bool HandleMenuCmd(unsigned int commandID, WTL::CTreeItem item);
+   std::vector<std::tstring> GetAllSoldItems();
 
 private:
    unsigned int m_charid;
    std::tstring m_label;
+   const AccountTreeViewItem* m_pParent;
 };
 
 

@@ -47,6 +47,7 @@ public:
     LRESULT OnItemActivate(LPNMHDR lParam);
 
     void UpdateListView(std::tstring const& where);
+    void UpdateListView(std::vector<std::tstring> v);
 
     // ItemAssistView overrides
     virtual void OnActive(bool doActivation);
@@ -59,9 +60,8 @@ private:
     CSplitterWindow   m_splitter;
 
     //MFTreeView        m_treeview;
-    PsmTreeView		 m_treeview;
+    PsmTreeView		   m_treeview;
     CListViewCtrl     m_listview;
-
     //CTreeItem         m_treeRoot;
 
     PlayershopTreeRoot m_treeRoot;

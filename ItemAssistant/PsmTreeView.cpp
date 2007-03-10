@@ -98,3 +98,16 @@ LRESULT PsmTreeView::OnItemExpanding(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
    }
    return result ? TRUE : FALSE;
 }
+
+LRESULT PsmTreeView::OnSelChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
+{
+   LPNMTREEVIEW pnmtv = (LPNMTREEVIEW)pnmh;
+
+   PsmTreeViewItem* pItem = (PsmTreeViewItem*)(pnmtv->itemNew.lParam);
+   if (pItem)
+   {
+      pItem->OnSelected();
+   }
+
+   return FALSE;
+}

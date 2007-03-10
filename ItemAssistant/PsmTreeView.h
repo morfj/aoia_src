@@ -24,11 +24,13 @@ public:
      BEGIN_MSG_MAP_EX(PsmTreeView)
          // put your message handler entries here
 		REFLECTED_NOTIFY_CODE_HANDLER(TVN_ITEMEXPANDING, OnItemExpanding)
+      REFLECTED_NOTIFY_CODE_HANDLER(TVN_SELCHANGED, OnSelChanged)
 		REFLECTED_NOTIFY_CODE_HANDLER(TVN_GETDISPINFO, OnGetDispInfo)
 		DEFAULT_REFLECTION_HANDLER()
 	END_MSG_MAP()
 
    LRESULT OnItemExpanding(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
+   LRESULT OnSelChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
    LRESULT OnGetDispInfo(int, LPNMHDR lParam, BOOL&);
 
 
