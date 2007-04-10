@@ -66,7 +66,11 @@ LRESULT PlayershopView::OnCreate(LPCREATESTRUCT createStruct)
 
    m_listview.Create(m_splitter.m_hWnd, rcDefault, NULL, style | LVS_REPORT, WS_EX_CLIENTEDGE);
    m_listview.SetDlgCtrlID(IDW_PSMLISTVIEW);
-   m_listview.AddColumn(_T("Text"), 0);
+   int colid = m_listview.AddColumn(_T("Info"), 0);
+   m_listview.SetColumnWidth(colid, 550);
+
+   colid = m_listview.AddColumn(_T("Toon"), 1);
+   m_listview.SetColumnWidth(colid, 100);
 
    m_treeRoot.SetOwner(this);
    m_treeview.SetRootItem(&m_treeRoot);
@@ -117,7 +121,7 @@ void PlayershopView::UpdateListView(std::vector<std::tstring> v)
    m_listview.DeleteAllItems();
 
    for(unsigned int i=0; i<v.size();i++){
-      m_listview.AddItem(0,0,v[i].c_str());
+      m_listview.AddItem(0,i%2,v[i].c_str());
    }
 }
 
