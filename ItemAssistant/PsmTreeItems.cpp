@@ -11,6 +11,10 @@
 #include <fstream>
 #include <vector>
 
+#define TIXML_USE_STL
+#include <TinyXml/tinyxml.h>
+
+
 PsmTreeViewItemBase::PsmTreeViewItemBase(PlayershopView* pOwner)
  : m_pOwner(pOwner)
 {
@@ -120,11 +124,15 @@ std::vector<PsmTreeViewItem*> AccountTreeViewItem::GetChildren() const
    {
       if(is_directory(*character)){
          boost::filesystem::path logFile = (*character).root_path() / boost::filesystem::path("\\PlayerShopLog.html", boost::filesystem::native);
-         result.push_back(new CharacterTreeViewItem1(m_pOwner, atoi((*character).leaf().substr(4).c_str()),this));
-         if(boost::filesystem::exists(logFile) && !boost::filesystem::is_directory(logFile)){
-            //we have a playershop file!!
-            //m_hasLogFile = true;
-         }
+         unsigned int charID = atoi((*character).leaf().substr(4).c_str());
+         if(charID != 0)
+         {
+            result.push_back(new CharacterTreeViewItem1(m_pOwner, charID,this));
+            if(boost::filesystem::exists(logFile) && !boost::filesystem::is_directory(logFile)){
+               //we have a playershop file!!
+               //m_hasLogFile = true;
+            }
+         }  
       }
    }
 
@@ -184,13 +192,36 @@ std::vector<std::tstring> CharacterTreeViewItem1::GetAllSoldItems()
 
    std::ifstream in(p.string().c_str());
    std::string line;
+   std::string text;
    std::vector<std::tstring> v;
    while(in){
       line.clear();
       std::getline(in,line);
       if(!line.empty())
       {
-         v.push_back(from_ascii_copy(line));
+         text += line;
+      }
+   }
+
+   // Now that we have the whole file, lets parse it
+
+   // Text located between the two following tags is to be considered an item sold
+   std::string startTag = "<div indent=wrapped>" ;
+   std::string endTag   = "</div>" ;
+
+   while(text.length() > 0)
+   {
+   
+      std::string::size_type start = text.find( startTag, 0 );
+      std::string::size_type end  = text.find( endTag , 0 );
+      if( start != std::string::npos && end != std::string::npos)
+      {
+         v.push_back(from_ascii_copy(text.substr(start+startTag.length(),end-start-startTag.length())));
+         text = text.substr(end+endTag.length());
+      }
+      else
+      {
+         text = "";
       }
    }
    return v;
