@@ -237,6 +237,44 @@ LRESULT InventoryView::OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND 
 #endif
         CloseClipboard();
     }
+
+    return 0;
+}
+
+
+LRESULT InventoryView::OnShowItemRef(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled)
+{
+    DWORD_PTR data = m_listview.GetItemData(m_listview.GetSelectedIndex());
+
+    g_DBManager.Lock();
+    OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo((int)data);
+    g_DBManager.UnLock();
+
+    std::tstring itemlocation = pItemInfo->ownername;
+    itemlocation += _T(" -> ");
+    itemlocation += pItemInfo->containername;
+
+    TCHAR buffer[1024];
+    if (CommandId == ID_VIEW_ITEMSTATS_AUNO) {
+        ATL::AtlLoadString(IDS_AUNO_ITEMREF_URL, buffer, 1024);
+    }
+    else if (CommandId == ID_VIEW_ITEMSTATS_JAYDEE) {
+        ATL::AtlLoadString(IDS_JAYDEE_ITEMREF_URL, buffer, 1024);
+    }
+    else {
+        assert(false); // Looks like you forgot to add a section to load the proper url for your command.
+    }
+    std::tstring url(buffer);
+
+    if (!url.empty()) {
+        boost::replace_all(url, _T("%lowid%"), pItemInfo->itemloid);
+        boost::replace_all(url, _T("%hiid%"), pItemInfo->itemhiid);
+        boost::replace_all(url, _T("%ql%"), pItemInfo->itemql);
+    }
+
+    ShellExecute(NULL, _T("open"), url.c_str(), NULL, NULL, SW_SHOWDEFAULT);
+
+    return 0;
 }
 
 
