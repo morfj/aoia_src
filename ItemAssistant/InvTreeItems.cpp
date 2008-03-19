@@ -292,10 +292,11 @@ std::vector<MFTreeViewItem*> CharacterTreeViewItem::GetChildren() const
    std::vector<MFTreeViewItem*> result;
 
    result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 1, _T(""), _T("Bank"))); // bank
-   result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 2, _T("slot > 47"), _T("Inventory"))); // inv
-   result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 2, _T("slot < 16"), _T("Weapons"))); // Weapons
-   result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 2, _T("slot > 16 AND slot < 32"), _T("Cloth"))); // Cloth
-   result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 2, _T("slot > 32 AND slot < 47"), _T("Implants"))); // Implants
+   result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 2, _T("slot > 63"), _T("Inventory"))); // inventory
+   result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 2, _T("slot < 16"), _T("Weapons"))); // Weapons tab
+   result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 2, _T("slot >= 16 AND slot < 32"), _T("Cloth"))); // Armor tab
+   result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 2, _T("slot >= 32 AND slot < 47"), _T("Implants"))); // Implants tab
+   result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 2, _T("slot >= 47 AND slot < 64"), _T("Social"))); // Social tab
    result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 0, _T(""), _T("Unknown"))); // Unknown
 
    return result;
