@@ -61,9 +61,11 @@ LRESULT TabFrame::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandl
    AddTab(m_PatternView, _T("Pattern Matcher"));
    m_viewPlugins.push_back(&m_PatternView);
 
+#ifdef _DEBUG
    m_PlayershopView.Create(*this, 0, 0, style);
    AddTab(m_PlayershopView, _T("Playershop Monitor"));
    m_viewPlugins.push_back(&m_PlayershopView);
+#endif
 
    //m_BotExportView.Create(*this, 0, 0, style);
    //AddTab(m_BotExportView, "Bot Export");
