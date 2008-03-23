@@ -131,6 +131,7 @@ protected:
 
    unsigned int GetDBVersion() const;
    void UpdateDBVersion(unsigned int fromVersion) const;
+   void CreateDBScheme() const;
 
 
 private:

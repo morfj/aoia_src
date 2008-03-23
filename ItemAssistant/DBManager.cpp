@@ -4,8 +4,8 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 
-namespace SQLite {
 
+namespace SQLite {
 
    Db::Db()
       : m_pDb(NULL)
@@ -182,9 +182,19 @@ bool DBManager::Init(std::tstring dbfile)
       dbfile = _T("ItemAssistant.db");
    }
 
+   bool dbfileExists = false;
+   if(FILE* fp = fopen(to_ascii_copy(dbfile).c_str(), "r")) {
+      dbfileExists = true;
+      fclose(fp);
+   }
+
    if (!SQLite::Db::Init(dbfile))
    {
       return false;
+   }
+
+   if (!dbfileExists) {
+      CreateDBScheme();
    }
 
    unsigned int dbVersion = GetDBVersion();
@@ -425,4 +435,20 @@ void DBManager::UpdateDBVersion(unsigned int fromVersion) const
    default:
       break;
    }
+}
+
+
+void DBManager::CreateDBScheme() const
+{
+   Begin();
+   Exec(_T("CREATE TABLE tItems (itemidx INTEGER NOT NULL PRIMARY KEY ON CONFLICT REPLACE AUTOINCREMENT UNIQUE DEFAULT '1', keylow INTEGER, keyhigh INTEGER, ql INTEGER, stack INTEGER DEFAULT '1', parent INTEGER NOT NULL DEFAULT '2', slot INTEGER, children INTEGER, owner INTEGER NOT NULL)"));
+   Exec(_T("CREATE VIEW vBankItems AS SELECT * FROM tItems WHERE parent=1"));
+   Exec(_T("CREATE VIEW vContainers AS SELECT * FROM tItems WHERE children > 0"));
+   Exec(_T("CREATE VIEW vInvItems AS SELECT * FROM tItems WHERE parent=2"));
+   Exec(_T("CREATE INDEX iOwner ON tItems (owner)"));
+   Exec(_T("CREATE INDEX iParent ON tItems (parent)"));
+   Exec(_T("CREATE TABLE tToons (charid, charname)"));
+   Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));
+   Exec(_T("CREATE VIEW vSchemeVersion AS SELECT '1' AS Version"));
+   Commit();
 }
