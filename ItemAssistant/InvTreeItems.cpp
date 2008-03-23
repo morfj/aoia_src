@@ -163,7 +163,7 @@ std::vector<MFTreeViewItem*> ContainerTreeViewItem::GetChildren() const
       {
          for (size_t i = 0; i < pT->Rows(); ++i)
          {
-            unsigned int contid = atoi(pT->Data()[pT->Columns()*i].c_str());
+            unsigned int contid = boost::lexical_cast<unsigned int>(pT->Data()[pT->Columns()*i]);
             result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, contid));
          }
       }
@@ -394,15 +394,12 @@ std::vector<MFTreeViewItem*> InventoryTreeRoot::GetChildren() const
 
    // Init contents from DB
    g_DBManager.Lock();
-   SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT DISTINCT owner FROM tItems"));
+   SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT DISTINCT owner FROM tItems ORDER BY owner ASC"));
    g_DBManager.UnLock();
 
-   if (pT != NULL)
-   {
-      for (size_t i = 0; i < pT->Rows(); ++i)
-      {
-         unsigned int charId = atoi(pT->Data()[pT->Columns()*i].c_str());
-
+   if (pT != NULL) {
+      for (size_t i = 0; i < pT->Rows(); ++i) {
+         unsigned int charId = boost::lexical_cast<unsigned int>(pT->Data()[pT->Columns()*i]);
          result.push_back(new CharacterTreeViewItem(m_pOwner, charId));
       }
    }

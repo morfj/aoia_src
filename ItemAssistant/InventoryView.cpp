@@ -497,7 +497,6 @@ void InventoryView::OnAOMessage(AO::Header* pMsg)
             }
         }
         break;
-
     }
 }
 
@@ -600,8 +599,8 @@ void InventoryView::UpdateListView(std::tstring const& where)
                     // Find proper container name
                     if (column == _T("Container"))
                     {
-                        unsigned int id = atoi(pT->Data(row, col).c_str());
-                        unsigned int charid = atoi(pT->Data(row, 1).c_str());
+                        unsigned int id = boost::lexical_cast<unsigned int>(pT->Data(row, col));
+                        unsigned int charid = boost::lexical_cast<unsigned int>(pT->Data(row, 1));
 
                         data = ServicesSingleton::Instance()->GetContainerName(charid, id);
                     }
@@ -609,7 +608,7 @@ void InventoryView::UpdateListView(std::tstring const& where)
                 }
                 if (pT->Columns() > 0)
                 {
-                    int data = atoi(pT->Data(row, 0).c_str());
+                    int data = boost::lexical_cast<int>(pT->Data(row, 0));
                     m_listview.SetItemData(indx, data);
                 }
             }
@@ -641,8 +640,8 @@ int InventoryView::CompareStr(LPARAM param1, LPARAM param2, LPARAM sort)
     case COL_QL:
     case COL_STACK:
         {
-            int a = atoi(to_ascii_copy(name1).c_str());
-            int b = atoi(to_ascii_copy(name2).c_str());
+            int a = boost::lexical_cast<int>(to_ascii_copy(name1));
+            int b = boost::lexical_cast<int>(to_ascii_copy(name2));
             result = pThis->m_sortDesc ? b - a : a - b;
         }
         break;
@@ -794,7 +793,7 @@ LRESULT FindView::OnCbnBuildCharcombo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
     {
         for (unsigned int i = 0; i < pT->Rows(); i++)
         {
-            unsigned int id = atoi(pT->Data()[pT->Columns()*i].c_str());
+            unsigned int id = boost::lexical_cast<unsigned int>(pT->Data()[pT->Columns()*i]);
 
             g_DBManager.Lock();
             std::tstring name = g_DBManager.GetToonName(id);

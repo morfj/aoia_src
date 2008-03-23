@@ -134,7 +134,7 @@ std::tstring SharedServices::MakeContainerName(unsigned int charid, unsigned int
 
     if (pT2 != NULL)
     {
-        int keylow = atoi(pT2->Data(0,0).c_str());
+        int keylow = boost::lexical_cast<int>(pT2->Data(0,0));
 
         std::map<std::tstring, std::tstring> item = GetAOItemInfo(keylow);
         result = item[_T("name")];

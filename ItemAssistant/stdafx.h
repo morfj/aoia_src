@@ -37,6 +37,7 @@ extern CAppModule _Module;  // Global _Module
 #include <stdio.h>
 
 #include <boost/shared_ptr.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "UnicodeSupport.h"
 

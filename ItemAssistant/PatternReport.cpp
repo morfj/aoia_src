@@ -94,8 +94,8 @@ PatternReport::PatternReport(unsigned int pbid, unsigned int toonid)
          g_DBManager.UnLock();
 
          for (unsigned int itemIdx = 0; itemIdx < pItems->Rows(); ++itemIdx) {
-            unsigned int containerid = (unsigned int)atoi(pItems->Data(itemIdx, 0).c_str());
-            unsigned int owner = m_toonid > 0 ? m_toonid : (unsigned int)atoi(pItems->Data(itemIdx, 1).c_str());
+            unsigned int containerid = boost::lexical_cast<unsigned int>(pItems->Data(itemIdx, 0));
+            unsigned int owner = m_toonid > 0 ? m_toonid : boost::lexical_cast<unsigned int>(pItems->Data(itemIdx, 1));
 
             if (pieces[owner][containerid].find(pattern) != pieces[owner][containerid].end()) {
                pieces[owner][containerid][pattern] += 1;

@@ -60,7 +60,7 @@ LRESULT PatternMatchView::OnCreate(LPCREATESTRUCT createStruct)
          for (unsigned int row = 0; row < pT->Rows(); row++)
          {
             boost::shared_ptr<PbItem> pPb = boost::shared_ptr<PbItem>(new PbItem());
-            pPb->pbid = atoi(pT->Data(row, 0).c_str());
+            pPb->pbid = boost::lexical_cast<unsigned int>(pT->Data(row, 0));
             pPb->pbname = from_ascii_copy(pT->Data(row, 1));
             pPb->pbavailability = -1.0f;
             m_pblist.push_back(pPb);
@@ -441,7 +441,7 @@ float PatternMatchView::CalcPbAvailability(unsigned int pbid, unsigned int tooni
       g_DBManager.UnLock();
 
       if (pItemCount) {
-         vals[pattern] += atoi(pItemCount->Data(0, 0).c_str());
+         vals[pattern] += boost::lexical_cast<unsigned int>(pItemCount->Data(0, 0));
       }
    }
 
@@ -539,7 +539,7 @@ void FilterView::UpdateToonList()
    {
       for (unsigned int i = 0; i < pT->Rows(); i++)
       {
-         unsigned int id = atoi(pT->Data()[pT->Columns()*i].c_str());
+         unsigned int id = boost::lexical_cast<unsigned int>(pT->Data()[pT->Columns()*i]);
 
          std::tstring name = g_DBManager.GetToonName(id);
          if (name.empty())

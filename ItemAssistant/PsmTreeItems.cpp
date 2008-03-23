@@ -124,7 +124,7 @@ std::vector<PsmTreeViewItem*> AccountTreeViewItem::GetChildren() const
    {
       if(is_directory(*character)){
          boost::filesystem::path logFile = (*character).root_path() / boost::filesystem::path("\\PlayerShopLog.html", boost::filesystem::native);
-         unsigned int charID = atoi((*character).leaf().substr(4).c_str());
+         unsigned int charID = boost::lexical_cast<unsigned int>((*character).leaf().substr(4));
          if(charID != 0)
          {
             result.push_back(new CharacterTreeViewItem1(m_pOwner, charID,this));
