@@ -8,92 +8,97 @@
 
 namespace SQLite {
 
-    class Db;
-    class Table;
+   class Db;
+   class Table;
 
-    typedef boost::shared_ptr<Db> DbPtr;
-    typedef boost::shared_ptr<Table> TablePtr;
+   typedef boost::shared_ptr<Db> DbPtr;
+   typedef boost::shared_ptr<Table> TablePtr;
 
 
-    class Table
-    {
-    public:
-        Table(int nrow, int ncol, char **result)
-        {
-            m_headers.reserve(ncol);
-            m_data.reserve(nrow*ncol);
+   class Table
+   {
+   public:
+      Table(int nrow, int ncol, char **result)
+      {
+         m_headers.reserve(ncol);
+         m_data.reserve(nrow*ncol);
 
-            for(int i=0; i < ncol; ++i)
+         for(int i=0; i < ncol; ++i)
+         {
+            m_headers.push_back(result[i]);   /* First row heading */
+         }
+         for(int i=0; i < ncol*nrow; ++i)
+         {
+            if (result[ncol+i] == NULL)
             {
-                m_headers.push_back(result[i]);   /* First row heading */
+               m_data.push_back(std::string());
             }
-            for(int i=0; i < ncol*nrow; ++i)
+            else
             {
-                if (result[ncol+i] == NULL)
-                {
-                    m_data.push_back(std::string());
-                }
-                else
-                {
-                    m_data.push_back(result[ncol+i]);
-                }
+               m_data.push_back(result[ncol+i]);
             }
-        }
+         }
+      }
 
-        std::vector<std::string> const& Headers() const { return m_headers; }
-        std::vector<std::string> const& Data() const { return m_data; }
-        std::string Data(unsigned int row, unsigned int col) const {
-            if (row < Rows() && col < Columns())
-            {
-                return m_data.at(Columns()*row + col);
-            }
-            return "";
-        }
+      std::vector<std::string> const& Headers() const { return m_headers; }
+      std::vector<std::string> const& Data() const { return m_data; }
+      std::string Data(unsigned int row, unsigned int col) const {
+         if (row < Rows() && col < Columns())
+         {
+            return m_data.at(Columns()*row + col);
+         }
+         return "";
+      }
 
-        size_t Columns() const { return m_headers.size(); }
-        size_t Rows() const { return m_headers.size() > 0 ? m_data.size() / m_headers.size() : 0; }
+      size_t Columns() const { return m_headers.size(); }
+      size_t Rows() const { return m_headers.size() > 0 ? m_data.size() / m_headers.size() : 0; }
 
-    private:
-        std::vector<std::string> m_headers;
-        std::vector<std::string> m_data;
-    };
+   private:
+      std::vector<std::string> m_headers;
+      std::vector<std::string> m_data;
+   };
 
 
-    class Db
-    {
-    public:
-        Db();
-        virtual ~Db();
+   class Db
+   {
+   public:
+      struct QueryFailedException : public std::exception
+      {
+         QueryFailedException(std::tstring const& msg) : std::exception(to_ascii_copy(msg).c_str()) {}
+      };
 
-        bool Init(std::tstring const& filename = _T("init.db"));
-        void Term();
+      Db();
+      virtual ~Db();
 
-        bool Exec(std::tstring const& sql);
-        TablePtr ExecTable(std::tstring const& sql);
+      bool Init(std::tstring const& filename = _T("init.db"));
+      void Term();
 
-        void Begin();
-        void Commit();
-        void Rollback();
+      bool Exec(std::tstring const& sql) const;
+      TablePtr ExecTable(std::tstring const& sql) const;
 
-    private:
-        sqlite3 *m_pDb;
-    };
+      void Begin() const;
+      void Commit() const;
+      void Rollback() const;
+
+   private:
+      sqlite3 *m_pDb;
+   };
 
 }  // namespace SQLite
 
 
 struct OwnedItemInfo
 {
-    std::tstring itemloid;
-    std::tstring itemhiid;
-    std::tstring itemql;
-    std::tstring itemname;
-    std::tstring ownername;
-    std::tstring ownerid;
-    std::tstring containername;
-    std::tstring containerid;
-    //std::tstring inventoryname;
-    //std::tstring inventoryid;
+   std::tstring itemloid;
+   std::tstring itemhiid;
+   std::tstring itemql;
+   std::tstring itemname;
+   std::tstring ownername;
+   std::tstring ownerid;
+   std::tstring containername;
+   std::tstring containerid;
+   //std::tstring inventoryname;
+   //std::tstring inventoryid;
 };
 
 typedef boost::shared_ptr<OwnedItemInfo> OwnedItemInfoPtr;
@@ -102,29 +107,33 @@ typedef boost::shared_ptr<OwnedItemInfo> OwnedItemInfoPtr;
 class DBManager : public SQLite::Db
 {
 public:
-    DBManager(void);
-    virtual ~DBManager(void);
+   DBManager(void);
+   virtual ~DBManager(void);
 
-    bool Init(std::tstring dbfile);
-    void Term();
+   bool Init(std::tstring dbfile);
+   void Term();
 
-    std::tstring AOFolder() const { return m_aofolder; }
+   std::tstring AOFolder() const { return m_aofolder; }
 
-    void InsertItem(unsigned int keylow, unsigned int keyhigh, unsigned short ql, unsigned short stack, 
-        unsigned int parent, unsigned short slot, unsigned int children, unsigned int owner);
+   void InsertItem(unsigned int keylow, unsigned int keyhigh, unsigned short ql, unsigned short stack, 
+      unsigned int parent, unsigned short slot, unsigned int children, unsigned int owner);
 
-    std::tstring GetToonName(unsigned int charid) const;
-    void SetToonName(unsigned int charid, std::tstring const& newName);
+   std::tstring GetToonName(unsigned int charid) const;
+   void SetToonName(unsigned int charid, std::tstring const& newName);
 
-    OwnedItemInfoPtr GetOwnedItemInfo(unsigned int itemID);
+   OwnedItemInfoPtr GetOwnedItemInfo(unsigned int itemID);
 
-    void Lock() { m_mutex.MutexOn(); }
-    void UnLock() { m_mutex.MutexOff(); }
+   void Lock() { m_mutex.MutexOn(); }
+   void UnLock() { m_mutex.MutexOff(); }
 
 protected:
-    virtual std::tstring GetFolder(HWND hWndOwner, std::tstring const& title);
+   virtual std::tstring GetFolder(HWND hWndOwner, std::tstring const& title);
+
+   unsigned int GetDBVersion() const;
+   void UpdateDBVersion(unsigned int fromVersion) const;
+
 
 private:
-    std::tstring   m_aofolder;
-    Mutex          m_mutex;
+   std::tstring   m_aofolder;
+   Mutex          m_mutex;
 };
