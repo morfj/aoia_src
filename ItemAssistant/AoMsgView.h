@@ -63,6 +63,9 @@ public:
 
    virtual void OnAOMessage(AO::Header* pMsg);
 
+protected:
+   void DumpMessageToStream(std::ostream &out, AO::Header* pMsg);
+
 private:
 	WTL::CListViewCtrl m_listview;
    DlgView m_dlgview;

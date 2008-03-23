@@ -26,19 +26,19 @@ BOOL AoMsgView::PreTranslateMessage(MSG* pMsg)
    {
       pMsg->hwnd = m_hWnd;
    }
-	return FALSE;
+   return FALSE;
 }
 
 
 LRESULT AoMsgView::OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
-	CPaintDC dc(m_hWnd);
-	//RECT rect;
+   CPaintDC dc(m_hWnd);
+   //RECT rect;
 
-	//GetClientRect(&rect);
-	//dc.DrawText("AO MSG VIEW", -1, &rect, NULL);
+   //GetClientRect(&rect);
+   //dc.DrawText("AO MSG VIEW", -1, &rect, NULL);
 
-	return 0;
+   return 0;
 }
 
 
@@ -52,14 +52,14 @@ LRESULT AoMsgView::OnCreate(LPCREATESTRUCT createStruct)
    m_listview.ModifyStyle(0, LVS_REPORT, SWP_NOACTIVATE);
    m_listview.AddColumn(_T("Message ID"), 0);
    m_listview.AddColumn(_T("Size"), 1);
-	return 0;
+   return 0;
 }
 
 
 LRESULT AoMsgView::OnSize(UINT wParam, CSize newSize)
 {
-	::SetWindowPos(m_dlgview, NULL, 0, 0, newSize.cx, newSize.cy, SWP_NOZORDER | SWP_NOACTIVATE);
-	return 0;
+   ::SetWindowPos(m_dlgview, NULL, 0, 0, newSize.cx, newSize.cy, SWP_NOZORDER | SWP_NOACTIVATE);
+   return 0;
 }
 
 
@@ -75,45 +75,45 @@ void AoMsgView::OnAOMessage(AO::Header* pMsg)
    CString msgString, sizeStr;
    unsigned int msgid = _byteswap_ulong(pMsg->msgid);
 
-   // Dump all character names to a file.
-   if (msgid == AO::MSG_MOB_SYNC) {
-      AO::MobInfo* pMobInfo = (AO::MobInfo*)pMsg;
-      std::string name(&(pMobInfo->characterName.str), pMobInfo->characterName.strLen); 
+   switch(msgid)
+   {
+   case AO::MSG_FULLSYNC:
+      {
+         Native::AOEquip equip((AO::Equip*)pMsg);
 
-      std::ofstream ofs;
-      ofs.open("c:\\character_names.txt", std::ios_base::out | std::ios_base::app);
-      ofs << pMsg->target.high << "\t" << name << "\r\n";
-   }
+         unsigned int numitems = equip.numitems();
 
-   // Dump all mob info messages to file
-   if (msgid == AO::MSG_MOB_SYNC) {
-      AO::MobInfo* pMobInfo = (AO::MobInfo*)pMsg;
-      std::string name(&(pMobInfo->characterName.str), pMobInfo->characterName.strLen - 1); 
-      std::string filename = "c:\\temp\\info_msg_";
-      filename += name;
-      filename += ".bin";
-
-      std::ofstream ofs;
-      ofs.open(filename.c_str(), std::ios_base::out | std::ios_base::binary);
-
-      // Dump message to stream
-      for (char* p = (char*)pMsg; p <= (char*)pMsg + _byteswap_ushort(pMsg->msgsize); ++p) {
-         ofs << *p;
+         std::ofstream ofs;
+         ofs.open("c:\\temp\\fullsync.bin", std::ios_base::out | std::ios_base::binary);
+         DumpMessageToStream(ofs, pMsg);
       }
+      break;
+
+   case AO::MSG_MOB_SYNC:
+      {
+         AO::MobInfo* pMobInfo = (AO::MobInfo*)pMsg;
+         std::string name(&(pMobInfo->characterName.str), pMobInfo->characterName.strLen - 1); 
+
+         // Dump all character IDs and names to a file.
+         {
+            std::ofstream ofs;
+            ofs.open("c:\\temp\\character_names.csv", std::ios_base::out | std::ios_base::app);
+            ofs << pMsg->target.high << "\t" << name << "\r\n";
+         }
+
+         // Dump all mob sync messages to file
+         {
+            std::string filename = "c:\\temp\\info_msg_";
+            filename += name;
+            filename += ".bin";
+
+            std::ofstream ofs;
+            ofs.open(filename.c_str(), std::ios_base::out | std::ios_base::binary);
+            DumpMessageToStream(ofs, pMsg);
+         }
+      }
+      break;
    }
-
-   // Dump all messages with the string "Oddworld" to a file
-   //for (char * payload = (char*)pMsg + AO::HeaderSize; payload <= (char*)pMsg + (_byteswap_ushort(pMsg->msgsize) - 8); ++payload) {
-   //   if (strnicmp(payload, "Oddworld", 8) == 0) {
-   //      std::ofstream ofs;
-   //      ofs.open("c:\\oddworld_messages.bin", std::ios_base::out | std::ios_base::binary/* | std::ios_base::ate*/);
-
-   //      // Dump message to stream
-   //      for (char* p = (char*)pMsg; p <= (char*)pMsg + _byteswap_ushort(pMsg->msgsize); ++p) {
-   //         ofs << *p;
-   //      }
-   //   }
-   //}
 
    //if (msgid == AO::MSG_POS_SYNC) {
    //   std::stringstream str;
@@ -123,7 +123,6 @@ void AoMsgView::OnAOMessage(AO::Header* pMsg)
    //      str << *payload;
    //   }
    //   str << std::endl << std::flush;
-
    //}
 
    if (m_mask.find(msgid) != m_mask.end())
@@ -144,30 +143,45 @@ void AoMsgView::OnAOMessage(AO::Header* pMsg)
 }
 
 
+/// Dump a message to stream
+void AoMsgView::DumpMessageToStream(std::ostream &out, AO::Header* pMsg)
+{
+   unsigned int messageSize = _byteswap_ushort(pMsg->msgsize);
+   char* p = (char*)pMsg;
+   char* pEnd = (char*)pMsg + messageSize;
+
+   while (p < pEnd)
+   {
+      out << *p;
+      ++p;
+   }
+}
+
+
 
 
 
 
 LRESULT DlgView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
-	this->SetWindowText(_T("Dialog View"));
+   this->SetWindowText(_T("Dialog View"));
 
-	HICON hIcon = (HICON)::LoadImage(
-				_Module.GetResourceInstance(),
-				MAKEINTRESOURCE(IDR_MAINFRAME),
-				IMAGE_ICON, 16, 16, LR_SHARED);
-	this->SetIcon(hIcon, ICON_SMALL);
+   HICON hIcon = (HICON)::LoadImage(
+      _Module.GetResourceInstance(),
+      MAKEINTRESOURCE(IDR_MAINFRAME),
+      IMAGE_ICON, 16, 16, LR_SHARED);
+   this->SetIcon(hIcon, ICON_SMALL);
 
-	DlgResize_Init(false, true, WS_CLIPCHILDREN);
-	return 0;
+   DlgResize_Init(false, true, WS_CLIPCHILDREN);
+   return 0;
 }
 
 
 LRESULT DlgView::OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
 {
-	LPMSG pMsg = (LPMSG)lParam;
+   LPMSG pMsg = (LPMSG)lParam;
 
-	return this->PreTranslateMessage(pMsg);
+   return this->PreTranslateMessage(pMsg);
 }
 
 
@@ -219,5 +233,5 @@ LRESULT DlgView::OnNMClickList1(int /*idCtrl*/, LPNMHDR pNMHDR, BOOL& /*bHandled
 
 BOOL DlgView::PreTranslateMessage(MSG* pMsg)
 {
-	return IsDialogMessage(pMsg);
+   return IsDialogMessage(pMsg);
 }
