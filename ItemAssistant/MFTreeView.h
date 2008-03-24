@@ -16,6 +16,7 @@ struct MFTreeViewItem
     virtual std::tstring GetLabel() const = 0;
     virtual void SetLabel(std::tstring const& newLabel) = 0;
     virtual std::vector<MFTreeViewItem*> GetChildren() const = 0;
+    virtual bool SortChildren() const = 0;
     virtual unsigned int AppendMenuCmd(HMENU hMenu, unsigned int firstID, WTL::CTreeItem item) const = 0;
     virtual bool HandleMenuCmd(unsigned int commandID, WTL::CTreeItem item) = 0;
 };

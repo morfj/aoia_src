@@ -48,7 +48,7 @@ LRESULT MFTreeView::OnItemExpanding(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandl
          {
             TVINSERTSTRUCT tvis = { 0 };
             tvis.hParent = pnmtv->itemNew.hItem;
-            tvis.hInsertAfter = hPrevItem;
+            tvis.hInsertAfter = pItem->SortChildren() ? TVI_SORT : hPrevItem;
             tvis.item.mask = TVIF_CHILDREN | TVIF_PARAM | TVIF_TEXT;
             tvis.item.pszText = LPSTR_TEXTCALLBACK;
             //tvis.item.iImage = nImage;

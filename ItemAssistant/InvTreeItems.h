@@ -18,6 +18,7 @@ public:
    virtual void SetLabel(std::tstring const& newLabel);
    virtual unsigned int AppendMenuCmd(HMENU hMenu, unsigned int firstID, WTL::CTreeItem item) const;
    virtual bool HandleMenuCmd(unsigned int commandID, WTL::CTreeItem item);
+   virtual bool SortChildren() const { return false; }
 
 protected:
    InventoryView* m_pOwner;
@@ -42,6 +43,7 @@ public:
    virtual bool CanDelete() const { return true; }
    virtual std::tstring GetLabel() const;
    virtual std::vector<MFTreeViewItem*> GetChildren() const;
+   virtual bool SortChildren() const { return true; }
    virtual bool HasChildren() const;
    virtual unsigned int AppendMenuCmd(HMENU hMenu, unsigned int firstID, WTL::CTreeItem item) const;
    virtual bool HandleMenuCmd(unsigned int commandID, WTL::CTreeItem item);
@@ -87,5 +89,6 @@ public:
    virtual bool CanDelete() const { return false; }
    virtual std::tstring GetLabel() const;
    virtual std::vector<MFTreeViewItem*> GetChildren() const;
+   virtual bool SortChildren() const { return true; }
    virtual bool HasChildren() const;
 };
