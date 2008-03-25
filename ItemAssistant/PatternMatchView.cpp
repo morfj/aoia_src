@@ -3,7 +3,7 @@
 #include "PatternMatchView.h"
 #include "DBManager.h"
 #include "PatternReport.h"
-
+#include "Version.h"
 #include <sstream>
 #include <map>
 #include <boost/algorithm/string.hpp>
@@ -663,7 +663,7 @@ LRESULT WebView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
    // Get an IWebBrowser2 interface on the control and navigate to a page.
    m_pWB2 = punkCtrl;
-   m_pWB2->Navigate ( CComBSTR("http://frellu.net/ia/help/patterns.php"), &v, &v, &v, &v );
+   m_pWB2->Navigate(CComBSTR(STREAM2STR("http://frellu.net/ia/help/patterns.php?version=" << g_versionNumber).c_str()), &v, &v, &v, &v);
 
    return 0;
 }

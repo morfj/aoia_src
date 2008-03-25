@@ -1,4 +1,4 @@
 #pragma once
 
 
-const std::tstring g_versionNumber = _T("Version 0.8.4");
+const std::tstring g_versionNumber = _T("0.8.4");

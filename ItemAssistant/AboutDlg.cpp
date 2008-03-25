@@ -13,7 +13,7 @@ LRESULT CAboutDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	CenterWindow(GetParent());
 
    ATL::CWindow versionCtrl(GetDlgItem(IDC_VERSION));
-   versionCtrl.SetWindowText(g_versionNumber.c_str());
+   versionCtrl.SetWindowText(STREAM2STR("Version " << g_versionNumber).c_str());
 
 	return TRUE;
 }
