@@ -440,7 +440,7 @@ float PatternMatchView::CalcPbAvailability(unsigned int pbid, unsigned int tooni
       SQLite::TablePtr pItemCount = g_DBManager.ExecTable(sql);
       g_DBManager.UnLock();
 
-      if (pItemCount) {
+      if (pItemCount && pItemCount->Rows() > 0) {
          vals[pattern] += boost::lexical_cast<unsigned int>(pItemCount->Data(0, 0));
       }
    }
@@ -539,7 +539,7 @@ void FilterView::UpdateToonList()
    {
       for (unsigned int i = 0; i < pT->Rows(); i++)
       {
-         unsigned int id = boost::lexical_cast<unsigned int>(pT->Data()[pT->Columns()*i]);
+         unsigned int id = boost::lexical_cast<unsigned int>(pT->Data(i,0));
 
          std::tstring name = g_DBManager.GetToonName(id);
          if (name.empty())

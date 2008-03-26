@@ -163,7 +163,7 @@ std::vector<MFTreeViewItem*> ContainerTreeViewItem::GetChildren() const
       {
          for (size_t i = 0; i < pT->Rows(); ++i)
          {
-            unsigned int contid = boost::lexical_cast<unsigned int>(pT->Data()[pT->Columns()*i]);
+            unsigned int contid = boost::lexical_cast<unsigned int>(pT->Data(i,0));
             result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, contid));
          }
       }
@@ -399,7 +399,7 @@ std::vector<MFTreeViewItem*> InventoryTreeRoot::GetChildren() const
 
    if (pT != NULL) {
       for (size_t i = 0; i < pT->Rows(); ++i) {
-         unsigned int charId = boost::lexical_cast<unsigned int>(pT->Data()[pT->Columns()*i]);
+         unsigned int charId = boost::lexical_cast<unsigned int>(pT->Data(i,0));
          result.push_back(new CharacterTreeViewItem(m_pOwner, charId));
       }
    }

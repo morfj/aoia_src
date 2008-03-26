@@ -793,7 +793,7 @@ LRESULT FindView::OnCbnBuildCharcombo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
     {
         for (unsigned int i = 0; i < pT->Rows(); i++)
         {
-            unsigned int id = boost::lexical_cast<unsigned int>(pT->Data()[pT->Columns()*i]);
+            unsigned int id = boost::lexical_cast<unsigned int>(pT->Data(i,0));
 
             g_DBManager.Lock();
             std::tstring name = g_DBManager.GetToonName(id);

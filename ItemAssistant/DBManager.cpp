@@ -380,8 +380,8 @@ OwnedItemInfoPtr DBManager::GetOwnedItemInfo(unsigned int itemID)
    pRetVal->ownername = from_ascii_copy(pT->Data(0, 4));
    pRetVal->ownerid = from_ascii_copy(pT->Data(0, 5));
    pRetVal->containerid = from_ascii_copy(pT->Data(0, 6));
-   unsigned int containerid = boost::lexical_cast<int>(pRetVal->containerid);
-   unsigned int ownerid = boost::lexical_cast<int>(pRetVal->ownerid);
+   unsigned int containerid = boost::lexical_cast<unsigned int>(pRetVal->containerid);
+   unsigned int ownerid = boost::lexical_cast<unsigned int>(pRetVal->ownerid);
    pRetVal->containername = ServicesSingleton::Instance()->GetContainerName(ownerid, containerid);
 
    return pRetVal;
