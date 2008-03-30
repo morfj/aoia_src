@@ -142,7 +142,7 @@ LRESULT InventoryView::OnItemContextMenu(LPNMHDR lParam)
 
 LRESULT InventoryView::OnSellItemAoMarket(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled)
 {
-    std::tstring url = _T("http://www.aomarket.com/bots/additem?id=%lowid%&ql=%ql%&length=%days%&server=%dimension%");
+    std::tstring url = _T("http://www.aomarket.com/bots/additem?id=%lowid%&ql=%ql%");
     DWORD_PTR data = m_listview.GetItemData(m_listview.GetSelectedIndex());
 
     g_DBManager.Lock();
