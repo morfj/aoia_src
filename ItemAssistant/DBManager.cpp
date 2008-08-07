@@ -135,7 +135,7 @@ bool DBManager::Init(std::tstring dbfile)
          FILE* fp;
          //char AOExePath[300];
          //sprintf( AOExePath, "%s\\anarchy.exe", AODir.c_str() );
-         if( fp = fopen( to_ascii_copy(AOExePath.str()).c_str(), "r" ) )
+         if( fopen_s( &fp, to_ascii_copy(AOExePath.str()).c_str(), "r" ) == S_OK )
          {
             requestFolder = false;
             fclose( fp );
@@ -162,7 +162,7 @@ bool DBManager::Init(std::tstring dbfile)
       std::tstringstream pathOfExe;
       pathOfExe << AODir << _T("\\anarchy.exe");
 
-      if( !( fp = fopen(to_ascii_copy(pathOfExe.str()).c_str(), "r") ) ) {
+      if( fopen_s(&fp, to_ascii_copy(pathOfExe.str()).c_str(), "r") != S_OK ) {
          MessageBox( NULL, _T("This is not AO's directory."), _T("ERROR"), MB_OK | MB_ICONERROR);
          return false;
       }
@@ -183,7 +183,8 @@ bool DBManager::Init(std::tstring dbfile)
    }
 
    bool dbfileExists = false;
-   if(FILE* fp = fopen(to_ascii_copy(dbfile).c_str(), "r")) {
+   FILE* fp = NULL;
+   if(fopen_s(&fp, to_ascii_copy(dbfile).c_str(), "r") == S_OK) {
       dbfileExists = true;
       fclose(fp);
    }
@@ -396,7 +397,7 @@ unsigned int DBManager::GetDBVersion() const
       SQLite::TablePtr pT = ExecTable(_T("SELECT Version FROM vSchemeVersion"));
 	   retval = boost::lexical_cast<unsigned int>(pT->Data(0,0));
    }
-   catch(Db::QueryFailedException &e) {
+   catch(Db::QueryFailedException &/*e*/) {
       retval = 0;
    }
    catch (boost::bad_lexical_cast &/*e*/) {
