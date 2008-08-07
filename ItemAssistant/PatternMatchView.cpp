@@ -659,11 +659,14 @@ LRESULT WebView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
    CComVariant v;    // empty VARIANT
 
    // Create the browser control using its GUID.
-   m_wndIE.CreateControlEx ( L"{8856F961-340A-11D0-A96B-00C04FD705A2}", NULL, NULL, &punkCtrl );
+   //m_wndIE.CreateControlEx ( L"{8856F961-340A-11D0-A96B-00C04FD705A2}", NULL, NULL, &punkCtrl );
+   m_wndIE.CreateControlEx ( L"Shell.Explorer", NULL, NULL, &punkCtrl );
 
    // Get an IWebBrowser2 interface on the control and navigate to a page.
    m_pWB2 = punkCtrl;
-   m_pWB2->Navigate(CComBSTR(STREAM2STR("http://frellu.net/ia/help/patterns.php?version=" << g_versionNumber).c_str()), &v, &v, &v, &v);
+   if (m_pWB2) {
+      m_pWB2->Navigate(CComBSTR(STREAM2STR("http://frellu.net/ia/help/patterns.php?version=" << g_versionNumber).c_str()), &v, &v, &v, &v);
+   }
 
    return 0;
 }
@@ -697,6 +700,10 @@ BOOL WebView::PreTranslateMsg(MSG* pMsg)
 
 void WebView::Navigate(std::tstring const& url)
 {
+   if (!m_pWB2) {
+      return;
+   }
+
    CComVariant v;    // empty VARIANT
    m_pWB2->Navigate( CComBSTR(url.c_str()), &v, &v, &v, &v );
 }
@@ -704,6 +711,10 @@ void WebView::Navigate(std::tstring const& url)
 
 void WebView::SetHTML(std::tstring const& html)
 {
+   if (!m_pWB2) {
+      return;
+   }
+
    LPDISPATCH pDisp = NULL;
    m_pWB2->get_Document(&pDisp);
 
