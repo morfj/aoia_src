@@ -50,7 +50,6 @@
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="4"
 			/>
 			<Tool
@@ -64,11 +63,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="&quot;madCodeHookLib - microsoft.lib&quot; shared.lib tinyxml.lib sqlite3.lib"
+				LinkLibraryDependencies="false"
+				AdditionalDependencies="shared.lib tinyxml.lib sqlite3.lib detours.lib"
 				OutputFile="$(OutDir)/ItemAssistant.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(SolutionDir)$(ConfigurationName)&quot;;&quot;$(SolutionDir)Externals\MadCodeHookLib\Dll\&quot;;&quot;$(SolutionDir)Externals\SQLite\&quot;;&quot;$(SolutionDir)Externals\boost_bin\&quot;"
 				UACExecutionLevel="2"
+				DelayLoadDLLs="user32.dll"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/ItemAssistant.pdb"
 				SubSystem="2"
@@ -96,7 +97,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="xcopy /Y $(SolutionDir)\Externals\SQLite\sqlite3.dll $(OutDir)&#x0D;&#x0A;xcopy /Y $(SolutionDir)\Externals\MadCodeHookLib\Dll\madCodeHookLib.dll $(OutDir)&#x0D;&#x0A;xcopy /Y aoitems.db $(OutDir)&#x0D;&#x0A;"
+				CommandLine="xcopy /Y $(SolutionDir)\Externals\SQLite\sqlite3.dll $(OutDir)&#x0D;&#x0A;xcopy /Y aoitems.db $(OutDir)&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -131,7 +132,6 @@
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="2"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -145,11 +145,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="&quot;madCodeHookLib - microsoft.lib&quot; shared.lib tinyxml.lib sqlite3.lib"
+				LinkLibraryDependencies="false"
+				AdditionalDependencies="shared.lib tinyxml.lib sqlite3.lib detours.lib"
 				OutputFile="$(OutDir)/ItemAssistant.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(SolutionDir)$(ConfigurationName)&quot;;&quot;$(SolutionDir)Externals\MadCodeHookLib\Dll\&quot;;&quot;$(SolutionDir)Externals\SQLite\&quot;;&quot;$(SolutionDir)Externals\boost_bin\&quot;"
 				UACExecutionLevel="2"
+				DelayLoadDLLs="user32.dll"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/ItemAssistant.pdb"
 				SubSystem="2"
@@ -179,7 +181,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="xcopy /Y $(SolutionDir)\Externals\SQLite\sqlite3.dll $(OutDir)&#x0D;&#x0A;xcopy /Y $(SolutionDir)\Externals\MadCodeHookLib\Dll\madCodeHookLib.dll $(OutDir)&#x0D;&#x0A;xcopy /Y aoitems.db $(OutDir)&#x0D;&#x0A;"
+				CommandLine="xcopy /Y $(SolutionDir)\Externals\SQLite\sqlite3.dll $(OutDir)&#x0D;&#x0A;xcopy /Y aoitems.db $(OutDir)&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
@@ -205,6 +207,10 @@
 			</File>
 			<File
 				RelativePath=".\DBManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\InjectionSupport.cpp"
 				>
 			</File>
 			<File
@@ -307,6 +313,10 @@
 			</File>
 			<File
 				RelativePath=".\DBManager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\InjectionSupport.h"
 				>
 			</File>
 			<File

@@ -1,10 +1,9 @@
 #include "stdafx.h"
-
 #include "aboutdlg.h"
 #include "InventoryView.h"
 #include "MainFrm.h"
 #include "shared/aopackets.h"
-#include <MadCodeHookLib/Dll/MadCodeHookLib.h>
+#include "InjectionSupport.h"
 #include "ntray.h"
 
 
@@ -82,6 +81,15 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
     m_trayIcon = boost::shared_ptr<CTrayNotifyIcon>(new CTrayNotifyIcon());
     m_trayIcon->Create(this, IDR_TRAY_POPUP, _T("AO Item Assistant"), hIconSmall, WM_TRAYICON);
+
+    // To allow incoming messages from lower level applications like the AO Client we need to add the
+    // message we use to the exception list.
+    // http://blogs.msdn.com/vishalsi/archive/2006/11/30/what-is-user-interface-privilege-isolation-uipi-on-vista.aspx
+    // It is however not available in all versions of windows, so we need to check for it existance 
+    // before we try to call it.
+    if (GetProcAddress(LoadLibrary(_T("user32.dll")), "ChangeWindowMessageFilter") != NULL) {
+        ChangeWindowMessageFilter(WM_COPYDATA, MSGFLT_ADD);
+    }
 
     Inject();
     SetTimer(1, 10000);
@@ -232,26 +240,13 @@ void CMainFrame::Inject()
         // Get process id
         GetWindowThreadProcessId( AOWnd, &AOProcessId );
 
-        // Get a handle on the process
-        if( AOProcessHnd = OpenProcess( PROCESS_ALL_ACCESS, FALSE, AOProcessId ) )
-        {
-            TCHAR CurrDir[MAX_PATH];
-            GetCurrentDirectory( MAX_PATH, CurrDir );
+        TCHAR CurrDir[MAX_PATH];
+        GetCurrentDirectory( MAX_PATH, CurrDir );
 
-            // Inject the dlls in clientr process
-            {
-                std::tstringstream temp;
-                temp << CurrDir << _T("\\madCodeHookLib.dll");
-                InjectLibrary( AOProcessHnd, (PSTR)to_ascii_copy(temp.str()).c_str());
-            }
-            {
-                std::tstringstream temp;
-                temp << CurrDir << _T("\\ItemAssistantHook.dll");
-                InjectLibrary( AOProcessHnd, (PSTR)to_ascii_copy(temp.str()).c_str());
-            }
-
-            CloseHandle( AOProcessHnd );
-        }
+        // Inject the dll into client process
+        std::tstringstream temp;
+        temp << CurrDir << _T("\\ItemAssistantHook.dll");
+        InjectDLL(AOProcessId, temp.str());
     }
 }
 
