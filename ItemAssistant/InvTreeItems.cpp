@@ -177,7 +177,7 @@ unsigned int ContainerTreeViewItem::AppendMenuCmd(HMENU hMenu, unsigned int firs
 {
    if (m_containerid != 0)
    {
-      m_commands[firstID] = InternalCommand::CMD_DELETE;
+      m_commands[firstID] = SqlTreeViewItemBase::CMD_DELETE;
       AppendMenu(hMenu, MF_STRING, firstID++, _T("Delete Items From DB"));
    }
    return firstID;
@@ -190,7 +190,7 @@ bool ContainerTreeViewItem::HandleMenuCmd(unsigned int commandID, WTL::CTreeItem
    {
       switch(m_commands[commandID])
       {
-      case InternalCommand::CMD_DELETE:
+      case SqlTreeViewItemBase::CMD_DELETE:
          {
             g_DBManager.Lock();
             g_DBManager.Begin();
@@ -307,7 +307,7 @@ unsigned int CharacterTreeViewItem::AppendMenuCmd(HMENU hMenu, unsigned int firs
 {
    //m_commands[firstID] = InternalCommand::CMD_EDIT;
    //AppendMenu(hMenu, MF_STRING, firstID++, _T("Edit Toon Name"));
-   m_commands[firstID] = InternalCommand::CMD_DELETE;
+   m_commands[firstID] = SqlTreeViewItemBase::CMD_DELETE;
    AppendMenu(hMenu, MF_STRING, firstID++, _T("Delete Items From DB"));
    return firstID;
 }
@@ -319,12 +319,12 @@ bool CharacterTreeViewItem::HandleMenuCmd(unsigned int commandID, WTL::CTreeItem
    {
       switch(m_commands[commandID])
       {
-      case InternalCommand::CMD_EDIT:
+      case SqlTreeViewItemBase::CMD_EDIT:
          {
             item.EditLabel();
          }
          break;
-      case InternalCommand::CMD_DELETE:
+      case SqlTreeViewItemBase::CMD_DELETE:
          {
             g_DBManager.Lock();
             g_DBManager.Begin();
