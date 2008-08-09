@@ -64,10 +64,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
-				AdditionalDependencies="shared.lib tinyxml.lib sqlite3.lib detours.lib"
+				AdditionalDependencies="shared.lib tinyxml.lib sqlite3.lib"
 				OutputFile="$(OutDir)/ItemAssistant.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;$(SolutionDir)$(ConfigurationName)&quot;;&quot;$(SolutionDir)Externals\MadCodeHookLib\Dll\&quot;;&quot;$(SolutionDir)Externals\SQLite\&quot;;&quot;$(SolutionDir)Externals\boost_bin\&quot;"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)$(ConfigurationName)&quot;;&quot;$(SolutionDir)Externals\SQLite\&quot;;&quot;$(SolutionDir)Externals\boost_bin\&quot;"
 				EnableUAC="false"
 				DelayLoadDLLs=""
 				GenerateDebugInformation="true"
@@ -146,10 +146,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
-				AdditionalDependencies="shared.lib tinyxml.lib sqlite3.lib detours.lib"
+				AdditionalDependencies="shared.lib tinyxml.lib sqlite3.lib"
 				OutputFile="$(OutDir)/ItemAssistant.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(SolutionDir)$(ConfigurationName)&quot;;&quot;$(SolutionDir)Externals\MadCodeHookLib\Dll\&quot;;&quot;$(SolutionDir)Externals\SQLite\&quot;;&quot;$(SolutionDir)Externals\boost_bin\&quot;"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)$(ConfigurationName)&quot;;&quot;$(SolutionDir)Externals\SQLite\&quot;;&quot;$(SolutionDir)Externals\boost_bin\&quot;"
 				EnableUAC="false"
 				DelayLoadDLLs=""
 				GenerateDebugInformation="true"
@@ -223,6 +223,10 @@
 			</File>
 			<File
 				RelativePath=".\ItemAssistant.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Logger.cpp"
 				>
 			</File>
 			<File
@@ -329,6 +333,10 @@
 			</File>
 			<File
 				RelativePath=".\ItemAssistant.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Logger.h"
 				>
 			</File>
 			<File
