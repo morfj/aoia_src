@@ -62,9 +62,17 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
     AtlAxWinInit();
 
     std::tstring args( lpCmdLine );
-    std::tstring::size_type argPos = args.find(_T("-db"));
+
+    // Check to see if logging should be enabled
+    if (args.find(_T("-log")) != std::tstring::npos) {
+        Logger::instance()->init(_T("ItemAssistant.log"));
+    }
+    else {
+        Logger::instance()->init();
+    }
 
     std::tstring dbfile;
+    std::tstring::size_type argPos = args.find(_T("-db"));
     if (argPos != std::tstring::npos)
     {
         dbfile = args.substr(argPos+4, args.find_first_of(_T(" "), argPos+4)-argPos-4);
@@ -78,6 +86,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
         g_DBManager.Lock();
         g_DBManager.Term();
         g_DBManager.UnLock();
+
+        Logger::instance()->destroy();
 
         _Module.Term();
         ::CoUninitialize();

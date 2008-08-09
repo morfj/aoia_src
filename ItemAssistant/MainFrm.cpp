@@ -137,7 +137,7 @@ void CMainFrame::SetToolbarVisibility(bool visible)
 
 LRESULT CMainFrame::OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-    static BOOL bVisible = FALSE;	// initially not visible
+    static bool bVisible = FALSE;	// initially not visible
     bVisible = !bVisible;
     SetToolbarVisibility(bVisible);
     return 0;
@@ -241,7 +241,6 @@ void CMainFrame::Inject()
 {
     HWND AOWnd;
     DWORD AOProcessId;
-    HANDLE AOProcessHnd;
 
     if( AOWnd = FindWindow( _T("Anarchy client"), _T("Anarchy Online") ) )
     {
@@ -255,6 +254,9 @@ void CMainFrame::Inject()
         std::tstringstream temp;
         temp << CurrDir << _T("\\ItemAssistantHook.dll");
         InjectDLL(AOProcessId, temp.str());
+    }
+    else {
+        Logger::instance()->log(_T("Could not locate Anarchy Online window."));
     }
 }
 
