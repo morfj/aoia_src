@@ -6,6 +6,8 @@
 #include "InjectionSupport.h"
 #include "ntray.h"
 
+// Delay loaded function definition
+typedef  BOOL (WINAPI *ChangeWindowMessageFilterFunc)(UINT message, DWORD dwFlag);
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 {
@@ -87,8 +89,11 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
     // http://blogs.msdn.com/vishalsi/archive/2006/11/30/what-is-user-interface-privilege-isolation-uipi-on-vista.aspx
     // It is however not available in all versions of windows, so we need to check for it existance 
     // before we try to call it.
-    if (GetProcAddress(LoadLibrary(_T("user32.dll")), "ChangeWindowMessageFilter") != NULL) {
-        ChangeWindowMessageFilter(WM_COPYDATA, MSGFLT_ADD);
+    {
+        ChangeWindowMessageFilterFunc f = (ChangeWindowMessageFilterFunc)GetProcAddress(LoadLibrary(_T("user32.dll")), "ChangeWindowMessageFilter");
+        if (f) {
+            (f)(WM_COPYDATA, MSGFLT_ADD);
+        }
     }
 
     Inject();
