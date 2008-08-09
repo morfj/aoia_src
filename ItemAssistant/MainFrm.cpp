@@ -8,6 +8,9 @@
 
 // Delay loaded function definition
 typedef  BOOL (WINAPI *ChangeWindowMessageFilterFunc)(UINT message, DWORD dwFlag);
+#define MSGFLT_ADD 1
+#define MSGFLT_REMOVE 2
+
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 {
