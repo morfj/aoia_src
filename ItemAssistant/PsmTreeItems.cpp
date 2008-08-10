@@ -1,18 +1,16 @@
 #include "stdafx.h"
 #include "PsmTreeItems.h"
 #include "PlayershopView.h"
-#include <sstream>
-#include <boost/filesystem/path.hpp>
-#include <boost/filesystem/operations.hpp>
-//#include <boost/filesystem/exception.hpp>
-//#include <boost/iostreams/stream_buffer.hpp>
-//#include <boost/iostreams/stream.hpp>
-#include <iostream>
+#include <boost/filesystem.hpp>
 #include <fstream>
+#include <iostream>
+#include <sstream>
 #include <vector>
 
 #define TIXML_USE_STL
 #include <TinyXml/tinyxml.h>
+
+using namespace boost::filesystem;
 
 
 PsmTreeViewItemBase::PsmTreeViewItemBase(PlayershopView* pOwner)
@@ -53,7 +51,7 @@ void PsmTreeViewItemBase::OnSelected()
 }
 
 /***************************************************************************/
-/** Container Tree View Item                                              **/
+/** Account Tree View Item                                                **/
 /***************************************************************************/
 
 AccountTreeViewItem::AccountTreeViewItem(
@@ -111,32 +109,36 @@ bool AccountTreeViewItem::HasChildren() const
 
 std::vector<PsmTreeViewItem*> AccountTreeViewItem::GetChildren() const
 {
-   std::vector<PsmTreeViewItem*> result;
+    std::vector<PsmTreeViewItem*> result;
 
-   std::tstring filename;
-   filename = STREAM2STR( g_DBManager.AOFolder() << _T("\\Prefs\\") << m_label);
-   boost::filesystem::path p(to_utf8_copy(filename), boost::filesystem::native);
+    path accountPath(to_ascii_copy(g_DBManager.AOFolder()), boost::filesystem::native);
+    accountPath = accountPath / "Prefs" / to_ascii_copy(m_label);
 
-   boost::filesystem::path account(to_utf8_copy(filename), boost::filesystem::native);
-   boost::filesystem::directory_iterator character(account), filesEnd;
+    directory_iterator character(accountPath), filesEnd;
+    for (; character != filesEnd; ++character)
+    {
+        if (!is_directory(*character)) {
+            continue;
+        }
 
-   for (; character != filesEnd; ++character)
-   {
-      if(is_directory(*character)){
-         boost::filesystem::path logFile = (*character).root_path() / boost::filesystem::path("\\PlayerShopLog.html", boost::filesystem::native);
-         unsigned int charID = boost::lexical_cast<unsigned int>((*character).leaf().substr(4));
-         if(charID != 0)
-         {
-            result.push_back(new CharacterTreeViewItem1(m_pOwner, charID,this));
-            if(boost::filesystem::exists(logFile) && !boost::filesystem::is_directory(logFile)){
-               //we have a playershop file!!
-               //m_hasLogFile = true;
-            }
-         }  
-      }
-   }
+        try {
+            unsigned int charID = boost::lexical_cast<unsigned int>((*character).leaf().substr(4));
+            if (charID != 0) {
+                result.push_back(new CharacterTreeViewItem1(m_pOwner, charID,this));
+                //path logFile = character->path() / "PlayerShopLog.html";
+                //if (exists(logFile) && !is_directory(logFile)) {
+                //    //we have a playershop file!!
+                //    //m_hasLogFile = true;
+                //}
+            }  
+        }
+        catch (boost::bad_lexical_cast &/*e*/) {
+            // do nothing with this toon
+            continue;
+        }
+    }
 
-   return result;
+    return result;
 }
 
 
@@ -152,7 +154,9 @@ bool AccountTreeViewItem::HandleMenuCmd(unsigned int commandID, WTL::CTreeItem i
 
 }
 
-
+/***************************************************************************/
+/** Character Tree View Item                                              **/
+/***************************************************************************/
 
 CharacterTreeViewItem1::CharacterTreeViewItem1(PlayershopView* pOwner, unsigned int charID, const AccountTreeViewItem* pParent)
  : m_charid(charID)
@@ -283,7 +287,9 @@ bool CharacterTreeViewItem1::HandleMenuCmd(unsigned int commandID, WTL::CTreeIte
 
 }
 
-
+/***************************************************************************/
+/** Playershop Tree View Item                                             **/
+/***************************************************************************/
 
 PlayershopTreeRoot::PlayershopTreeRoot(PlayershopView* pOwner)
  : PsmTreeViewItemBase(pOwner)
