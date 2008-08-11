@@ -191,78 +191,24 @@ void PlayershopView::OnActive(bool doActivation)
 
 void WatchDirectoryThread::WatchDirectory(LPTSTR lpDir)
 {
-   //DWORD dwWaitStatus; 
-/*   HANDLE dwChangeHandles[2]; 
-   TCHAR lpDrive[4];
-   TCHAR lpFile[_MAX_FNAME];
-   TCHAR lpExt[_MAX_EXT];
-
-   _tsplitpath_s(lpDir, lpDrive, 4, NULL, 0, lpFile, _MAX_FNAME, lpExt, _MAX_EXT);
-
-   lpDrive[2] = (TCHAR)'\\';
-   lpDrive[3] = (TCHAR)'\0';
- 
-// Watch the directory for file creation and deletion.  
-   dwChangeHandles[0] = FindFirstChangeNotification( 
-      lpDir,                          // directory to watch 
-      TRUE,                          // watch the subtree 
-      FILE_NOTIFY_CHANGE_LAST_WRITE |
-	  FILE_NOTIFY_CHANGE_CREATION);  // watch file write or creation
- */
-HANDLE directory = CreateFile(
-      lpDir,                          // directory to watch 
+   // Create a HANDLE to the directory we want to watch
+   HANDLE directory = CreateFile(
+      lpDir,                          
       GENERIC_READ,
       FILE_SHARE_READ|FILE_SHARE_WRITE,
       NULL,
       OPEN_EXISTING,
       FILE_FLAG_BACKUP_SEMANTICS ,
       NULL
-);
+   );
 
-char buffer[4096];
-/*
+   // Create a buffer to receive the changed filenames
+   char buffer[4096];
 
-BOOL WINAPI ReadDirectoryChangesW(
-  directory,
-  buffer,
-  4096,
-  TRUE,
-  FILE_NOTIFY_CHANGE_LAST_WRITE|FILE_NOTIFY_CHANGE_CREATION
-);
-*/
-/*
-   if (dwChangeHandles[0] == INVALID_HANDLE_VALUE) 
-   {
-     printf("\n ERROR: FindFirstChangeNotification function failed.\n");
-     ExitProcess(GetLastError()); 
-   }
- */
-// Watch the subtree for directory creation and deletion.  
-/*   dwChangeHandles[1] = FindFirstChangeNotification( 
-      lpDrive,                       // directory to watch 
-      TRUE,                          // watch the subtree 
-      FILE_NOTIFY_CHANGE_DIR_NAME);  // watch dir name changes 
- 
-   if (dwChangeHandles[1] == INVALID_HANDLE_VALUE) 
-   {
-     printf("\n ERROR: FindFirstChangeNotification function failed.\n");
-     ExitProcess(GetLastError()); 
-   }
- */
-
-// Make a final validation check on our handles.
-/*   if ((dwChangeHandles[0] == NULL))// || (dwChangeHandles[1] == NULL))
-   {
-     printf("\n ERROR: Unexpected NULL from FindFirstChangeNotification.\n");
-     ExitProcess(GetLastError()); 
-   }
-*/
-// Change notification is set. Now wait on both notification 
-// handles and refresh accordingly.  
-   while (TRUE) 
+   while (!m_term) 
    { 
-      // Wait for notification. 
-      printf("\nWaiting for notification...\n");
+
+      // Wait for notification
       DWORD bytesReturned = 0;
 
       ReadDirectoryChangesW(
@@ -276,147 +222,69 @@ BOOL WINAPI ReadDirectoryChangesW(
          NULL
       );
 
-//      RefreshTree(NULL); 
-
       std::tstringstream f;
       f << lpDir << "\\";
+
+      // Did not find any information on the data returned,
+      // so the filename is retreived based on trial and error
       for(int i=12;i<bytesReturned;i=i+2)
-      {
-      f << buffer[i];
+      {  
+         f << buffer[i];
       }
 
-   std::tstring filename(f.str());
+      std::tstring filename(f.str());
+      const wchar_t* ptr = filename.c_str();
 
-    //char text[]="hello dolly!";
-   //iterator_range<char*> result=find_last(filename.c_str(),"PlayerShopLog.html");
+      // Proceed only if the directory change notification is triggered by
+      // the file PlayerShopLog.html
 
-    //transform( result.begin(), result.end(), result.begin(), bind2nd(plus<char>(), 1) );
-    // text = "hello dommy!"            
-
-    //to_upper(result); // text == "hello doMMy!"
-
-    // iterator_range is convertible to bool
-   const wchar_t* ptr = filename.c_str();
-   if(!boost::find_last(ptr, "PlayerShopLog.html"))
-    {
-        return;
-    }
-
-   boost::filesystem::path p(to_utf8_copy(filename),boost::filesystem::native);
-
-   std::ifstream in(p.string().c_str());
-   std::string line;
-   std::string text;
-   std::vector<std::tstring> v;
-   while(in){
-      line.clear();
-      std::getline(in,line);
-      if(!line.empty())
+      if(boost::find_last(ptr, "PlayerShopLog.html"))
       {
-         text += line;
+         boost::filesystem::path p(to_utf8_copy(filename),boost::filesystem::native);
+
+         std::ifstream in(p.string().c_str());
+         std::string line;
+         std::string text;
+         std::vector<std::tstring> v;
+         while(in){
+            line.clear();
+            std::getline(in,line);
+            if(!line.empty())
+            {
+               text += line;
+            }
+         }
+
+         // Now that we have the whole file, lets parse it
+
+         // Text located between the two following tags is to be considered an item sold
+         std::string startTag = "<div indent=wrapped>" ;
+         std::string endTag   = "</div>" ;
+         std::stringstream popupText;
+         while(text.length() > 0)
+         {
+         
+            std::string::size_type start = text.find( startTag, 0 );
+            std::string::size_type end  = text.find( endTag , 0 );
+            if( start != std::string::npos && end != std::string::npos)
+            {
+               // adding text for ballon message
+               popupText << text.substr(start+startTag.length(),end-start-startTag.length()) << "\r\n";
+
+               // remove the already processed part of the string
+               text = text.substr(end+endTag.length());
+            }
+            else
+            {
+               text = "";
+            }
+         }
+
+         if(!popupText.str().empty())
+         {
+            ServicesSingleton::Instance()->ShowTrayIconBalloon(STREAM2STR(popupText.str().c_str()));
+         }
       }
-   }
-
-   // Now that we have the whole file, lets parse it
-
-   // Text located between the two following tags is to be considered an item sold
-   std::string startTag = "<div indent=wrapped>" ;
-   std::string endTag   = "</div>" ;
-   std::stringstream popupText;
-   while(text.length() > 0)
-   {
-   
-      std::string::size_type start = text.find( startTag, 0 );
-      std::string::size_type end  = text.find( endTag , 0 );
-      if( start != std::string::npos && end != std::string::npos)
-      {
-         // adding data for column 1
-         //v.push_back(from_ascii_copy(text.substr(start+startTag.length(),end-start-startTag.length())));
-         popupText << text.substr(start+startTag.length(),end-start-startTag.length()) << "\r\n";
-
-         // remove the already processed part of the string
-         text = text.substr(end+endTag.length());
-      }
-      else
-      {
-         text = "";
-      }
-   }
-
-/*
-   if(!m_popup)
-   {
-      m_popup = new CPlayerShopPopupDlg;
-   }
-   
-   if(!::IsWindow(m_popup->GetSafeHwnd()))
-   {
-      m_popup->Create(IDD_PLAYERSHOPPOPUP,this);
-   }
-*/
-   ServicesSingleton::Instance()->ShowTrayIconBalloon(STREAM2STR(popupText.str().c_str()));
-//   popup.Create(NULL);
-/*
-   PlayerShopPopupDlg popup;
-   popup.Create(NULL);
-   popup.ShowWindow(SW_SHOW);
-   popup->SetText(popupText.str());
-*/
-   //popup.ShowWindow(0);
-   //popup.DoModal();
-//   m_popup->SetText(popupText.str());
-//   m_popup->ShowWindow(SW_SHOW);
-
-   //Sleep(5000);
-   //popup.ShowWindow(SW_HIDE);
-   //popup.DestroyWindow();
-
-/*
-
-      dwWaitStatus = WaitForMultipleObjects(1, dwChangeHandles, 
-         FALSE, INFINITE); 
- 
-      switch (dwWaitStatus) 
-      { 
-         case WAIT_OBJECT_0: 
- 
-         // A file was created or written.
-         // Refresh tree
-             RefreshTree(NULL); 
-             if ( FindNextChangeNotification(dwChangeHandles[0]) == FALSE )
-             {
-               printf("\n ERROR: FindNextChangeNotification function failed.\n");
-               ExitProcess(GetLastError()); 
-             }
-             break; 
- 
-         case WAIT_OBJECT_0 + 1: 
- 
-         // A directory was created, renamed, or deleted.
-         // Refresh the tree and restart the notification. 
-             RefreshTree(lpDrive); 
-             if (FindNextChangeNotification(dwChangeHandles[1]) == FALSE )
-             {
-               printf("\n ERROR: FindNextChangeNotification function failed.\n");
-               ExitProcess(GetLastError()); 
-             }
-             break; 
- 
-         case WAIT_TIMEOUT:
-
-         // A time-out occurred. This would happen if some value other 
-         // than INFINITE is used in the Wait call and no changes occur.
-         // In a single-threaded environment, you might not want an
-         // INFINITE wait.
- 
-            printf("\nNo changes in the time-out period.\n");
-            break;
-
-         default: 
-            printf("\n ERROR: Unhandled dwWaitStatus.\n");
-            ExitProcess(GetLastError());
-            break;
-      }*/
    }
 }
 
@@ -447,12 +315,8 @@ DWORD WatchDirectoryThread::ThreadProc()
    std::tstring filename;
    filename = STREAM2STR( g_DBManager.AOFolder() << _T("\\Prefs") );
 
-   do
-   {
-      WatchDirectory((LPTSTR)filename.c_str());
-//      WatchDirectory(dummy.c_str());
-   } 
-   while (!m_term);
+   WatchDirectory((LPTSTR)filename.c_str());
+
 
    m_term = false;
 
