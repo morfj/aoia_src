@@ -11,7 +11,10 @@
 class WatchDirectoryThread : public Thread
 {
 public:
-	WatchDirectoryThread(): m_term(false)  { }
+	WatchDirectoryThread(HANDLE hWakeupEvent): m_term(false)
+   {
+      m_hWakeupEvent = hWakeupEvent;
+   }
    virtual ~WatchDirectoryThread() { }
 
 
@@ -24,9 +27,12 @@ public:
 
    virtual DWORD ThreadProc();
 
+
 private:
    PlayershopView* m_pOwner;
+   LPTSTR m_lpDir;
    bool m_term;
+   HANDLE m_hWakeupEvent;
 
 };
 class PlayershopView :
@@ -91,7 +97,8 @@ private:
    //CTreeItem         m_treeRoot;
 
    PlayershopTreeRoot m_treeRoot;
-   WatchDirectoryThread m_directoryWatch;
+   WatchDirectoryThread* m_directoryWatch;
+   HANDLE m_hWakeupEvent;
 
    bool  m_sortDesc;
    int   m_sortColumn;

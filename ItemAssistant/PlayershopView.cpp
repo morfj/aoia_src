@@ -1,15 +1,7 @@
 #include "StdAfx.h"
 #include "PlayershopView.h"
-//#include <boost/filesystem/path.hpp>
-//#include <boost/filesystem/fstream.hpp>
-//#include <boost/filesystem/operations.hpp>
-//#include <boost/algorithm/string.hpp>
-//#include <boost/algorithm/string/find_iterator.hpp>
-//#include <boost/algorithm/string/find_format.hpp>
-//#include <boost/algorithm/string/replace.hpp>
-//#include <boost/algorithm/string/erase.hpp>
 #include <boost/algorithm/string/find.hpp>
-
+#include <Windows.h>
 enum ColumnID
 {
     TEXT,
@@ -20,13 +12,20 @@ enum ColumnID
 PlayershopView::PlayershopView(void)
 : m_sortColumn(0)
 {
-   m_directoryWatch.Begin();
+   m_hWakeupEvent = CreateEvent(0,false,false,0);
+   m_directoryWatch = new WatchDirectoryThread(m_hWakeupEvent);
+   m_directoryWatch->Begin();
 }
 
 PlayershopView::~PlayershopView(void)
 {
-   m_directoryWatch.StopPlease();
-   m_directoryWatch.End();
+   m_directoryWatch->StopPlease();
+   SetEvent( m_hWakeupEvent );
+   m_directoryWatch->End();
+   delete m_hWakeupEvent;
+   m_hWakeupEvent = NULL;
+   delete m_directoryWatch;
+   m_directoryWatch = NULL;
 }
 
 
@@ -189,48 +188,24 @@ void PlayershopView::OnActive(bool doActivation)
 }
 
 
-void WatchDirectoryThread::WatchDirectory(LPTSTR lpDir)
+typedef struct DIR_WATCH
 {
-   // Create a HANDLE to the directory we want to watch
-   HANDLE directory = CreateFile(
-      lpDir,                          
-      GENERIC_READ,
-      FILE_SHARE_READ|FILE_SHARE_WRITE,
-      NULL,
-      OPEN_EXISTING,
-      FILE_FLAG_BACKUP_SEMANTICS ,
-      NULL
-   );
+   OVERLAPPED overlapped;
+	_FILE_NOTIFY_INFORMATION* fileNotifyInfo;
+	LPTSTR     lpDir;
+} *HDIR_MONITOR;
 
-   // Create a buffer to receive the changed filenames
-   char buffer[4096];
 
-   while (!m_term) 
-   { 
-
-      // Wait for notification
-      DWORD bytesReturned = 0;
-
-      ReadDirectoryChangesW(
-         directory,
-         buffer,
-         4096,
-         TRUE,
-         FILE_NOTIFY_CHANGE_LAST_WRITE|FILE_NOTIFY_CHANGE_CREATION,
-         &bytesReturned,
-         NULL,
-         NULL
-      );
+VOID CALLBACK DirChangeCompletionRoutine( DWORD dwErrorCode, DWORD
+dwNumberOfBytesTransfered,  LPOVERLAPPED lpOverlapped)
+{
+   HDIR_MONITOR             pMonitor  = (HDIR_MONITOR) lpOverlapped;
+//   _FILE_NOTIFY_INFORMATION* fileNotifyInfo = (_FILE_NOTIFY_INFORMATION*)&lpOverlapped;
+      // The string returned is not null terminated, lets terminate it
+   pMonitor->fileNotifyInfo->FileName[pMonitor->fileNotifyInfo->FileNameLength/2]=0;
 
       std::tstringstream f;
-      f << lpDir << "\\";
-
-      // Did not find any information on the data returned,
-      // so the filename is retreived based on trial and error
-      for(int i=12;i<bytesReturned;i=i+2)
-      {  
-         f << buffer[i];
-      }
+      f << pMonitor->lpDir << "\\" << pMonitor->fileNotifyInfo->FileName;
 
       std::tstring filename(f.str());
       const wchar_t* ptr = filename.c_str();
@@ -284,25 +259,81 @@ void WatchDirectoryThread::WatchDirectory(LPTSTR lpDir)
          {
             ServicesSingleton::Instance()->ShowTrayIconBalloon(STREAM2STR(popupText.str().c_str()));
          }
+      }	
+}
+
+
+void WatchDirectoryThread::WatchDirectory(LPTSTR lpDir)
+{
+   //m_lpDir = lpDir;
+
+   HANDLE hObjects[2];
+
+
+   // Create a HANDLE to the directory we want to watch
+   HANDLE directory = CreateFile(
+      lpDir,                          
+      GENERIC_READ,
+      FILE_SHARE_READ|FILE_SHARE_WRITE,
+      NULL,
+      OPEN_EXISTING,
+      FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+      NULL
+   );
+
+   hObjects[0] = m_hWakeupEvent;
+   hObjects[1] = directory;
+
+
+   // Create a buffer to receive the changed filenames
+   char buffer[2048];
+   //_FILE_NOTIFY_INFORMATION* fileNotifyInfo = (_FILE_NOTIFY_INFORMATION*)buffer;
+
+   HDIR_MONITOR pMonitor = (HDIR_MONITOR)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*pMonitor));
+
+   pMonitor->lpDir = lpDir;
+   pMonitor->fileNotifyInfo = (_FILE_NOTIFY_INFORMATION*)buffer;
+
+
+   while (!m_term) 
+   { 
+
+      // Wait for notification
+      DWORD bytesReturned = 0;
+
+      //LPOVERLAPPED_COMPLETION_ROUTINE cb = (LPOVERLAPPED_COMPLETION_ROUTINE)(&WatchDirectoryThread::DirChangeCompletionRoutine);
+/*
+	   pMonitor->overlapped.Internal =
+	   overlapped.InternalHigh =
+	   overlapped.Offset =
+	   overlapped.OffsetHigh = 0;
+	   overlapped.hEvent = NULL;
+*/
+
+      if(!ReadDirectoryChangesW(
+         directory,
+         pMonitor->fileNotifyInfo,
+         2048,
+         TRUE,
+         FILE_NOTIFY_CHANGE_LAST_WRITE|FILE_NOTIFY_CHANGE_CREATION,
+         &bytesReturned,
+         &pMonitor->overlapped,
+	      DirChangeCompletionRoutine
+      ))
+      {
+         // error
+         int a =1;
+      }
+	   // Wait for notification.
+	   DWORD dwWaitStatus = WaitForMultipleObjects(2, hObjects,
+							FALSE, INFINITE);
+
+
+      if(!m_term)
+      {
+         SleepEx(INFINITE,TRUE);
       }
    }
-}
-
-void WatchDirectoryThread::RefreshDirectory(LPTSTR lpDir)
-{
-   // This is where you might place code to refresh your
-   // directory listing, but not the subtree because it
-   // would not be necessary.
-
-   _tprintf(TEXT("Directory (%s) changed.\n"), lpDir);
-}
-
-void WatchDirectoryThread::RefreshTree(LPTSTR lpDrive)
-{
-   // This is where you might place code to refresh your
-   // directory listing, including the subtree.
-
-   _tprintf(TEXT("Directory tree (%s) changed.\n"), lpDrive);
 }
 
 /*************************************************/
@@ -312,13 +343,11 @@ void WatchDirectoryThread::RefreshTree(LPTSTR lpDrive)
 DWORD WatchDirectoryThread::ThreadProc()
 {
    m_term = false;
-   std::tstring filename;
-   filename = STREAM2STR( g_DBManager.AOFolder() << _T("\\Prefs") );
+   std::tstring directoryToWatch;
+   directoryToWatch = STREAM2STR( g_DBManager.AOFolder() << _T("\\Prefs") );
 
-   WatchDirectory((LPTSTR)filename.c_str());
-
-
-   m_term = false;
+   WatchDirectory((LPTSTR)directoryToWatch.c_str());
 
    return 0;
 }
+
