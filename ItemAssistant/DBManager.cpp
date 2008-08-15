@@ -269,6 +269,7 @@ bool DBManager::SyncLocalItemsDB(std::tstring const& localfile, std::tstring con
         return false;
     }
 
+    remove(local);
     rename(tmpfile, local);
 
     return true;
