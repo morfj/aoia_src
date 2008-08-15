@@ -1,7 +1,6 @@
 #pragma once
 
 #include "shared/aopackets.h"
-#include "shared/localdb.h"
 #include <PluginSDK/ItemAssistView.h>
 #include <atlsplit.h>
 #include <vector>
@@ -167,7 +166,6 @@ public:
 protected:
     //void AddItemToView(Native::DbKey const& key, Native::DbItem const& item);
     void AddToTreeView(unsigned int charId, unsigned int contId);
-    bool GetItemInfo(unsigned int itemKey, MissionItem& result);
     void CleanupDB(unsigned int charid);
     void UpdateLayout(CSize newSize);
     std::vector<std::tstring> GetAccountNames();

@@ -134,7 +134,6 @@
 #define ATL_IDS_SCTASKLIST              0xEF13
 #define ATL_IDS_MDICHILD                0xEF1F
 #define ATL_IDS_MRU_FILE                0xEFDA
-#define IDC_STATIC                      -1
 
 // Next default values for new objects
 // 

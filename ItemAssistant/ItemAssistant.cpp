@@ -4,7 +4,6 @@
 #include "stdafx.h"
 #include "ItemAssistant.h"
 #include "DBManager.h"
-#include <shared/localdb.h>
 #include <shlobj.h>
 #include "MainFrm.h"
 

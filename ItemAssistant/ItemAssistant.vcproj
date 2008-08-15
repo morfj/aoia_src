@@ -58,6 +58,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				AdditionalIncludeDirectories="$(SolutionDir)Externals\WTL\include\"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -97,7 +98,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="xcopy /Y $(SolutionDir)\Externals\SQLite\sqlite3.dll $(OutDir)&#x0D;&#x0A;xcopy /Y ctreestd.dll $(OutDir)"
+				CommandLine="xcopy /Y $(SolutionDir)\Externals\SQLite\sqlite3.dll $(OutDir)"
 			/>
 		</Configuration>
 		<Configuration
@@ -140,6 +141,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				AdditionalIncludeDirectories="$(SolutionDir)Externals\WTL\include\"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -182,7 +184,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="xcopy /Y $(SolutionDir)\Externals\SQLite\sqlite3.dll $(OutDir)&#x0D;&#x0A;xcopy /Y README.txt $(OutDir)&#x0D;&#x0A;xcopy /Y ctreestd.dll $(OutDir)"
+				CommandLine="xcopy /Y $(SolutionDir)\Externals\SQLite\sqlite3.dll $(OutDir)&#x0D;&#x0A;xcopy /Y README.txt $(OutDir)"
 			/>
 		</Configuration>
 	</Configurations>

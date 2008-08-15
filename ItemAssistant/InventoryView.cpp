@@ -3,7 +3,7 @@
 #include "InventoryView.h"
 #include "AOMessageParsers.h"
 #include "resource.h"
-#include "shared/AODB.h"
+#include <shared/AODB.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <ShellAPI.h>
