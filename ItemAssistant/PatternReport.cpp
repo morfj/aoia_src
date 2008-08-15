@@ -52,7 +52,7 @@ PatternReport::PatternReport(unsigned int pbid, unsigned int toonid)
 
    {  // Determine PB name
       g_DBManager.Lock();
-      SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR(_T("SELECT name FROM vPBNames WHERE aoid = ") << pbid));
+      SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR(_T("SELECT name FROM tblPocketBoss WHERE pbid = ") << pbid));
       g_DBManager.UnLock();
 
       if (pT != NULL && pT->Rows() > 0)

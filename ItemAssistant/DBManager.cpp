@@ -257,6 +257,8 @@ bool DBManager::SyncLocalItemsDB(std::tstring const& localfile, std::tstring con
             }
             writer.CommitItems();
         }
+
+        writer.PostProcessData();
     }
     catch (std::bad_alloc &e) {
         assert(false);

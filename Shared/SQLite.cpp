@@ -70,7 +70,13 @@ namespace SQLite {
 
     bool Db::Exec(std::tstring const& sql) const
     {
-        return (SQLITE_OK == sqlite3_exec(m_pDb, to_ascii_copy(sql).c_str(), NULL, NULL, NULL)) ? true : false;
+        return Exec(to_ascii_copy(sql));
+    }
+
+
+    bool Db::Exec(std::string const& sql) const
+    {
+        return (SQLITE_OK == sqlite3_exec(m_pDb, sql.c_str(), NULL, NULL, NULL)) ? true : false;
     }
 
 

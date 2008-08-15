@@ -17,6 +17,7 @@ public:
     void WriteItem(boost::shared_ptr<ao_item> item);
     void CommitItems();
     void AbortWrite();
+    void PostProcessData();
 
 private:
     SQLite::Db m_db;

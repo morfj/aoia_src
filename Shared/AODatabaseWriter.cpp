@@ -2,37 +2,77 @@
 #include "AODatabaseWriter.h"
 #include <boost/assign.hpp>
 #include <boost/algorithm/string.hpp>
+#include <ItemAssistant/Logger.h>
+
 
 using namespace boost::algorithm;
 using namespace boost::assign;
 
+const std::string c_scheme_sql = 
+    "CREATE TABLE tblAO ("
+    "   [aoid] INTEGER  PRIMARY KEY NOT NULL,"
+    "   [name] TEXT  NOT NULL,"
+    "   [ql] INTEGER  NULL,"
+    "   [type] TEXT  NOT NULL,"
+    "   [description] VARCHAR(256)  NULL,"
+    "   [flags] INTEGER  NULL,"
+    "   [properties] INTEGER  NULL,"
+    "   [icon] INTEGER  NULL"
+    "   );"
 
-#define SQL_CREATE_ITEMS_TABLE \
-    "CREATE TABLE [tblAO] (" \
-    "   [aoid] INTEGER  PRIMARY KEY NOT NULL," \
-    "   [name] TEXT  NOT NULL," \
-    "   [ql] INTEGER  NULL," \
-    "   [type] TEXT  NOT NULL," \
-    "   [description] VARCHAR(256)  NULL," \
-    "   [flags] INTEGER  NULL," \
-    "   [properties] INTEGER  NULL," \
-    "   [icon] INTEGER  NULL" \
-    ");"
+    "CREATE TABLE [tblPocketBoss] ("
+    "   [pbid] INTEGER  NOT NULL PRIMARY KEY,"
+    "   [ql] INTEGER  NOT NULL,"
+    "   [name] TEXT  NOT NULL"
+    "   );"
 
-#define SQL_CREATE_ATTRIBUTES_TABLE \
-    "CREATE TABLE [tbl_Attributes] (" \
-    "   [ItemID] INTEGER  NOT NULL," \
-    "   [AttributeName] VARCHAR(128)  NOT NULL," \
-    "   [AttributeValue] TEXT  NOT NULL," \
-    "   PRIMARY KEY ([ItemID],[AttributeName])" \
-    ");"
+    "CREATE TABLE tblPatterns ( "
+    "    [aoid] INTEGER NOT NULL PRIMARY KEY UNIQUE, "
+    "    [pbid] INTEGER,"
+    "    [pattern] TEXT NOT NULL,"
+    "    [name] TEXT NOT NULL"
+    "    );"
+
+    //"CREATE VIEW vAPatterns AS "
+    //"   SELECT aoid,ql,name FROM tblAO WHERE name LIKE \"ab%an pattern%\" ; "
+
+    //"CREATE VIEW vBPatterns AS "
+    //"   SELECT aoid,ql,name FROM tblAO WHERE name LIKE \"b%ar pattern%\" ; " 
+
+    //"CREATE VIEW vCPatterns AS "
+    //"   SELECT aoid,ql,name FROM tblAO WHERE name LIKE \"chi pattern%\" ; "
+
+    //"CREATE VIEW vDPatterns AS "
+    //"   SELECT aoid,ql,name FROM tblAO WHERE name LIKE \"dom pattern%\" ; "
+
+    //"CREATE VIEW vABPatterns AS "
+    //"   SELECT aoid,ql,name FROM tblAO WHERE name LIKE \"a%-b%ar assembly%\" ; "
+
+    //"CREATE VIEW vABCPatterns AS "
+    //"   SELECT aoid,ql,name FROM tblAO WHERE name LIKE \"a%b%c% assembly%\" ; "
+
+    //"CREATE VIEW vCompletePatterns AS "
+    //"   SELECT aoid,ql,name FROM tblAO WHERE name LIKE \"%complete%pattern of '%\" ; "
+
+    ;
+
+
+const std::vector<std::string> c_datatransformation_sql = list_of
+    ("INSERT OR REPLACE INTO tblPocketBoss (pbid, ql, name) SELECT aoid, ql, substr(name, 34, length(name)-34) AS name FROM tblAO WHERE name LIKE '%Novictalized Notum Crystal with%' AND LENGTH(name) > 35")
+    ("INSERT OR REPLACE INTO tblPatterns (aoid, name, pattern) SELECT aoid, TRIM(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(name, 'Pattern', ''), 'of', ''), 'Aban', ''), 'Abhan', ''), '''', '')) AS name, 'A' AS Pattern FROM tblAO WHERE name LIKE 'ab%an pattern%'")
+    ("INSERT OR REPLACE INTO tblPatterns (aoid, name, pattern) SELECT aoid, TRIM(REPLACE(REPLACE(REPLACE(REPLACE(name, 'Pattern', ''), 'of', ''), 'Bhotaar', ''), '''', '')) AS name, 'B' AS Pattern FROM tblAO WHERE name LIKE 'b%ar pattern%'")
+    ("INSERT OR REPLACE INTO tblPatterns (aoid, name, pattern) SELECT aoid, TRIM(REPLACE(REPLACE(REPLACE(REPLACE(name, 'Pattern', ''), 'of', ''), 'Chi', ''), '''', '')) AS name, 'C' AS Pattern FROM tblAO WHERE name LIKE 'chi pattern%'")
+    ("INSERT OR REPLACE INTO tblPatterns (aoid, name, pattern) SELECT aoid, TRIM(REPLACE(REPLACE(REPLACE(REPLACE(name, 'Pattern', ''), 'of', ''), 'Dom', ''), '''', '')) AS name, 'D' AS Pattern FROM tblAO WHERE name LIKE 'dom pattern%'")
+    ("INSERT OR REPLACE INTO tblPatterns (aoid, name, pattern) SELECT aoid, TRIM(REPLACE(REPLACE(REPLACE(REPLACE(name, 'Assembly', ''), 'of', ''), 'Aban-Bhotar', ''), '''', '')) AS name, 'AB' AS Pattern FROM tblAO WHERE name LIKE 'a%-b%ar assembly%'")
+    ("INSERT OR REPLACE INTO tblPatterns (aoid, name, pattern) SELECT aoid, TRIM(REPLACE(REPLACE(name, 'Aban-Bhotar-Chi Assembly', ''), '''', '')) AS name, 'ABC' AS Pattern FROM tblAO WHERE name LIKE 'a%b%c% assembly%'")
+    ("INSERT OR REPLACE INTO tblPatterns (aoid, name, pattern) SELECT aoid, TRIM(REPLACE(REPLACE(REPLACE(name, 'Complete Blueptrint Pattern of', ''), 'Complete Blueprint Pattern of', ''), '''', '')) AS name, 'ABCD' AS Pattern FROM tblAO WHERE name LIKE '%complete%pattern of ''%'")
+    ;
 
 
 AODatabaseWriter::AODatabaseWriter(std::string const& filename)
 {
     m_db.Init(from_ascii_copy(filename));
-    m_db.Exec(from_ascii_copy(SQL_CREATE_ITEMS_TABLE));
-    //m_db.Exec(from_ascii_copy(SQL_CREATE_ATTRIBUTES_TABLE));
+    m_db.Exec(from_ascii_copy(c_scheme_sql));
 }
 
 
@@ -95,4 +135,15 @@ void AODatabaseWriter::CommitItems()
 void AODatabaseWriter::AbortWrite()
 {
     m_db.Rollback();
+}
+
+
+void AODatabaseWriter::PostProcessData()
+{
+    for (std::vector<std::string>::const_iterator it = c_datatransformation_sql.begin(); it != c_datatransformation_sql.end(); ++it) {
+        if (!m_db.Exec(*it)) {
+            assert(false);
+            Logger::instance()->log(_T("Error while postprocessing data."));
+        }
+    }
 }
