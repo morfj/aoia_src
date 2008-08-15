@@ -40,7 +40,7 @@ extern CAppModule _Module;  // Global _Module
 #include <boost/shared_ptr.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "UnicodeSupport.h"
+#include <shared/UnicodeSupport.h>
 
 #include "SQLite/sqlite3.h"
 
@@ -51,14 +51,6 @@ extern DBManager g_DBManager; // Global DB manager
 #include <shared/Singleton.h>
 #include "SharedServices.h"
 typedef Shared::Singleton<SharedServices> ServicesSingleton;
-
-#ifdef UNICODE
-#define STREAM2STR( streamdef ) \
-   (((std::wostringstream&)(std::wostringstream().flush() << streamdef)).str())
-#else
-#define STREAM2STR( streamdef ) \
-   (((std::ostringstream&)(std::ostringstream().flush() << streamdef)).str())
-#endif
 
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
 

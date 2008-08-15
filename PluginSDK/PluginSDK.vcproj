@@ -4,6 +4,7 @@
 	Version="9,00"
 	Name="PluginSDK"
 	ProjectGUID="{27846E26-FA81-4B43-997D-62B0338F1A37}"
+	RootNamespace="PluginSDK"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -170,10 +171,6 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 		</Filter>
-		<File
-			RelativePath=".\ReadMe.txt"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>

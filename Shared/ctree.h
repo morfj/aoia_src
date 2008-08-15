@@ -1,6 +1,8 @@
 #ifndef _CTREE_INC
 #define _CTREE_INC
 
+#include <shared/UnicodeSupport.h>
+
 typedef char TEXT, *pTEXT;
 typedef unsigned char UTEXT, *pUTEXT;
 typedef short COUNT, *pCOUNT;
@@ -69,8 +71,7 @@ DECLARE COUNT (__cdecl * GetGTEVRecord)(short keyno, void* Target, void* recptr,
 DECLARE COUNT (__cdecl * ReWriteVRecord)(COUNT datno, pVOID recptr, VRLEN bufsiz);
 
 
-
-DECLARE int CTreeStd_LinkDll(char *DllPath);
+DECLARE int CTreeStd_LinkDll(std::tstring const& DllPath);
 DECLARE void CTreeStd_UnlinkDll();
 
 #endif /* _CTREE_INC */

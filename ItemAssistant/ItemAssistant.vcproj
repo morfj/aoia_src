@@ -49,6 +49,7 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
+				ProgramDataBaseFileName="$(IntDir)\$(ProjectName).pdb"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 			/>
@@ -66,7 +67,6 @@
 				LinkLibraryDependencies="false"
 				AdditionalDependencies="shared.lib tinyxml.lib sqlite3.lib"
 				OutputFile="$(OutDir)/ItemAssistant.exe"
-				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(SolutionDir)$(ConfigurationName)&quot;;&quot;$(SolutionDir)Externals\SQLite\&quot;;&quot;$(SolutionDir)Externals\boost_bin\&quot;"
 				EnableUAC="false"
 				DelayLoadDLLs=""
@@ -97,7 +97,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="xcopy /Y $(SolutionDir)\Externals\SQLite\sqlite3.dll $(OutDir)&#x0D;&#x0A;xcopy /Y aoitems.db $(OutDir)&#x0D;&#x0A;"
+				CommandLine="xcopy /Y $(SolutionDir)\Externals\SQLite\sqlite3.dll $(OutDir)&#x0D;&#x0A;xcopy /Y ctreestd.dll $(OutDir)"
 			/>
 		</Configuration>
 		<Configuration
@@ -131,6 +131,7 @@
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="2"
+				ProgramDataBaseFileName="$(IntDir)\$(ProjectName).pdb"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -181,7 +182,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="xcopy /Y $(SolutionDir)\Externals\SQLite\sqlite3.dll $(OutDir)&#x0D;&#x0A;xcopy /Y aoitems.db $(OutDir)&#x0D;&#x0A;xcopy /Y README.txt $(OutDir)&#x0D;&#x0A;"
+				CommandLine="xcopy /Y $(SolutionDir)\Externals\SQLite\sqlite3.dll $(OutDir)&#x0D;&#x0A;xcopy /Y README.txt $(OutDir)&#x0D;&#x0A;xcopy /Y ctreestd.dll $(OutDir)"
 			/>
 		</Configuration>
 	</Configurations>
@@ -289,10 +290,6 @@
 				RelativePath=".\TabFrame.cpp"
 				>
 			</File>
-			<File
-				RelativePath=".\UnicodeSupport.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -389,10 +386,6 @@
 			</File>
 			<File
 				RelativePath=".\trayiconimpl.h"
-				>
-			</File>
-			<File
-				RelativePath=".\UnicodeSupport.h"
 				>
 			</File>
 			<File

@@ -1,5 +1,6 @@
+#include "stdafx.h"
+
 #define _CTREE_CPP
-#include <windows.h>
 #include "ctree.h"
 
 // Handle of the Ctree DLL.  NULL until it is loaded.
@@ -10,7 +11,8 @@ static HINSTANCE hDll = NULL;
 	memcpy(&(a), &fnDll, sizeof(void *));	
 
 // Perform dynamic linking of ctreestd.dll functions
-int CTreeStd_LinkDll(char *DllPath) {
+int CTreeStd_LinkDll(std::tstring const& DllPath)
+{
 	FARPROC fnDll;
 
 	if (hDll) {
@@ -19,7 +21,7 @@ int CTreeStd_LinkDll(char *DllPath) {
 	}
 
 	// Load the dll file into memory
-	hDll = LoadLibrary(DllPath);
+	hDll = LoadLibrary(DllPath.c_str());
 	if (hDll == NULL) {
 		// Unable to load library file. Signal failure.
 		return 0;
