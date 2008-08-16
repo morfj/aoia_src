@@ -184,7 +184,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="xcopy /Y $(SolutionDir)\Externals\SQLite\sqlite3.dll $(OutDir)&#x0D;&#x0A;xcopy /Y README.txt $(OutDir)"
+				CommandLine="xcopy /Y $(SolutionDir)\Externals\SQLite\sqlite3.dll $(OutDir)&#x0D;&#x0A;xcopy /Y README.txt $(OutDir)&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
@@ -226,10 +226,6 @@
 			</File>
 			<File
 				RelativePath=".\ItemAssistant.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Logger.cpp"
 				>
 			</File>
 			<File
@@ -332,10 +328,6 @@
 			</File>
 			<File
 				RelativePath=".\ItemAssistant.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Logger.h"
 				>
 			</File>
 			<File

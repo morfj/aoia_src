@@ -2,10 +2,8 @@
 #include "UnicodeSupport.h"
 
 
-std::string to_ascii_copy(std::tstring const& input)
+std::string to_ascii_copy(std::wstring const& input)
 {
-#ifdef UNICODE
-
    int len_buffer = input.length() + 1;
    char* abuffer = (char*)malloc( len_buffer );
    ZeroMemory(abuffer, len_buffer );
@@ -17,12 +15,12 @@ std::string to_ascii_copy(std::tstring const& input)
    free(abuffer);
 
    return result;
+}
 
-#else
 
+inline std::string to_ascii_copy(std::string const& input)
+{
    return input;
-
-#endif
 }
 
 

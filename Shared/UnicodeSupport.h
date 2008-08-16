@@ -9,7 +9,8 @@ namespace std {
 }
 
 
-std::string to_ascii_copy(std::tstring const& input);
+std::string to_ascii_copy(std::wstring const& input);
+std::string to_ascii_copy(std::string const& input);
 std::string to_utf8_copy(std::tstring const& input);
 std::tstring from_ascii_copy(std::string const& input);
 std::tstring from_utf8_copy(std::string const& input);

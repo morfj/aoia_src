@@ -74,8 +74,9 @@ namespace SQLite {
         bool Init(std::tstring const& filename = _T("init.db"));
         void Term();
 
-        bool Exec(std::tstring const& sql) const;
+        bool Exec(std::wstring const& sql) const;
         bool Exec(std::string const& sql) const;
+
         TablePtr ExecTable(std::tstring const& sql) const;
 
         void Begin() const;

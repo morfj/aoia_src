@@ -2,7 +2,7 @@
 #include "AODatabaseWriter.h"
 #include <boost/assign.hpp>
 #include <boost/algorithm/string.hpp>
-#include <ItemAssistant/Logger.h>
+#include "Logger.h"
 
 
 using namespace boost::algorithm;

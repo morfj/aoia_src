@@ -3,7 +3,7 @@
 #include "ctree.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/assign.hpp>
-#include <ItemAssistant/Logger.h>
+#include "Logger.h"
 
 #define BUFFER_SIZE 1024*1024
 

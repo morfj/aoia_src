@@ -68,7 +68,7 @@ namespace SQLite {
     }
 
 
-    bool Db::Exec(std::tstring const& sql) const
+    bool Db::Exec(std::wstring const& sql) const
     {
         return Exec(to_ascii_copy(sql));
     }
