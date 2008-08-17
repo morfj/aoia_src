@@ -7,6 +7,9 @@
 #include <sstream>
 
 
+namespace bfs = boost::filesystem;
+
+
 /*********************************************************/
 /* DB Manager Implementation                             */
 /*********************************************************/
@@ -67,16 +70,13 @@ bool DBManager::Init(std::tstring dbfile)
         if (AODir.empty()) {
             return false;
         }
-        FILE* fp;
 
-        std::tstringstream pathOfExe;
-        pathOfExe << AODir << _T("\\anarchy.exe");
-
-        if( fopen_s(&fp, to_ascii_copy(pathOfExe.str()).c_str(), "r") != S_OK ) {
+        bfs::path pathOfExe(to_ascii_copy(AODir));
+        pathOfExe = pathOfExe / "anarchy.exe";
+        if (!bfs::exists(pathOfExe)) {
             MessageBox( NULL, _T("This is not AO's directory."), _T("ERROR"), MB_OK | MB_ICONERROR);
             return false;
         }
-        fclose( fp );
 
         if (regKey.Open(HKEY_CURRENT_USER, _T("Software\\AOItemAssistant"), KEY_ALL_ACCESS) == ERROR_SUCCESS)
         {
@@ -85,19 +85,13 @@ bool DBManager::Init(std::tstring dbfile)
         }
     }
 
-    m_aofolder = std::tstring(AODir);
+    m_aofolder = AODir;
 
-    if (dbfile.empty())
-    {
+    if (dbfile.empty()) {
         dbfile = _T("ItemAssistant.db");
     }
 
-    bool dbfileExists = false;
-    FILE* fp = NULL;
-    if(fopen_s(&fp, to_ascii_copy(dbfile).c_str(), "r") == S_OK) {
-        dbfileExists = true;
-        fclose(fp);
-    }
+    bool dbfileExists = bfs::exists(to_ascii_copy(dbfile));
 
     if (!SQLite::Db::Init(dbfile))
     {
@@ -178,18 +172,16 @@ std::tstring DBManager::GetFolder(HWND hWndOwner, std::tstring const& title)
 */
 bool DBManager::SyncLocalItemsDB(std::tstring const& localfile, std::tstring const& aofolder)
 {
-    using namespace boost::filesystem;
-
     bool hasLocalDB = false;
     std::time_t lastUpdateTime;
 
-    path local(to_ascii_copy(localfile));
-    path original(to_ascii_copy(aofolder));
+    bfs::path local(to_ascii_copy(localfile));
+    bfs::path original(to_ascii_copy(aofolder));
     original = original / "cd_image/data/db/ResourceDatabase.dat";
     
-    if (exists(local) && is_regular(local)) {
+    if (bfs::exists(local) && bfs::is_regular(local)) {
         hasLocalDB = true;
-        lastUpdateTime = last_write_time(local);
+        lastUpdateTime = bfs::last_write_time(local);
     }
 
     if (!exists(original)) {
@@ -197,13 +189,13 @@ bool DBManager::SyncLocalItemsDB(std::tstring const& localfile, std::tstring con
         return hasLocalDB;
     }
 
-    if (hasLocalDB) {
-        std::time_t lastOriginalUpdateTime = last_write_time(original);
+    if (hasLocalDB && GetAODBSchemeVersion(localfile) == 1) {
+        std::time_t lastOriginalUpdateTime = bfs::last_write_time(original);
         if (lastOriginalUpdateTime <= lastUpdateTime) {
-            return true;
+                return true;
         }
 
-        // Ask user if he wants to continue using the old DB or update it now.
+        // Ask user if he wants to continue using the old (but compatible) DB or update it now.
         int answer = ::MessageBox(NULL, 
             _T("You items database is out of date. Do you wish to update it now?\r\nAnswering 'NO' will continue using the old one."),
             _T("Question - AO Item Assistant"), MB_ICONQUESTION | MB_YESNOCANCEL);
@@ -217,8 +209,8 @@ bool DBManager::SyncLocalItemsDB(std::tstring const& localfile, std::tstring con
 
     // If we come this far we need to update the DB.
 
-    path tmpfile("tmp_" + local.string());
-    remove(tmpfile);
+    bfs::path tmpfile("tmp_" + local.string());
+    bfs::remove(tmpfile);
 
     try {
         AODatabaseParser aodb(original.string());
@@ -276,54 +268,6 @@ bool DBManager::SyncLocalItemsDB(std::tstring const& localfile, std::tstring con
 
     return true;
 }
-
-//void DBManager::SyncLocalItemDB(Db& itemDB, const char* AoDir)
-//{
-//	bool doUpdate = true;
-//
-//	/* Check if local database is up to date */
-//	HANDLE hLocalDB = CreateFile( "AODatabase.bdb", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL );
-//
-//	std::tstring dbfile(AoDir);
-//	dbfile += "\\cd_image\\data\\db\\ResourceDatabase.dat";
-//	HANDLE hOrigDB = CreateFile( dbfile.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL );
-//
-//	if( hLocalDB != INVALID_HANDLE_VALUE && hOrigDB != INVALID_HANDLE_VALUE )
-//	{
-//		FILETIME OrigTime, LocalTime;
-//
-//		GetFileTime( hLocalDB, NULL, NULL, &LocalTime );
-//		GetFileTime( hOrigDB, NULL, NULL, &OrigTime );
-//
-//		if( CompareFileTime( &OrigTime, &LocalTime ) < 0 )
-//		{
-//			doUpdate = false;
-//		}
-//	}
-//
-//	if (hOrigDB != INVALID_HANDLE_VALUE)
-//	{
-//		CloseHandle( hOrigDB );
-//	}
-//	if (hLocalDB != INVALID_HANDLE_VALUE)
-//	{
-//		CloseHandle( hLocalDB );
-//	}
-//
-//	if (doUpdate)
-//	{
-//		// DB out-of-date. Update it!
-//		if( !CreateLocalDatabase(itemDB, AoDir) )
-//		{
-//			// Delete the database in case it was partly created,
-//			// so we're not using a partial database on next
-//			// execution.
-//			DeleteFile( "AODatabase.bdb" );
-//
-//			::MessageBox( NULL, "Failed to create local database.", "ERROR", MB_OK | MB_ICONERROR );
-//		}
-//	}
-//}
 
 
 void DBManager::InsertItem(unsigned int keylow,
@@ -406,6 +350,28 @@ OwnedItemInfoPtr DBManager::GetOwnedItemInfo(unsigned int itemID)
     pRetVal->containername = ServicesSingleton::Instance()->GetContainerName(ownerid, containerid);
 
     return pRetVal;
+}
+
+
+unsigned int DBManager::GetAODBSchemeVersion(std::tstring const& filename) const
+{
+    unsigned int retval = 0;
+    SQLite::Db db;
+
+    if (db.Init(filename)) {
+        try {
+            SQLite::TablePtr pT = db.ExecTable(_T("SELECT Version FROM vSchemeVersion"));
+            retval = boost::lexical_cast<unsigned int>(pT->Data(0,0));
+        }
+        catch(Db::QueryFailedException &/*e*/) {
+            retval = 0;
+        }
+        catch (boost::bad_lexical_cast &/*e*/) {
+            retval = 0;
+        }
+    }
+
+    return retval;
 }
 
 

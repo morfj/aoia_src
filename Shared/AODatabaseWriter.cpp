@@ -33,26 +33,7 @@ const std::string c_scheme_sql =
     "    [name] TEXT NOT NULL"
     "    );"
 
-    //"CREATE VIEW vAPatterns AS "
-    //"   SELECT aoid,ql,name FROM tblAO WHERE name LIKE \"ab%an pattern%\" ; "
-
-    //"CREATE VIEW vBPatterns AS "
-    //"   SELECT aoid,ql,name FROM tblAO WHERE name LIKE \"b%ar pattern%\" ; " 
-
-    //"CREATE VIEW vCPatterns AS "
-    //"   SELECT aoid,ql,name FROM tblAO WHERE name LIKE \"chi pattern%\" ; "
-
-    //"CREATE VIEW vDPatterns AS "
-    //"   SELECT aoid,ql,name FROM tblAO WHERE name LIKE \"dom pattern%\" ; "
-
-    //"CREATE VIEW vABPatterns AS "
-    //"   SELECT aoid,ql,name FROM tblAO WHERE name LIKE \"a%-b%ar assembly%\" ; "
-
-    //"CREATE VIEW vABCPatterns AS "
-    //"   SELECT aoid,ql,name FROM tblAO WHERE name LIKE \"a%b%c% assembly%\" ; "
-
-    //"CREATE VIEW vCompletePatterns AS "
-    //"   SELECT aoid,ql,name FROM tblAO WHERE name LIKE \"%complete%pattern of '%\" ; "
+    "CREATE VIEW vSchemeVersion AS SELECT '1' AS Version ; "
 
     ;
 

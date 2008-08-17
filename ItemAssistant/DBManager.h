@@ -48,6 +48,7 @@ protected:
     virtual std::tstring GetFolder(HWND hWndOwner, std::tstring const& title);
     bool SyncLocalItemsDB(std::tstring const& localfile, std::tstring const& aofolder);
 
+    unsigned int GetAODBSchemeVersion(std::tstring const& filename) const;
     unsigned int GetDBVersion() const;
     void UpdateDBVersion(unsigned int fromVersion) const;
     void CreateDBScheme() const;
