@@ -5,6 +5,7 @@
 #include <shared/AODatabaseParser.h>
 #include <shared/AODatabaseWriter.h>
 #include <sstream>
+#include "ProgressDialog.h"
 
 
 namespace bfs = boost::filesystem;
@@ -216,39 +217,90 @@ bool DBManager::SyncLocalItemsDB(std::tstring const& localfile, std::tstring con
         AODatabaseParser aodb(original.string());
         AODatabaseWriter writer(tmpfile.string());
 
+        unsigned int itemCount = aodb.GetItemCount(AODB_TYP_ITEM);
+        unsigned int nanoCount = aodb.GetItemCount(AODB_TYP_NANO);
+
+        CProgressDialog dlg(itemCount + nanoCount, itemCount);
+        dlg.SetWindowText(_T("Progress Dialog - Item Assistant"));
+        dlg.setText(0, _T("Extracting data from the AO DB..."));
+        dlg.setText(1, STREAM2STR("Finished " << 0 << " out of " << itemCount << " items."));
+        dlg.setText(2, _T("Overall progress: 0%"));
+
         // Extract items
         boost::shared_ptr<ao_item> item = aodb.GetFirstItem(AODB_TYP_ITEM);
         if (item) {
-            unsigned int itemcount = 1;
+            unsigned int count = 1;
             writer.BeginWrite();
             writer.WriteItem(item);
             while (item = aodb.GetNextItem()) { 
-                ++itemcount; 
+                ++count; 
                 writer.WriteItem(item);
-                if (itemcount % 10000 == 0) {
+                if (count % 1000 == 0) {
+                    if (dlg.userCanceled()) {
+                        return false;
+                    }
+                    dlg.setTaskProgress(count, itemCount);
+                    dlg.setText(1, STREAM2STR("Finished " << count << " out of " << itemCount << " items."));
+                    dlg.setOverallProgress(count, itemCount + nanoCount);
+                    dlg.setText(2, STREAM2STR("Overall progress: " << (count * 100) / (itemCount + nanoCount) << "%"));
+                }
+                if (count % 10000 == 0) {
                     writer.CommitItems();
                     writer.BeginWrite();
                 }
             }
+            dlg.setTaskProgress(count, itemCount);
+            dlg.setText(1, STREAM2STR("Finished " << count << " out of " << itemCount << " items."));
+            dlg.setOverallProgress(count, itemCount + nanoCount);
+            dlg.setText(2, STREAM2STR("Overall progress: " << (count * 100) / (itemCount + nanoCount) << "%"));
             writer.CommitItems();
         }
+
+        if (dlg.userCanceled()) {
+            return false;
+        }
+        //dlg.setTaskProgress(0, nanoCount);
+        //dlg.setText(1, STREAM2STR("Finished " << 0 << " out of " << nanoCount << " nanos."));
+        //dlg.setText(2, STREAM2STR("Overall progress: " << (itemCount * 100) / (itemCount + nanoCount) << "%"));
+        //dlg.setOverallProgress(itemCount, itemCount + nanoCount);
 
         // Extract nano programs
         boost::shared_ptr<ao_item> nano = aodb.GetFirstItem(AODB_TYP_NANO);
         if (nano) {
-            unsigned int itemcount = 1;
+            unsigned int count = 1;
             writer.BeginWrite();
             writer.WriteItem(nano);
             while (nano = aodb.GetNextItem()) { 
-                ++itemcount; 
+                ++count; 
                 writer.WriteItem(nano);
-                if (itemcount % 10000 == 0) {
+                if (count % 1000 == 0) {
+                    if (dlg.userCanceled()) {
+                        return false;
+                    }
+                    dlg.setTaskProgress(count, nanoCount);
+                    dlg.setText(1, STREAM2STR("Finished " << count << " out of " << nanoCount << " nanos."));
+                    dlg.setOverallProgress(itemCount + count, itemCount + nanoCount);
+                    dlg.setText(2, STREAM2STR("Overall progress: " << ((itemCount + count) * 100) / (itemCount + nanoCount) << "%"));
+                }
+                if (count % 10000 == 0) {
                     writer.CommitItems();
                     writer.BeginWrite();
                 }
             }
+            dlg.setTaskProgress(count, nanoCount);
+            dlg.setText(1, STREAM2STR("Finished " << count << " out of " << nanoCount << " nanos."));
+            dlg.setOverallProgress(itemCount + count, itemCount + nanoCount);
+            dlg.setText(2, STREAM2STR("Overall progress: " << ((itemCount + count) * 100) / (itemCount + nanoCount) << "%"));
             writer.CommitItems();
         }
+
+        if (dlg.userCanceled()) {
+            return false;
+        }
+        //dlg.setTaskProgress(nanoCount, nanoCount);
+        //dlg.setOverallProgress(itemCount + nanoCount, itemCount + nanoCount);
+        //dlg.setText(1, STREAM2STR("Finished " << nanoCount << " out of " << nanoCount << " nanos."));
+        //dlg.setText(2, _T("Overall progress: 100%"));
 
         writer.PostProcessData();
     }

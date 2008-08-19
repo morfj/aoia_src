@@ -253,6 +253,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ProgressDialog.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\PsmTreeItems.cpp"
 				>
 			</File>
@@ -352,6 +356,10 @@
 			</File>
 			<File
 				RelativePath=".\PlayershopView.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ProgressDialog.h"
 				>
 			</File>
 			<File

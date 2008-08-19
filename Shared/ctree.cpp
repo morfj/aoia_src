@@ -45,6 +45,9 @@ int CTreeStd_LinkDll(std::tstring const& DllPath)
 	DYNLINK(NextVRecord, "NXTVREC" );
 	DYNLINK(GetGTEVRecord, "GTEVREC" );
  
+    DYNLINK(NbrOfKeyEntries, "IDXENT");
+    DYNLINK(NbrOfKeysInRange, "RNGENT");
+
 	return 1; // No Failures.  Signal success.
 
 exit_error:

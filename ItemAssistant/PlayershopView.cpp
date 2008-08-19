@@ -22,7 +22,7 @@ PlayershopView::~PlayershopView(void)
    m_directoryWatch->StopPlease();
    SetEvent( m_hWakeupEvent );
    m_directoryWatch->End();
-   delete m_hWakeupEvent;
+   CloseHandle(m_hWakeupEvent);
    m_hWakeupEvent = NULL;
    delete m_directoryWatch;
    m_directoryWatch = NULL;

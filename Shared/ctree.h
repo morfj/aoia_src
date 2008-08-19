@@ -70,6 +70,8 @@ DECLARE COUNT (__cdecl * GetGTEVRecord)(short keyno, void* Target, void* recptr,
 
 DECLARE COUNT (__cdecl * ReWriteVRecord)(COUNT datno, pVOID recptr, VRLEN bufsiz);
 
+DECLARE LONG (__cdecl * NbrOfKeyEntries)(COUNT keyno);
+DECLARE LONG (__cdecl * NbrOfKeysInRange)(COUNT keyno, pVOID idxval1, pVOID idxval2);
 
 DECLARE int CTreeStd_LinkDll(std::tstring const& DllPath);
 DECLARE void CTreeStd_UnlinkDll();

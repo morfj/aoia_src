@@ -87,19 +87,28 @@ AODatabaseParser::~AODatabaseParser()
 }
 
 
+unsigned int AODatabaseParser::GetItemCount(ResourceType type)
+{
+    long startKey[2] = { _byteswap_ulong(type), 0 };
+    long endKey[2] = { _byteswap_ulong(type + 1), 0 };
+
+    LONG recCount = NbrOfKeysInRange(m_aodbFile->tfilno + 1, &startKey, &endKey);
+
+    return recCount;
+}
+
+
 shared_ptr<ao_item> AODatabaseParser::GetFirstItem(ResourceType type)
 {
     m_currentResourceType = type;
 
     shared_ptr<ao_item> retval;
 
-    long key[2];
-    key[0] = _byteswap_ulong(type);
-    key[1] = 0;
+    long startKey[2] = { _byteswap_ulong(type), 0 };
 
     unsigned int bufSize = BUFFER_SIZE;
     ZeroMemory(m_buffer.get(), BUFFER_SIZE);
-    if (GetGTEVRecord(m_aodbFile->tfilno + 1, &key, m_buffer.get(), &bufSize)) {
+    if (GetGTEVRecord(m_aodbFile->tfilno + 1, &startKey, m_buffer.get(), &bufSize)) {
         return retval;
     }
 

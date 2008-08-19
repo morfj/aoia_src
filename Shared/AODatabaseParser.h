@@ -17,6 +17,9 @@ public:
     AODatabaseParser(std::string const& aodbfile);
     ~AODatabaseParser();
 
+    /// Retrieves the number of items with the specified type
+    unsigned int GetItemCount(ResourceType type);
+
     /// Retrieves the first item of a specific type
     boost::shared_ptr<ao_item> GetFirstItem(ResourceType type);
 
