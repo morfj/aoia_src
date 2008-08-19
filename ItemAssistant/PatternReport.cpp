@@ -66,7 +66,7 @@ PatternReport::PatternReport(unsigned int pbid, unsigned int toonid)
 
    {  // Find all patternpieces
       g_DBManager.Lock();
-      SQLite::TablePtr pIDs = g_DBManager.ExecTable(STREAM2STR(_T("SELECT aoid, pattern FROM tPatterns WHERE pbid = ") << pbid));
+      SQLite::TablePtr pIDs = g_DBManager.ExecTable(STREAM2STR(_T("SELECT aoid, pattern FROM tblPatterns WHERE name = (SELECT name FROM tblPocketBoss WHERE pbid = ") << pbid << ")"));
       g_DBManager.UnLock();
 
       // Copy patternpiece IDs to map

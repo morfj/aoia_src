@@ -167,7 +167,7 @@ std::map<std::tstring, std::tstring> SharedServices::GetAOItemInfo(unsigned int 
    std::map<std::tstring, std::tstring> result;
 
    std::tstringstream sql;
-   sql << _T("SELECT aoid, ql, type, fromaoid, name FROM tblAO WHERE aoid = ") << lowkey;
+   sql << _T("SELECT aoid, ql, type, name, description, flags, properties, icon FROM tblAO WHERE aoid = ") << lowkey;
 
    g_DBManager.Lock();
    SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());

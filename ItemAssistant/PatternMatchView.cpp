@@ -407,7 +407,9 @@ float PatternMatchView::CalcPbAvailability(unsigned int pbid, unsigned int tooni
     std::map<std::tstring, unsigned int> vals;
 
     g_DBManager.Lock();
-    SQLite::TablePtr pIDs = g_DBManager.ExecTable(STREAM2STR("SELECT aoid, pattern FROM tPatterns WHERE pbid = " << pbid));
+    SQLite::TablePtr pIDs = g_DBManager.ExecTable(STREAM2STR(
+        "SELECT aoid, pattern FROM tblPatterns WHERE name = (SELECT name FROM tblPocketBoss WHERE pbid = " << pbid << ")"
+        ));
     g_DBManager.UnLock();
 
     if (pIDs == NULL) {

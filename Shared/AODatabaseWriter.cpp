@@ -23,12 +23,11 @@ const std::string c_scheme_sql =
     "CREATE TABLE [tblPocketBoss] ("
     "   [pbid] INTEGER  NOT NULL PRIMARY KEY,"
     "   [ql] INTEGER  NOT NULL,"
-    "   [name] TEXT  NOT NULL"
+    "   [name] TEXT  UNIQUE NOT NULL"
     "   );"
 
     "CREATE TABLE tblPatterns ( "
     "    [aoid] INTEGER NOT NULL PRIMARY KEY UNIQUE, "
-    "    [pbid] INTEGER,"
     "    [pattern] TEXT NOT NULL,"
     "    [name] TEXT NOT NULL"
     "    );"
@@ -39,7 +38,7 @@ const std::string c_scheme_sql =
 
 
 const std::vector<std::string> c_datatransformation_sql = list_of
-    ("INSERT OR REPLACE INTO tblPocketBoss (pbid, ql, name) SELECT aoid, ql, substr(name, 34, length(name)-34) AS name FROM tblAO WHERE name LIKE '%Novictalized Notum Crystal with%' AND LENGTH(name) > 35")
+    ("INSERT OR REPLACE INTO tblPocketBoss (pbid, ql, name) SELECT aoid, ql, substr(name, 34, length(name)-34) AS name FROM tblAO WHERE name LIKE '%Novictalized Notum Crystal with%' AND LENGTH(name) > 35 ORDER BY aoid")
     ("INSERT OR REPLACE INTO tblPatterns (aoid, name, pattern) SELECT aoid, TRIM(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(name, 'Pattern', ''), 'of', ''), 'Aban', ''), 'Abhan', ''), '''', '')) AS name, 'A' AS Pattern FROM tblAO WHERE name LIKE 'ab%an pattern%'")
     ("INSERT OR REPLACE INTO tblPatterns (aoid, name, pattern) SELECT aoid, TRIM(REPLACE(REPLACE(REPLACE(REPLACE(name, 'Pattern', ''), 'of', ''), 'Bhotaar', ''), '''', '')) AS name, 'B' AS Pattern FROM tblAO WHERE name LIKE 'b%ar pattern%'")
     ("INSERT OR REPLACE INTO tblPatterns (aoid, name, pattern) SELECT aoid, TRIM(REPLACE(REPLACE(REPLACE(REPLACE(name, 'Pattern', ''), 'of', ''), 'Chi', ''), '''', '')) AS name, 'C' AS Pattern FROM tblAO WHERE name LIKE 'chi pattern%'")
