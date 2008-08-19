@@ -1,7 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
-#include <atlres.h>
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -325,6 +324,19 @@ BEGIN
     PUSHBUTTON      "AUNO.org",IDC_AUNO,63,47,50,14
 END
 
+IDD_DUAL_PROGRESS DIALOGEX 0, 0, 318, 105
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Progress Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Description line 1",IDC_DESCRIPTION1,7,7,304,8
+    LTEXT           "Description line 2",IDC_DESCRIPTION2,7,23,304,8
+    LTEXT           "Description line 3",IDC_DESCRIPTION3,7,55,304,8
+    CONTROL         "",IDC_PROGRESS1,"msctls_progress32",WS_BORDER,7,33,304,14
+    CONTROL         "",IDC_PROGRESS2,"msctls_progress32",WS_BORDER,7,65,304,14
+    PUSHBUTTON      "Abort",IDCANCEL,133,84,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -340,6 +352,14 @@ BEGIN
         RIGHTMARGIN, 250
         TOPMARGIN, 7
         BOTTOMMARGIN, 152
+    END
+
+    IDD_DUAL_PROGRESS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 311
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 98
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -483,56 +503,6 @@ BEGIN
 END
 
 #endif    // English (U.S.) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// Norwegian (Bokmal) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NOR)
-#ifdef _WIN32
-LANGUAGE LANG_NORWEGIAN, SUBLANG_NORWEGIAN_BOKMAL
-#pragma code_page(1252)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
-IDD_DUAL_PROGRESS DIALOGEX 0, 0, 318, 105
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Progress Dialog"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    LTEXT           "Description line 1",IDC_DESCRIPTION1,7,7,304,8
-    LTEXT           "Description line 2",IDC_DESCRIPTION2,7,23,304,8
-    LTEXT           "Description line 3",IDC_DESCRIPTION3,7,55,304,8
-    CONTROL         "",IDC_PROGRESS1,"msctls_progress32",WS_BORDER,7,33,304,14
-    CONTROL         "",IDC_PROGRESS2,"msctls_progress32",WS_BORDER,7,65,304,14
-    PUSHBUTTON      "Abort",IDCANCEL,133,84,50,14
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
-BEGIN
-    IDD_DUAL_PROGRESS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 311
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 98
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
-#endif    // Norwegian (Bokmal) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
