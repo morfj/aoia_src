@@ -56,23 +56,26 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
     // remove old menu
     SetMenu(NULL);
 
-    HWND hWndToolBar = CreateSimpleToolBarCtrl(m_hWnd, IDR_MAINFRAME, FALSE, ATL_SIMPLE_TOOLBAR_PANE_STYLE);
+    //HWND hWndToolBar = CreateSimpleToolBarCtrl(m_hWnd, IDR_MAINFRAME, FALSE, ATL_SIMPLE_TOOLBAR_PANE_STYLE);
 
     CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
     AddSimpleReBarBand(hWndCmdBar);
-    AddSimpleReBarBand(hWndToolBar, NULL, TRUE);
+    //AddSimpleReBarBand(hWndToolBar, NULL, TRUE);
 
     CreateSimpleStatusBar();
 
     DWORD style = WS_CHILD | /*WS_VISIBLE |*/ WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 
+    m_tabbedChildWindow.SetToolBarPanel(m_hWndToolBar);
     m_tabbedChildWindow.SetTabStyles(CTCS_TOOLTIPS | CTCS_DRAGREARRANGE);
     m_hWndClient = m_tabbedChildWindow.Create(m_hWnd, rcDefault, 0, style | WS_VISIBLE);
 
-    UIAddToolBar(hWndToolBar);
+    //UIAddToolBar(hWndToolBar);
 
-    SetToolbarVisibility(false);
-    UISetCheck(ID_VIEW_STATUS_BAR, 1);
+    m_tabbedChildWindow.SetToolbarVisibility(true);
+    UISetCheck(ID_VIEW_STATUS_BAR, true);
+    UISetCheck(ID_VIEW_TOOLBAR, true);
+    UpdateLayout();
 
     // register object for message filtering and idle updates
     CMessageLoop* pLoop = _Module.GetMessageLoop();
@@ -117,29 +120,13 @@ LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 }
 
 
-LRESULT CMainFrame::OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-{
-    // TODO: add code to initialize document
-
-    return 0;
-}
-
-
-void CMainFrame::SetToolbarVisibility(bool visible)
-{
-    CReBarCtrl rebar = m_hWndToolBar;
-    int nBandIndex = rebar.IdToIndex(ATL_IDW_BAND_FIRST + 1);	// toolbar is 2nd added band
-    rebar.ShowBand(nBandIndex, visible);
-    UISetCheck(ID_VIEW_TOOLBAR, visible);
-    UpdateLayout();
-}
-
-
 LRESULT CMainFrame::OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-    static bool bVisible = FALSE;	// initially not visible
+    static bool bVisible = true;	// initially state
     bVisible = !bVisible;
-    SetToolbarVisibility(bVisible);
+    m_tabbedChildWindow.SetToolbarVisibility(bVisible);
+    UISetCheck(ID_VIEW_TOOLBAR, bVisible);
+    UpdateLayout();
     return 0;
 }
 

@@ -2,110 +2,120 @@
 #include "Tabframe.h"
 
 
-TabFrame::TabFrame(void)
+TabFrame::TabFrame()
+  : m_toobarVisibility(true)
 {
+    //SetForwardNotifications(true);
 }
 
 
-TabFrame::~TabFrame(void)
+TabFrame::~TabFrame()
 {
 }
 
 
 LRESULT TabFrame::OnSelChange(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
 {
-   PluginViewInterface* oldplugin = GetActivePluginView();
+    if (m_activeViewToolbar.IsWindow()) {
+        int nBandIndex = m_rebarControl.IdToIndex(ATL_IDW_BAND_FIRST + 1);	// toolbar is 2nd added band
+        if (nBandIndex >= 0) {
+            m_rebarControl.DeleteBand(nBandIndex);
+        }
+        //m_activeViewToolbar.ShowWindow(SW_HIDE);
+        m_activeViewToolbar.Detach();
+    }
+    PluginViewInterface* oldplugin = GetActivePluginView();
 
-   baseClass::OnSelChange(0, pnmh, bHandled);
+    baseClass::OnSelChange(0, pnmh, bHandled);
 
-   PluginViewInterface* newplugin = GetActivePluginView();
+    PluginViewInterface* newplugin = GetActivePluginView();
 
-   if (oldplugin)
-   {
-      oldplugin->OnActive(false);
-   }
+    if (oldplugin) {
+        oldplugin->OnActive(false);
+    }
 
-   if (newplugin)
-   {
-      newplugin->OnActive(true);
-   }
+    if (newplugin) {
+        m_activeViewToolbar.Attach(newplugin->GetToolbar());
+        if (m_activeViewToolbar.IsWindow()) {
+            m_activeViewToolbar.SetParent(m_rebarControl);
+            //m_activeViewToolbar.ShowWindow(SW_SHOWDEFAULT);
+            WTL::CFrameWindowImplBase<>::AddSimpleReBarBandCtrl(m_rebarControl, m_activeViewToolbar, ATL_IDW_BAND_FIRST + 1, NULL, TRUE);
+            m_rebarControl.ShowBand(m_rebarControl.IdToIndex(ATL_IDW_BAND_FIRST + 1), m_toobarVisibility);
+        }
+        newplugin->OnActive(true);
+    }
 
-   //for (unsigned int i = 0; i < m_viewPlugins.size(); i++)
-   //{
-   //   if (m_viewPlugins[i] == plugin)
-   //   {
-   //      plugin->OnActive(true);
-   //   }
-   //   else
-   //   {
-   //      plugin->OnActive(false);
-   //   }
-   //}
-
-   bHandled = TRUE;
-   return 0;
+    bHandled = TRUE;
+    return 0;
 }
 
 
 LRESULT TabFrame::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-   baseClass::OnCreate(uMsg, wParam, lParam, bHandled);
+    baseClass::OnCreate(uMsg, wParam, lParam, bHandled);
 
-   DWORD style = WS_CHILD | /*WS_VISIBLE |*/ WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
+    DWORD style = WS_CHILD | /*WS_VISIBLE |*/ WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 
-   m_InventoryView.Create(*this, 0, 0, style);
-   AddTab(m_InventoryView, _T("Inventory"));
-	m_viewPlugins.push_back(&m_InventoryView);
+    m_InventoryView.Create(*this, 0, 0, style);
+    AddTab(m_InventoryView, _T("Inventory"));
+    m_viewPlugins.push_back(&m_InventoryView);
 
-   m_PatternView.Create(*this, 0, 0, style);
-   AddTab(m_PatternView, _T("Pattern Matcher"));
-   m_viewPlugins.push_back(&m_PatternView);
+    m_PatternView.Create(*this, 0, 0, style);
+    AddTab(m_PatternView, _T("Pattern Matcher"));
+    m_viewPlugins.push_back(&m_PatternView);
 
-   m_PlayershopView.Create(*this, 0, 0, style);
-   AddTab(m_PlayershopView, _T("Playershop Monitor"));
-   m_viewPlugins.push_back(&m_PlayershopView);
+    m_PlayershopView.Create(*this, 0, 0, style);
+    AddTab(m_PlayershopView, _T("Playershop Monitor"));
+    m_viewPlugins.push_back(&m_PlayershopView);
 
-   //m_BotExportView.Create(*this, 0, 0, style);
-   //AddTab(m_BotExportView, "Bot Export");
-   //m_viewPlugins.push_back(&m_BotExportView);
+    //m_BotExportView.Create(*this, 0, 0, style);
+    //AddTab(m_BotExportView, "Bot Export");
+    //m_viewPlugins.push_back(&m_BotExportView);
 
 #ifdef _DEBUG
-   m_MsgView.Create(*this, 0, 0, style);
-   AddTab(m_MsgView, _T("Messages (Debug)"));
-   m_viewPlugins.push_back(&m_MsgView);
+    m_MsgView.Create(*this, 0, 0, style);
+    AddTab(m_MsgView, _T("Messages (Debug)"));
+    m_viewPlugins.push_back(&m_MsgView);
 #endif
 
-   DisplayTab(m_InventoryView);
+    DisplayTab(m_InventoryView);
 
-   return 0;
+    return 0;
 }
 
 
 PluginViewInterface* TabFrame::GetActivePluginView()
 {
-   PluginViewInterface* result = NULL;
+    PluginViewInterface* result = NULL;
 
-   HWND hWnd = GetActiveView();
-   if (hWnd != NULL)
-   {
-      for (unsigned int i = 0; i < m_viewPlugins.size(); i++)
-      {
-         if (m_viewPlugins[i]->GetWindow() == hWnd)
-         {
-            result = m_viewPlugins[i];
-            break;
-         }
-      }
-   }
+    HWND hWnd = GetActiveView();
+    if (hWnd != NULL)
+    {
+        for (unsigned int i = 0; i < m_viewPlugins.size(); i++)
+        {
+            if (m_viewPlugins[i]->GetWindow() == hWnd)
+            {
+                result = m_viewPlugins[i];
+                break;
+            }
+        }
+    }
 
-   return result;
+    return result;
 }
 
 
 void TabFrame::OnAOMessage(AO::Header *pMsg)
 {
-	for (unsigned int i = 0; i < m_viewPlugins.size(); i++)
-	{
-		m_viewPlugins[i]->OnAOMessage(pMsg);
-	}
+    for (unsigned int i = 0; i < m_viewPlugins.size(); i++)
+    {
+        m_viewPlugins[i]->OnAOMessage(pMsg);
+    }
+}
+
+
+void TabFrame::SetToolbarVisibility(bool visible)
+{
+    m_toobarVisibility = visible;
+    m_rebarControl.ShowBand(m_rebarControl.IdToIndex(ATL_IDW_BAND_FIRST + 1), m_toobarVisibility);
 }

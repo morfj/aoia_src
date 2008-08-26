@@ -13,6 +13,8 @@
 
 #include <map>
 
+using namespace WTL;
+
 
 enum ColumnID
 {
@@ -56,6 +58,28 @@ LRESULT InventoryView::OnFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
     CSize newsize(rect.right, rect.bottom);
     UpdateLayout(newsize);
 
+    m_toolbar.CheckButton(ID_INV_FIND_TOGGLE, TRUE);
+
+    return 0;
+}
+
+
+LRESULT InventoryView::OnFindToggle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+    if (!::IsWindowVisible(m_findview)) {
+        m_findview.ShowWindow(SW_SHOW);
+        m_findview.SetFocus();
+        RECT rect;
+        GetClientRect(&rect);
+        CSize newsize(rect.right, rect.bottom);
+        UpdateLayout(newsize);
+    }
+    else {
+        HideFindWindow();
+    } 
+
+    m_toolbar.CheckButton(ID_INV_FIND_TOGGLE, m_findview.IsWindowVisible());
+
     return 0;
 }
 
@@ -77,6 +101,8 @@ LRESULT InventoryView::OnInfo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
     {
         m_infoview.ShowWindow(SW_HIDE);
     }
+
+    m_toolbar.CheckButton(ID_INFO, m_infoview.IsWindowVisible());
 
     RECT rect;
     GetClientRect(&rect);
@@ -290,6 +316,8 @@ void InventoryView::HideFindWindow()
     GetClientRect(&rect);
     CSize newsize(rect.right, rect.bottom);
     UpdateLayout(newsize);
+
+    m_toolbar.CheckButton(ID_INV_FIND_TOGGLE, FALSE);
 }
 
 
@@ -323,6 +351,44 @@ LRESULT InventoryView::OnCreate(LPCREATESTRUCT createStruct)
     m_splitter.SetActivePane(SPLIT_PANE_LEFT);
 
     m_accelerators.LoadAccelerators(IDR_INV_ACCEL);
+
+    TBBUTTON buttons[4];
+    buttons[0].iBitmap = 0;
+    buttons[0].idCommand = ID_INV_FIND_TOGGLE;
+    buttons[0].fsState = TBSTATE_ENABLED;
+    buttons[0].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_CHECK | BTNS_AUTOSIZE;
+    buttons[0].dwData = NULL;
+    buttons[0].iString = (INT_PTR)_T("Find Item");
+    buttons[1].iBitmap = 1;
+    buttons[1].idCommand = ID_INFO;
+    buttons[1].fsState = TBSTATE_ENABLED;
+    buttons[1].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_CHECK | BTNS_AUTOSIZE;
+    buttons[1].dwData = NULL;
+    buttons[1].iString = (INT_PTR)_T("Item Info");
+    buttons[2].iBitmap = 3;
+    buttons[2].idCommand = 0;
+    buttons[2].fsState = 0;
+    buttons[2].fsStyle = BTNS_SEP;
+    buttons[2].dwData = NULL;
+    buttons[2].iString = NULL;
+    buttons[3].iBitmap = 2;
+    buttons[3].idCommand = ID_HELP;
+    buttons[3].fsState = TBSTATE_ENABLED;
+    buttons[3].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_AUTOSIZE;
+    buttons[3].dwData = NULL;
+    buttons[3].iString = (INT_PTR)_T("Help");
+
+    CImageList imageList;
+    imageList.CreateFromImage(IDB_INVENTORY_VIEW, 16, 2, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
+
+    m_toolbar.Create(GetTopLevelWindow(), NULL, _T("InventoryViewToolBar"), 
+        ATL_SIMPLE_TOOLBAR_PANE_STYLE | TBSTYLE_LIST, 
+        TBSTYLE_EX_MIXEDBUTTONS);
+    m_toolbar.SetButtonStructSize();
+    //m_toolbar.AddBitmap(2, IDB_INVENTORY_VIEW);
+    m_toolbar.SetImageList(imageList);
+    m_toolbar.AddButtons(ARRAYSIZE(buttons), buttons);
+    m_toolbar.AutoSize();
 
     PostMessage(WM_POSTCREATE);
 

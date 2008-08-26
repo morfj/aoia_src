@@ -33,7 +33,6 @@ public:
     BEGIN_MSG_MAP_EX(CMainFrame)
         MESSAGE_HANDLER(WM_CREATE, OnCreate)
         COMMAND_ID_HANDLER(ID_APP_EXIT, OnFileExit)
-        COMMAND_ID_HANDLER(ID_FILE_NEW, OnFileNew)
         COMMAND_ID_HANDLER(ID_VIEW_TOOLBAR, OnViewToolBar)
         COMMAND_ID_HANDLER(ID_VIEW_STATUS_BAR, OnViewStatusBar)
         COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
@@ -51,7 +50,6 @@ public:
 
     LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
     LRESULT OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-    LRESULT OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -63,9 +61,6 @@ public:
     void OnSysCommand(UINT wParam, CPoint mousePos);
 
     boost::shared_ptr<CTrayNotifyIcon> GetTrayIcon() const { return m_trayIcon; }
-
-protected:
-    void SetToolbarVisibility(bool visible);
 
 private:
     void Inject();

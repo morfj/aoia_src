@@ -45,6 +45,14 @@ public:
     {
         // Override in derived classes
     }
+
+    virtual HWND GetToolbar() const
+    {
+        return m_toolbar.m_hWnd;
+    }
+
+protected:
+    WTL::CToolBarCtrl m_toolbar;
 };
 
 #endif // ITEMASSISTVIEW_H

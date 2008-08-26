@@ -52,6 +52,26 @@ LRESULT AoMsgView::OnCreate(LPCREATESTRUCT createStruct)
    m_listview.ModifyStyle(0, LVS_REPORT, SWP_NOACTIVATE);
    m_listview.AddColumn(_T("Message ID"), 0);
    m_listview.AddColumn(_T("Size"), 1);
+
+   TBBUTTON buttons[1];
+   buttons[0].iBitmap = 0;
+   buttons[0].idCommand = ID_EDIT_CLEAR;
+   buttons[0].fsState = TBSTATE_ENABLED;
+   buttons[0].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_AUTOSIZE;
+   buttons[0].dwData = NULL;
+   buttons[0].iString = (INT_PTR)_T("Clear");
+
+   CImageList imageList;
+   imageList.CreateFromImage(IDB_AOMESSAGE_VIEW, 16, 1, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
+
+   m_toolbar.Create(GetTopLevelWindow(), NULL, _T("AOMessageViewToolBar"), 
+       ATL_SIMPLE_TOOLBAR_PANE_STYLE | TBSTYLE_LIST, 
+       TBSTYLE_EX_MIXEDBUTTONS);
+   m_toolbar.SetButtonStructSize();
+   m_toolbar.SetImageList(imageList);
+   m_toolbar.AddButtons(ARRAYSIZE(buttons), buttons);
+   m_toolbar.AutoSize();
+
    return 0;
 }
 

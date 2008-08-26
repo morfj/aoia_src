@@ -27,6 +27,10 @@ public:
 
     PluginViewInterface* GetActivePluginView();
     void OnAOMessage(AO::Header *pMsg);
+    void SetToolBarPanel(HWND panel) { m_rebarControl.Attach(panel); }
+
+    /// Sets the state of the toolbar for the active view.
+    void SetToolbarVisibility(bool visible);
 
 private:
     std::vector<PluginViewInterface*> m_viewPlugins;
@@ -36,4 +40,9 @@ private:
     PatternMatchView           m_PatternView;
     PlayershopView             m_PlayershopView;
     BotExportView              m_BotExportView;
+
+    WTL::CReBarCtrl m_rebarControl;
+    WTL::CToolBarCtrl m_activeViewToolbar;
+
+    bool m_toobarVisibility;
 };

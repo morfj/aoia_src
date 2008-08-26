@@ -13,7 +13,7 @@ class InventoryView;
 
 
 class InfoView
-    :	public CDialogImpl<InfoView>
+    : public CDialogImpl<InfoView>
     , public CDialogResize<InfoView>
 {
 public:
@@ -49,7 +49,7 @@ private:
 
 
 class FindView
-    :	public CDialogImpl<FindView>
+    : public CDialogImpl<FindView>
     , public CDialogResize<FindView>
 {
 public:
@@ -124,6 +124,7 @@ public:
         MSG_WM_SIZE(OnSize)
         //MSG_WM_NOTIFY(OnNotify)
         MESSAGE_HANDLER(WM_POSTCREATE, OnPostCreate)
+        COMMAND_ID_HANDLER(ID_INV_FIND_TOGGLE, OnFindToggle)
         COMMAND_ID_HANDLER(ID_INV_FIND, OnFind)
         COMMAND_ID_HANDLER(ID_INV_FIND_HIDE, OnFindHide)
         COMMAND_ID_HANDLER(ID_INFO, OnInfo)
@@ -148,6 +149,7 @@ public:
     LRESULT OnPostCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
     //LRESULT OnNotify(int wParam, LPNMHDR lParam);
     LRESULT OnFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+    LRESULT OnFindToggle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnFindHide(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnInfo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnColumnClick(LPNMHDR lParam);
