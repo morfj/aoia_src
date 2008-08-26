@@ -63,13 +63,25 @@ LRESULT PatternMatchView::OnCreate(LPCREATESTRUCT createStruct)
     m_availCalc.SetOwner(this);
     //m_availCalc.Begin();
 
-    TBBUTTON buttons[1];
+    TBBUTTON buttons[3];
     buttons[0].iBitmap = 0;
-    buttons[0].idCommand = ID_HELP;
+    buttons[0].idCommand = ID_RECALCULATE;
     buttons[0].fsState = TBSTATE_ENABLED;
     buttons[0].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_AUTOSIZE;
     buttons[0].dwData = NULL;
-    buttons[0].iString = (INT_PTR)_T("Help");
+    buttons[0].iString = (INT_PTR)_T("Recalculate");
+    buttons[1].iBitmap = 3;
+    buttons[1].idCommand = 0;
+    buttons[1].fsState = 0;
+    buttons[1].fsStyle = BTNS_SEP;
+    buttons[1].dwData = NULL;
+    buttons[1].iString = NULL;
+    buttons[2].iBitmap = 1;
+    buttons[2].idCommand = ID_HELP;
+    buttons[2].fsState = TBSTATE_ENABLED;
+    buttons[2].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_AUTOSIZE;
+    buttons[2].dwData = NULL;
+    buttons[2].iString = (INT_PTR)_T("Help");
 
     CImageList imageList;
     imageList.CreateFromImage(IDB_PATTERNMATCH_VIEW, 16, 1, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_DEFAULTSIZE);

@@ -80,6 +80,8 @@
 #define ID_Menu                         32771
 #define ID_VIEW_INVENTORY               32772
 #define ID_VIEW_MESSAGES                32773
+#define ID_PAUSE_TOGGLE                 32774
+#define ID_RECALCULATE                  32775
 #define ID_VIEW_INFOPANEL               32778
 #define ID_INV_FIND                     32782
 #define ID_INV_FIND_TOGGLE              32783
