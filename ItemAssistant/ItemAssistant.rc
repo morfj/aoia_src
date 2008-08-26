@@ -359,8 +359,6 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\ico120.ico"
-IDR_INVENTORY_VIEW      ICON                    "res\\inventory.ico"
-IDR_DEBUG_VIEW          ICON                    "res\\debug.ico"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
