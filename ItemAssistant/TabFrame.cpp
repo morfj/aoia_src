@@ -16,33 +16,41 @@ TabFrame::~TabFrame()
 
 LRESULT TabFrame::OnSelChange(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
 {
-    if (m_activeViewToolbar.IsWindow()) {
-        int nBandIndex = m_rebarControl.IdToIndex(ATL_IDW_BAND_FIRST + 1);	// toolbar is 2nd added band
-        if (nBandIndex >= 0) {
-            m_rebarControl.DeleteBand(nBandIndex);
-        }
-        //m_activeViewToolbar.ShowWindow(SW_HIDE);
-        m_activeViewToolbar.Detach();
-    }
     PluginViewInterface* oldplugin = GetActivePluginView();
-
     baseClass::OnSelChange(0, pnmh, bHandled);
-
     PluginViewInterface* newplugin = GetActivePluginView();
 
     if (oldplugin) {
         oldplugin->OnActive(false);
     }
 
-    if (newplugin) {
+    if (newplugin)
+    {
+        newplugin->OnActive(true);
+
+        // Assign new toolbar.
+        m_activeViewToolbar.Detach();
         m_activeViewToolbar.Attach(newplugin->GetToolbar());
-        if (m_activeViewToolbar.IsWindow()) {
-            m_activeViewToolbar.SetParent(m_rebarControl);
-            //m_activeViewToolbar.ShowWindow(SW_SHOWDEFAULT);
+
+        int nBandIndex = m_rebarControl.IdToIndex(ATL_IDW_BAND_FIRST + 1);	// toolbar is 2nd added band
+        if (nBandIndex < 0)
+        {
+            // Insert new band
             WTL::CFrameWindowImplBase<>::AddSimpleReBarBandCtrl(m_rebarControl, m_activeViewToolbar, ATL_IDW_BAND_FIRST + 1, NULL, TRUE);
             m_rebarControl.ShowBand(m_rebarControl.IdToIndex(ATL_IDW_BAND_FIRST + 1), m_toobarVisibility);
+            m_rebarControl.LockBands(true);
         }
-        newplugin->OnActive(true);
+        else
+        {
+            // Replace band
+            REBARBANDINFO rbbi;
+            ZeroMemory(&rbbi, sizeof(REBARBANDINFO));
+            rbbi.cbSize = sizeof(REBARBANDINFO);
+            rbbi.fMask = RBBIM_CHILD;
+            rbbi.hwndChild = m_activeViewToolbar.m_hWnd;
+
+            m_rebarControl.SetBandInfo(nBandIndex, &rbbi);
+        }
     }
 
     bHandled = TRUE;
