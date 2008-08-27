@@ -794,7 +794,7 @@ DWORD AvailCalcThread::ThreadProc()
                 float avail = PatternMatchView::CalcPbAvailability(pbid, m_toon);
                 m_pOwner->PbListMutex().MutexOn();
                 m_pOwner->SetBossAvail(pbid, avail);
-                unsigned short percent = (unsigned int)((m_index * 100) / list.size());
+                unsigned short percent = (unsigned int)(((m_index + 1) * 100) / list.size());
                 m_pOwner->PostMessage(WM_UPDATE_PBLIST, percent, pbid);
             }
             ++m_index;
