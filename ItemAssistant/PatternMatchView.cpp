@@ -159,8 +159,8 @@ void PatternMatchView::SetFilterSettings(unsigned int toonid, float availfilter)
 
 
 /**
-* Updates the specified pocketboss entry. If pbid is zero, update all entries.
-*/
+ * Updates the specified pocketboss entry. If pbid is zero, update all entries.
+ */
 void PatternMatchView::UpdatePbListView(unsigned int pbid)
 {
     if (pbid == 0)
@@ -368,6 +368,33 @@ LRESULT PatternMatchView::OnSize(UINT wParam, CSize newSize)
     UpdateLayout(newSize);
     return 0;
 }
+
+
+LRESULT PatternMatchView::OnRecalculate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+    // Stop workerthread
+    m_availCalc.StopPlease();
+    m_availCalc.End();
+
+    // Clean out pending messages from the old thread.
+    MSG msg;
+    while (PeekMessage(&msg, m_hWnd, WM_UPDATE_PBLIST, WM_UPDATE_PBLIST, PM_REMOVE))
+    {
+        continue;
+    }
+
+    // Reset calculations for ALL PBs
+    SetBossAvail(0, -1.0f);
+
+    // Restart thread
+    m_availCalc.SetToon(m_toonid);
+    m_availCalc.Begin();
+
+    UpdatePbListView();
+
+    return 0;
+}
+
 
 LRESULT PatternMatchView::OnUpdatePbListView(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled)
 {
@@ -781,6 +808,8 @@ DWORD AvailCalcThread::ThreadProc()
 
     do
     {
+        int lastUpdate = -1;
+
         m_pOwner->PbListMutex().MutexOn();
 
         PatternMatchView::PbList &list = m_pOwner->PbListRef();
@@ -795,7 +824,10 @@ DWORD AvailCalcThread::ThreadProc()
                 m_pOwner->PbListMutex().MutexOn();
                 m_pOwner->SetBossAvail(pbid, avail);
                 unsigned short percent = (unsigned int)(((m_index + 1) * 100) / list.size());
-                m_pOwner->PostMessage(WM_UPDATE_PBLIST, percent, pbid);
+                if (percent > lastUpdate) {
+                    m_pOwner->PostMessage(WM_UPDATE_PBLIST, percent, pbid);
+                    lastUpdate = percent;
+                }
             }
             ++m_index;
         }
