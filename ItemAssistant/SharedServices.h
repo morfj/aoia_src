@@ -31,6 +31,10 @@ public:
     void ShowTrayIconBalloon(std::tstring const& message) const;
     void SetTrayIcon(boost::shared_ptr<CTrayNotifyIcon> trayIcon);
 
+    /// Opens the online help for the specified topic. 
+    /// (ex: topic = "patternmatcher" will expand to http://ia.frellu.net/help.php?topic=patternmatcher&version=0.9.0")
+    static void ShowHelp(std::tstring const& topic);
+
 protected:
     std::vector<std::tstring> GetAccountNames() const;
     std::tstring MakeContainerName(unsigned int charid, unsigned int containerid) const;

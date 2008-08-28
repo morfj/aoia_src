@@ -128,6 +128,7 @@ public:
         COMMAND_ID_HANDLER(ID_INV_FIND, OnFind)
         COMMAND_ID_HANDLER(ID_INV_FIND_HIDE, OnFindHide)
         COMMAND_ID_HANDLER(ID_INFO, OnInfo)
+        COMMAND_ID_HANDLER(ID_HELP, OnHelp)
         COMMAND_ID_HANDLER(ID_SELL_ITEM_AOMARKET, OnSellItemAoMarket)
         COMMAND_ID_HANDLER(ID_COPY_AUNO_ITEMREF, OnCopyItemRef)
         COMMAND_ID_HANDLER(ID_COPY_AUNO_ITEMREF_VBB, OnCopyItemRef)
@@ -152,6 +153,7 @@ public:
     LRESULT OnFindToggle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnFindHide(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnInfo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+    LRESULT OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnColumnClick(LPNMHDR lParam);
     LRESULT OnItemActivate(LPNMHDR lParam);
     LRESULT OnItemContextMenu(LPNMHDR lParam);

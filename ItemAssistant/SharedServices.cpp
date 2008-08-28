@@ -5,10 +5,14 @@
 #include <TinyXml/tinyxml.h>
 
 #include <sstream>
-#include <boost/algorithm/string/trim.hpp>
+#include <boost/algorithm/string.hpp>
 #include "DBManager.h"
 #include "MainFrm.h"
 #include "ntray.h"
+#include "Version.h"
+
+
+namespace ba = boost::algorithm;
 
 
 SharedServices::SharedServices()
@@ -180,7 +184,7 @@ std::map<std::tstring, std::tstring> SharedServices::GetAOItemInfo(unsigned int 
          for (unsigned int col = 0; col < pT->Columns(); col++)
          {
             std::tstring column = from_ascii_copy(pT->Headers()[col]);
-            std::tstring data = boost::algorithm::trim_copy(from_ascii_copy(pT->Data()[col]));
+            std::tstring data = ba::trim_copy(from_ascii_copy(pT->Data()[col]));
 
             result[column] = data;
          }
@@ -230,4 +234,11 @@ void SharedServices::ShowTrayIconBalloon(std::tstring const& message) const
 void SharedServices::SetTrayIcon(boost::shared_ptr<CTrayNotifyIcon> trayIcon)
 {
    m_trayIcon = trayIcon;
+}
+
+
+void SharedServices::ShowHelp(std::tstring const& topic)
+{
+    std::tstring helpUrl = STREAM2STR(_T("http://ia.frellu.net/help.php?topic=") << topic << _T("&version=") << g_versionNumber);
+    ShellExecute(NULL, _T("open"), helpUrl.c_str(), NULL, NULL, SW_NORMAL);
 }

@@ -113,6 +113,13 @@ LRESULT InventoryView::OnInfo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 }
 
 
+LRESULT InventoryView::OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+    SharedServices::ShowHelp(_T("inventory"));
+    return 0;
+}
+
+
 LRESULT InventoryView::OnColumnClick(LPNMHDR lParam)
 {
     LPNMLISTVIEW pnmv = (LPNMLISTVIEW) lParam;

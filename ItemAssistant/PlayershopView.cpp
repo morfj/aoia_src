@@ -150,6 +150,13 @@ LRESULT PlayershopView::OnPostCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 }
 
 
+LRESULT PlayershopView::OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+    SharedServices::ShowHelp(_T("playershop"));
+    return 0;
+}
+
+
 // Updates the list view with the results of the SQL query. 'where' is used as the expression after the WHERE keyword.
 void PlayershopView::UpdateListView(std::tstring const& where)
 {

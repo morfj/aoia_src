@@ -123,6 +123,7 @@ public:
         MSG_WM_DESTROY(OnDestroy)
         MSG_WM_SIZE(OnSize)
         COMMAND_ID_HANDLER(ID_RECALCULATE, OnRecalculate)
+        COMMAND_ID_HANDLER(ID_HELP, OnHelp)
         MESSAGE_HANDLER(WM_UPDATE_PBLIST, OnUpdatePbListView)
         NOTIFY_CODE_HANDLER_EX(LVN_COLUMNCLICK, OnColumnClick)
         NOTIFY_CODE_HANDLER_EX(LVN_ITEMACTIVATE, OnItemActivate)
@@ -162,6 +163,7 @@ protected:
     void OnDestroy();
     LRESULT OnSize(UINT wParam, CSize newSize);
     LRESULT OnRecalculate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+    LRESULT OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnColumnClick(LPNMHDR lParam);
     LRESULT OnItemActivate(LPNMHDR lParam);
     LRESULT OnUpdatePbListView(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled);

@@ -56,6 +56,7 @@ public:
         MSG_WM_CREATE(OnCreate)
         MSG_WM_SIZE(OnSize)
         MESSAGE_HANDLER(WM_POSTCREATE, OnPostCreate)
+        COMMAND_ID_HANDLER(ID_HELP, OnHelp)
         /*      COMMAND_ID_HANDLER(ID_INV_FIND, OnFind)
         COMMAND_ID_HANDLER(ID_INV_FIND_HIDE, OnFindHide)
         COMMAND_ID_HANDLER(ID_INFO, OnInfo)
@@ -69,6 +70,7 @@ public:
     LRESULT OnCreate(LPCREATESTRUCT createStruct);
     LRESULT OnSize(UINT wParam, CSize newSize);
     LRESULT OnPostCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+    LRESULT OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnColumnClick(LPNMHDR lParam);
     LRESULT OnItemActivate(LPNMHDR lParam);
 

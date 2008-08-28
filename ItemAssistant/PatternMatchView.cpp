@@ -396,6 +396,13 @@ LRESULT PatternMatchView::OnRecalculate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 }
 
 
+LRESULT PatternMatchView::OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+    SharedServices::ShowHelp(_T("patternmatcher"));
+    return 0;
+}
+
+
 LRESULT PatternMatchView::OnUpdatePbListView(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled)
 {
     UpdatePbListView(lParam);
