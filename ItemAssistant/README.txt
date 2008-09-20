@@ -23,6 +23,7 @@ Version ?.?.?                                       Release Date: ??/??/????
     * Playershop monitor added.
     * The application will now parse the original AO database to create its 
       own item database.
+    * GUI cleanup.
 
 Version 0.8.4                                       Release Date: 31/03/2008
     * Updated DB scheme to fix issue with 32 bit unsigned character IDs.
