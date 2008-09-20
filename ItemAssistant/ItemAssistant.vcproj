@@ -205,6 +205,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Application.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\BotExportView.cpp"
 				>
 			</File>
@@ -250,6 +254,10 @@
 			</File>
 			<File
 				RelativePath=".\PlayershopView.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PluginManager.cpp"
 				>
 			</File>
 			<File
@@ -311,6 +319,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Application.h"
+				>
+			</File>
+			<File
 				RelativePath=".\BotExportView.h"
 				>
 			</File>
@@ -356,6 +368,10 @@
 			</File>
 			<File
 				RelativePath=".\PlayershopView.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PluginManager.h"
 				>
 			</File>
 			<File

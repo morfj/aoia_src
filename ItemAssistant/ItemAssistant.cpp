@@ -5,7 +5,7 @@
 #include "ItemAssistant.h"
 #include "DBManager.h"
 #include <shlobj.h>
-#include "MainFrm.h"
+#include "Application.h"
 
 
 #define MAX_LOADSTRING 100
@@ -14,29 +14,6 @@
 // Global Variables:
 CAppModule _Module;
 DBManager g_DBManager;
-
-
-int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
-{
-    CMessageLoop theLoop;
-    _Module.AddMessageLoop(&theLoop);
-
-    CMainFrame wndMain;
-
-    if(wndMain.CreateEx() == NULL) {
-        ATLTRACE(_T("Main window creation failed!\n"));
-        return 0;
-    }
-
-    ServicesSingleton::Instance()->SetTrayIcon(wndMain.GetTrayIcon());
-
-    wndMain.ShowWindow(nCmdShow);
-
-    int nRet = theLoop.Run();
-
-    _Module.RemoveMessageLoop();
-    return nRet;
-}
 
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
@@ -60,37 +37,16 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
     AtlAxWinInit();
 
-    std::tstring args( lpCmdLine );
-
-    // Check to see if logging should be enabled
-    if (args.find(_T("-log")) != std::tstring::npos) {
-        Logger::instance()->init(_T("ItemAssistant.log"));
-    }
-    else {
-        Logger::instance()->init();
+    if (!App::Instance()->init( lpCmdLine )) {
+        return 0;
     }
 
-    std::tstring dbfile;
-    std::tstring::size_type argPos = args.find(_T("-db"));
-    if (argPos != std::tstring::npos)
-    {
-        dbfile = args.substr(argPos+4, args.find_first_of(_T(" "), argPos+4)-argPos-4);
-    }
+    int nRet = App::Instance()->run(lpCmdLine, nCmdShow);
 
-    int nRet = -1;
-    if (g_DBManager.Init(dbfile))
-    {
-        nRet = Run(lpCmdLine, nCmdShow);
+    App::Instance()->destroy();
 
-        g_DBManager.Lock();
-        g_DBManager.Term();
-        g_DBManager.UnLock();
-
-        Logger::instance()->destroy();
-
-        _Module.Term();
-        ::CoUninitialize();
-    }
+    _Module.Term();
+    ::CoUninitialize();
 
     return nRet;
 }
