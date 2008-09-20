@@ -355,7 +355,7 @@ void WatchDirectoryThread::WatchDirectory(LPTSTR lpDir)
         DWORD dwWaitStatus = WaitForMultipleObjects(2, hObjects, FALSE, INFINITE);
 
         if(IsRunning()) {
-            SleepEx(INFINITE, TRUE);
+            SleepEx(1000, TRUE);
         }
     }
 }
