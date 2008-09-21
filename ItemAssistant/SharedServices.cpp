@@ -160,12 +160,12 @@ std::tstring SharedServices::MakeContainerName(unsigned int charid, unsigned int
 
 
 /**
-* Returns all columns from the AO Item database for the specified key value. 
-* The items are returned in a map where the key is the name of the property,
-* and the value is the string representation of the property value.
-* The following properties are currently available:
-*    aoid, ql, type, fromaoid, name
-*/
+ * Returns all columns from the AO Item database for the specified key value. 
+ * The items are returned in a map where the key is the name of the property,
+ * and the value is the string representation of the property value.
+ * The following properties are currently available:
+ *    aoid, ql, type, fromaoid, name, description, flags, properties and icon ID.
+ */
 std::map<std::tstring, std::tstring> SharedServices::GetAOItemInfo(unsigned int lowkey) const
 {
    std::map<std::tstring, std::tstring> result;

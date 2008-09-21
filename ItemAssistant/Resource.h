@@ -72,6 +72,8 @@
 #define IDC_DESCRIPTION3                1035
 #define IDC_PROGRESS1                   1036
 #define IDC_PROGRESS2                   1037
+#define IDC_QLMIN                       1038
+#define IDC_QLMAX                       1039
 #define ATL_IDC_TAB_CONTROL             0x3020
 #define ID_APPLY_NOW                    0x3021
 #define ID_WIZBACK                      0x3023
@@ -207,7 +209,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        150
 #define _APS_NEXT_COMMAND_VALUE         32820
-#define _APS_NEXT_CONTROL_VALUE         1038
+#define _APS_NEXT_CONTROL_VALUE         1040
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

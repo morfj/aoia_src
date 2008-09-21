@@ -175,8 +175,17 @@ LRESULT InventoryView::OnItemContextMenu(LPNMHDR lParam)
 
 LRESULT InventoryView::OnSellItemAoMarket(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled)
 {
+    int activeItemIdx = m_listview.GetHotItem();
+    if (activeItemIdx < 0 && m_listview.GetSelectedCount() == 1) {
+        activeItemIdx = m_listview.GetSelectedIndex();
+    }
+
+    if (activeItemIdx < 0) {
+        return 0;
+    }
+
     std::tstring url = _T("http://www.aomarket.com/bots/additem?id=%lowid%&ql=%ql%");
-    DWORD_PTR data = m_listview.GetItemData(m_listview.GetSelectedIndex());
+    DWORD_PTR data = m_listview.GetItemData(activeItemIdx);
 
     g_DBManager.Lock();
     OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo((int)data);
@@ -347,7 +356,7 @@ LRESULT InventoryView::OnCreate(LPCREATESTRUCT createStruct)
     m_treeview.Create(m_splitter.m_hWnd, rcDefault, NULL, style | TVS_SHOWSELALWAYS | TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_EDITLABELS, WS_EX_CLIENTEDGE);
     m_treeview.SetDlgCtrlID(IDW_TREEVIEW);
 
-    m_listview.Create(m_splitter.m_hWnd, rcDefault, NULL, style | LVS_REPORT | LVS_SINGLESEL, WS_EX_CLIENTEDGE);
+    m_listview.Create(m_splitter.m_hWnd, rcDefault, NULL, style | LVS_REPORT /*| LVS_SINGLESEL*/, WS_EX_CLIENTEDGE);
     m_listview.SetDlgCtrlID(IDW_LISTVIEW);
 
     //m_treeview.SetUnicodeFormat();
@@ -818,6 +827,16 @@ void InfoView::SetCurrentItem(unsigned int item)
 
 
 
+
+FindView::FindView()
+    : m_lastQueryChar(-1)
+    , m_lastQueryQlMin(-1)
+    , m_lastQueryQlMax(-1)
+    , m_pParent(NULL)
+{
+}
+
+
 void FindView::SetParent(InventoryView* parent)
 {
     m_pParent = parent;
@@ -924,6 +943,8 @@ void FindView::UpdateFindQuery()
 
     CComboBox cb = GetDlgItem(IDC_CHARCOMBO);
     CEdit eb = GetDlgItem(IDC_ITEMTEXT);
+    CEdit qlmin = GetDlgItem(IDC_QLMIN);
+    CEdit qlmax = GetDlgItem(IDC_QLMAX);
 
     unsigned int charid = 0;
     int item = -1;
@@ -937,16 +958,47 @@ void FindView::UpdateFindQuery()
     eb.GetWindowText(buffer, MAX_PATH);
     std::tstring text(buffer);
 
-    if ((text.size() > 2) && ((m_lastQueryText != text) || (m_lastQueryChar != charid)))
+    int minql = -1;
+    ZeroMemory(buffer, MAX_PATH);
+    qlmin.GetWindowText(buffer, MAX_PATH);
+    std::tstring qlminText(buffer);
+    try {
+        minql = boost::lexical_cast<int>(qlminText);
+    }
+    catch(boost::bad_lexical_cast &/*e*/) {
+        // Go with the default value
+    }
+
+    int maxql = -1;
+    ZeroMemory(buffer, MAX_PATH);
+    qlmax.GetWindowText(buffer, MAX_PATH);
+    std::tstring qlmaxText(buffer);
+    try {
+        maxql = boost::lexical_cast<int>(qlmaxText);
+    }
+    catch(boost::bad_lexical_cast &/*e*/) {
+        // Go with the default value
+    }
+
+    if ( text.size() > 2
+        && ( m_lastQueryText != text || m_lastQueryChar != charid || m_lastQueryQlMin != minql || m_lastQueryQlMax != maxql ) )
     {
         m_lastQueryText = text;
         m_lastQueryChar = charid;
+        m_lastQueryQlMin = minql;
+        m_lastQueryQlMax = maxql;
         std::tstringstream sql;
 
-        if (charid > 0)
-        {
+        if (charid > 0) {
             sql << _T("owner = ") << charid << _T(" AND ");
         }
+        if (minql > -1) {
+            sql << _T("titems.ql >= ") << minql << _T(" AND ");
+        }
+        if (maxql > -1) {
+            sql << _T("titems.ql <= ") << maxql << _T(" AND ");
+        }
+
         sql << _T("keylow IN (SELECT aoid FROM aodb.tblAO WHERE name LIKE \"%") << text << _T("%\")");
 
         m_pParent->UpdateListView(sql.str());

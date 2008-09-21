@@ -55,7 +55,7 @@ class FindView
 public:
     enum { IDD = IDD_INV_FIND };
 
-    FindView() : m_lastQueryChar(-1), /*m_editctrl(this, 1), m_charcombo(this, 2),*/ m_pParent(NULL) { }
+    FindView();
 
     void SetParent(InventoryView* parent);
     BOOL PreTranslateMsg(MSG* pMsg);
@@ -65,6 +65,8 @@ public:
         MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
         MESSAGE_HANDLER(WM_FORWARDMSG, OnForwardMsg)
         COMMAND_HANDLER(IDC_ITEMTEXT, EN_CHANGE, OnEnChangeItemtext)
+        COMMAND_HANDLER(IDC_QLMIN, EN_CHANGE, OnEnChangeItemtext)
+        COMMAND_HANDLER(IDC_QLMAX, EN_CHANGE, OnEnChangeItemtext)
         COMMAND_HANDLER(IDC_CHARCOMBO, CBN_SELCHANGE, OnCbnSelChangeCharcombo)
         COMMAND_HANDLER(IDC_CHARCOMBO, CBN_SETFOCUS, OnCbnBuildCharcombo)
         CHAIN_MSG_MAP(CDialogResize<FindView>)
@@ -91,8 +93,8 @@ private:
     InventoryView* m_pParent;
     std::tstring m_lastQueryText;
     int m_lastQueryChar;
-    //CContainedWindow m_editctrl;
-    //CContainedWindow m_charcombo;
+    int m_lastQueryQlMin;
+    int m_lastQueryQlMax;
 };
 
 
