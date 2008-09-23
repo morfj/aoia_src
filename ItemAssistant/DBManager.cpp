@@ -309,6 +309,13 @@ bool DBManager::SyncLocalItemsDB(std::tstring const& localfile, std::tstring con
         Logger::instance()->log(STREAM2STR(_T("Error creating item database. ") << e.what()));
         return false;
     }
+    catch (AODatabaseParser::CTreeDbException &e) {
+        assert(false);
+        Logger::instance()->log(STREAM2STR(_T("Error parsing the AO Database. ") << e.what()));
+        MessageBox( NULL, _T("Unable to parse the AO database.\n\rPlease make sure Anarchy Online is not running and try again."),
+            _T("Error - AO Item Assistant"), MB_OK | MB_ICONERROR);
+        return false;
+    }
     catch (std::exception &e) {
         assert(false);
         Logger::instance()->log(STREAM2STR(_T("Error creating item database. ") << e.what()));

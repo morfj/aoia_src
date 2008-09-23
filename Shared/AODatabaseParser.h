@@ -14,6 +14,10 @@ struct iseg;
 class AODatabaseParser
 {
 public:
+    struct CTreeDbException : public std::exception {
+        CTreeDbException(std::string const& what) : std::exception(what.c_str()) {}
+    };
+
     AODatabaseParser(std::string const& aodbfile);
     ~AODatabaseParser();
 

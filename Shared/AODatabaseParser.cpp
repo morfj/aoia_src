@@ -81,14 +81,20 @@ AODatabaseParser::AODatabaseParser(std::string const& aodbfile)
 
 AODatabaseParser::~AODatabaseParser()
 {
-    CloseIFile(m_aodbFile.get());
-    CloseISAM();
-    CTreeStd_UnlinkDll();
+    if (m_isOk) {
+        CloseIFile(m_aodbFile.get());
+        CloseISAM();
+        CTreeStd_UnlinkDll();
+    }
 }
 
 
 unsigned int AODatabaseParser::GetItemCount(ResourceType type)
 {
+    if (!m_isOk) {
+        throw CTreeDbException("AODatabaseParser was not initialize properly.");
+    }
+
     long startKey[2] = { _byteswap_ulong(type), 0 };
     long endKey[2] = { _byteswap_ulong(type + 1), 0 };
 
@@ -100,6 +106,10 @@ unsigned int AODatabaseParser::GetItemCount(ResourceType type)
 
 shared_ptr<ao_item> AODatabaseParser::GetFirstItem(ResourceType type)
 {
+    if (!m_isOk) {
+        throw CTreeDbException("AODatabaseParser was not initialize properly.");
+    }
+
     m_currentResourceType = type;
 
     shared_ptr<ao_item> retval;
@@ -129,6 +139,10 @@ shared_ptr<ao_item> AODatabaseParser::GetFirstItem(ResourceType type)
 
 shared_ptr<ao_item> AODatabaseParser::GetNextItem()
 {
+    if (!m_isOk) {
+        throw CTreeDbException("AODatabaseParser was not initialize properly.");
+    }
+
     shared_ptr<ao_item> retval;
 
     if (!m_isOk) {
@@ -263,6 +277,7 @@ static std::map<unsigned short, unsigned char> s_effectkeys = map_list_of
     (0xec,   1) // ??: PlayfieldNano-Self <AOID>
     (0xed,   1) // ??: SolveQuest-Self <quest-id>
     (0xee,   2) // ??: KnockBack-Self <unknown, unknown> / KnockBack-Target?
+    (0xef,   0) // 17.10.0: ??
     ;
 
 AOItemParser::AOItemParser(char* pBuffer, unsigned int bufSize)
