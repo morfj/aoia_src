@@ -141,6 +141,7 @@ public:
         COMMAND_ID_HANDLER(ID_VIEW_ITEMSTATS_JAYDEE, OnShowItemRef)
         NOTIFY_CODE_HANDLER_EX(LVN_COLUMNCLICK, OnColumnClick)
         NOTIFY_CODE_HANDLER_EX(LVN_ITEMACTIVATE, OnItemActivate)
+        NOTIFY_CODE_HANDLER_EX(LVN_ITEMCHANGED, OnItemChanged)
         NOTIFY_HANDLER_EX(IDW_LISTVIEW, NM_RCLICK, OnItemContextMenu)
         CHAIN_MSG_MAP(inherited)
         REFLECT_NOTIFICATIONS()
@@ -158,6 +159,7 @@ public:
     LRESULT OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnColumnClick(LPNMHDR lParam);
     LRESULT OnItemActivate(LPNMHDR lParam);
+    LRESULT OnItemChanged(LPNMHDR lParam);
     LRESULT OnItemContextMenu(LPNMHDR lParam);
     LRESULT OnSellItemAoMarket(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
     LRESULT OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
@@ -168,6 +170,7 @@ public:
 
     void HideFindWindow();
     void UpdateListView(std::tstring const& where);
+    void OnSelectionChanged();
 
 protected:
     //void AddItemToView(Native::DbKey const& key, Native::DbItem const& item);

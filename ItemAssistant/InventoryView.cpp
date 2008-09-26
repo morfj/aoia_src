@@ -155,6 +155,18 @@ LRESULT InventoryView::OnItemActivate(LPNMHDR lParam)
 }
 
 
+LRESULT InventoryView::OnItemChanged(LPNMHDR lParam)
+{
+    LPNMLISTVIEW pnmv = (LPNMLISTVIEW)lParam; 
+
+    if (pnmv->uChanged & LVIF_STATE) {
+        OnSelectionChanged();
+    }
+
+    return 0;
+}
+
+
 LRESULT InventoryView::OnItemContextMenu(LPNMHDR lParam)
 {
     LPNMITEMACTIVATE param = (LPNMITEMACTIVATE)lParam;
@@ -166,6 +178,9 @@ LRESULT InventoryView::OnItemContextMenu(LPNMHDR lParam)
 
         WTL::CMenu menu;
         menu.LoadMenu(IDR_ITEM_POPUP);
+        if (m_listview.GetSelectedCount() != 1) {
+            menu.EnableMenuItem(ID_SELL_ITEM_AOMARKET, MF_BYCOMMAND | MF_DISABLED);
+        }
         WTL::CMenuHandle popup = menu.GetSubMenu(0);
         int cmd = popup.TrackPopupMenu(TPM_LEFTALIGN | TPM_TOPALIGN, pos.x, pos.y, m_hWnd);
     }
@@ -175,17 +190,13 @@ LRESULT InventoryView::OnItemContextMenu(LPNMHDR lParam)
 
 LRESULT InventoryView::OnSellItemAoMarket(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled)
 {
-    int activeItemIdx = m_listview.GetHotItem();
-    if (activeItemIdx < 0 && m_listview.GetSelectedCount() == 1) {
-        activeItemIdx = m_listview.GetSelectedIndex();
-    }
-
-    if (activeItemIdx < 0) {
+    if (m_listview.GetSelectedCount() != 1) {
         return 0;
     }
+    int activeItemIdx = m_listview.GetSelectionMark();
+    DWORD_PTR data = m_listview.GetItemData(activeItemIdx);
 
     std::tstring url = _T("http://www.aomarket.com/bots/additem?id=%lowid%&ql=%ql%");
-    DWORD_PTR data = m_listview.GetItemData(activeItemIdx);
 
     g_DBManager.Lock();
     OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo((int)data);
@@ -202,7 +213,11 @@ LRESULT InventoryView::OnSellItemAoMarket(WORD FromAccelerator, WORD CommandId, 
 
 LRESULT InventoryView::OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled)
 {
-    DWORD_PTR data = m_listview.GetItemData(m_listview.GetSelectedIndex());
+    if (m_listview.GetSelectedCount() != 1) {
+        return 0;
+    }
+    int activeItemIdx = m_listview.GetSelectionMark();
+    DWORD_PTR data = m_listview.GetItemData(activeItemIdx);
 
     g_DBManager.Lock();
     OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo((int)data);
@@ -286,7 +301,11 @@ LRESULT InventoryView::OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND 
 
 LRESULT InventoryView::OnShowItemRef(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled)
 {
-    DWORD_PTR data = m_listview.GetItemData(m_listview.GetSelectedIndex());
+    if (m_listview.GetSelectedCount() != 1) {
+        return 0;
+    }
+    int activeItemIdx = m_listview.GetSelectionMark();
+    DWORD_PTR data = m_listview.GetItemData(activeItemIdx);
 
     g_DBManager.Lock();
     OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo((int)data);
@@ -356,7 +375,7 @@ LRESULT InventoryView::OnCreate(LPCREATESTRUCT createStruct)
     m_treeview.Create(m_splitter.m_hWnd, rcDefault, NULL, style | TVS_SHOWSELALWAYS | TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_EDITLABELS, WS_EX_CLIENTEDGE);
     m_treeview.SetDlgCtrlID(IDW_TREEVIEW);
 
-    m_listview.Create(m_splitter.m_hWnd, rcDefault, NULL, style | LVS_REPORT /*| LVS_SINGLESEL*/, WS_EX_CLIENTEDGE);
+    m_listview.Create(m_splitter.m_hWnd, rcDefault, NULL, style | LVS_REPORT /*| LVS_SINGLESEL*/ | LVS_SHOWSELALWAYS, WS_EX_CLIENTEDGE);
     m_listview.SetDlgCtrlID(IDW_LISTVIEW);
 
     //m_treeview.SetUnicodeFormat();
@@ -368,7 +387,7 @@ LRESULT InventoryView::OnCreate(LPCREATESTRUCT createStruct)
 
     m_accelerators.LoadAccelerators(IDR_INV_ACCEL);
 
-    TBBUTTON buttons[4];
+    TBBUTTON buttons[5];
     buttons[0].iBitmap = 0;
     buttons[0].idCommand = ID_INV_FIND_TOGGLE;
     buttons[0].fsState = TBSTATE_ENABLED;
@@ -387,12 +406,18 @@ LRESULT InventoryView::OnCreate(LPCREATESTRUCT createStruct)
     buttons[2].fsStyle = BTNS_SEP;
     buttons[2].dwData = NULL;
     buttons[2].iString = NULL;
-    buttons[3].iBitmap = 2;
-    buttons[3].idCommand = ID_HELP;
-    buttons[3].fsState = TBSTATE_ENABLED;
+    buttons[3].iBitmap = 3;
+    buttons[3].idCommand = ID_SELL_ITEM_AOMARKET;
+    buttons[3].fsState = 0;
     buttons[3].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_AUTOSIZE;
     buttons[3].dwData = NULL;
-    buttons[3].iString = (INT_PTR)_T("Help");
+    buttons[3].iString = (INT_PTR)_T("Sell Item");
+    buttons[4].iBitmap = 2;
+    buttons[4].idCommand = ID_HELP;
+    buttons[4].fsState = TBSTATE_ENABLED;
+    buttons[4].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_AUTOSIZE;
+    buttons[4].dwData = NULL;
+    buttons[4].iString = (INT_PTR)_T("Help");
 
     CImageList imageList;
     imageList.CreateFromImage(IDB_INVENTORY_VIEW, 16, 2, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
@@ -698,6 +723,20 @@ void InventoryView::UpdateListView(std::tstring const& where)
     }
 
     m_listview.SortItemsEx(CompareStr, (LPARAM)this);
+
+    OnSelectionChanged();
+}
+
+
+void InventoryView::OnSelectionChanged()
+{
+    int count = m_listview.GetSelectedCount();
+    if (count == 1) {
+        m_toolbar.EnableButton(ID_SELL_ITEM_AOMARKET, TRUE);
+    }
+    else {
+        m_toolbar.EnableButton(ID_SELL_ITEM_AOMARKET, FALSE);
+    }
 }
 
 
