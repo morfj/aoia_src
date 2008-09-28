@@ -23,6 +23,7 @@
 #define IDD_INV_FIND                    132
 #define IDS_JAYDEE_ITEMREF_URL          132
 #define IDR_INV_ACCEL                   133
+#define IDS_AO_ITEMREF_URL              133
 #define IDD_PATTERN_MATCHER             134
 #define IDR_PB_ACCEL                    135
 #define IDD_ITEM_INFO                   136

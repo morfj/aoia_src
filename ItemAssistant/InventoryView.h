@@ -173,6 +173,21 @@ public:
     void OnSelectionChanged();
 
 protected:
+    enum ItemServer {
+        SERVER_AUNO = 1,
+        SERVER_JAYDEE,
+        SERVER_AO,
+    };
+
+    enum ExportFormat {
+        FORMAT_HTML = 1,
+        FORMAT_VBB,
+        FORMAT_AO,
+        FORMAT_CSV,
+    };
+
+    std::tstring GetServerItemURLTemplate( ItemServer server );
+
     //void AddItemToView(Native::DbKey const& key, Native::DbItem const& item);
     void AddToTreeView(unsigned int charId, unsigned int contId);
     void CleanupDB(unsigned int charid);

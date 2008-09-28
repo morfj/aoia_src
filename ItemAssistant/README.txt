@@ -13,17 +13,21 @@ have contributed either directly or indirectly include:
     * kennethx1     - Moral support and code.
     * auno          - aoppa source was a big help.
     * morb, gnarf   - clicksaver rocks and showed me the technique that made it all possible.
+    * Everyone else that has provided feedback and done testing.
 
 Change Log:
 ===========
-Version ?.?.?                                       Release Date: ??/??/????
-	* Now works on both WindowsXP as well as Vista (32 and 64 bit) without the
+Version 0.9.0                                       Release Date: ??/??/????
+    * Now works on both WindowsXP as well as Vista (32 and 64 bit) without the
       need to be launched in compatibility mode.
 	* Added "-log" commandline option.
     * Playershop monitor added.
     * The application will now parse the original AO database to create its 
       own item database.
     * GUI cleanup.
+    * Some context menu commands now work with multiple selection of items.
+    * Copying item references to AO script format now also writes the result to a
+      script called aoia to the scripts folder of Anarchy Online.
 
 Version 0.8.4                                       Release Date: 31/03/2008
     * Updated DB scheme to fix issue with 32 bit unsigned character IDs.
