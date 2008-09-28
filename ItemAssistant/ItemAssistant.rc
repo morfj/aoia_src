@@ -271,7 +271,7 @@ FONT 10, "Verdana", 400, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,195,6,30,11,WS_GROUP
     LTEXT           "Anarchy Online Item Assistant (AO:IA)",IDC_STATIC,30,18,129,8
-    LTEXT           "Internal Version",IDC_VERSION,172,60,53,8
+    RTEXT           "Internal Version",IDC_VERSION,144,60,81,8
     LTEXT           "Homepage:  http://ia.frellu.net",IDC_STATIC,42,36,104,8
 END
 

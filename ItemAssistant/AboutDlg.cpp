@@ -10,17 +10,17 @@
 
 LRESULT CAboutDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
-	CenterWindow(GetParent());
+    CenterWindow(GetParent());
 
-   ATL::CWindow versionCtrl(GetDlgItem(IDC_VERSION));
-   versionCtrl.SetWindowText(STREAM2STR("Version " << g_versionNumber).c_str());
+    ATL::CWindow versionCtrl(GetDlgItem(IDC_VERSION));
+    versionCtrl.SetWindowText(STREAM2STR("Version " << g_versionNumber).c_str());
 
-	return TRUE;
+    return TRUE;
 }
 
 
 LRESULT CAboutDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	EndDialog(wID);
-	return 0;
+    EndDialog(wID);
+    return 0;
 }
