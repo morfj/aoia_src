@@ -12,7 +12,8 @@ This application is in no way only due to my own efforts. Some people who
 have contributed either directly or indirectly include:
     * kennethx1     - Moral support and code.
     * auno          - aoppa source was a big help.
-    * morb, gnarf   - clicksaver rocks and showed me the technique that made it all possible.
+    * morb, gnarf   - clicksaver rocks and showed me the technique that made 
+                      it all possible.
     * Everyone else that has provided feedback and done testing.
 
 Change Log:
@@ -26,8 +27,8 @@ Version 0.9.0                                       Release Date: ??/??/????
       own item database.
     * GUI cleanup.
     * Some context menu commands now work with multiple selection of items.
-    * Copying item references to AO script format now also writes the result to a
-      script called aoia to the scripts folder of Anarchy Online.
+    * Copying item references to AO script format now also writes the result
+      to a script called 'aoia' to the scripts folder of Anarchy Online.
 
 Version 0.8.4                                       Release Date: 31/03/2008
     * Updated DB scheme to fix issue with 32 bit unsigned character IDs.

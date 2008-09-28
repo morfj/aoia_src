@@ -33,13 +33,11 @@
 #define IDR_TRAY_POPUP                  143
 #define IDR_ITEM_POPUP                  144
 #define IDD_DUAL_PROGRESS               145
-#define IDB_BITMAP1                     146
 #define IDB_INVENTORY_VIEW              146
-#define IDB_BITMAP2                     147
 #define IDB_AOMESSAGE_VIEW              147
 #define IDB_PATTERNMATCH_VIEW           148
-#define IDB_BITMAP3                     149
 #define IDB_PLAYERSHOP_VIEW             149
+#define IDR_ITEM_POPUP_MULTISEL         150
 #define IDC_EDIT2                       1001
 #define IDC_LIST1                       1002
 #define IDC_EDIT1                       1003
@@ -208,7 +206,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        150
+#define _APS_NEXT_RESOURCE_VALUE        151
 #define _APS_NEXT_COMMAND_VALUE         32820
 #define _APS_NEXT_CONTROL_VALUE         1040
 #define _APS_NEXT_SYMED_VALUE           110

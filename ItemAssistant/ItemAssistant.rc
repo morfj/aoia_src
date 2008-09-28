@@ -72,6 +72,30 @@ IDB_INVENTORY_VIEW      BITMAP                  "res\\InventoryView.bmp"
 IDB_AOMESSAGE_VIEW      BITMAP                  "res\\AOMessageView.bmp"
 IDB_PATTERNMATCH_VIEW   BITMAP                  "res\\PatternMatcher.bmp"
 IDB_PLAYERSHOP_VIEW     BITMAP                  "res\\PlayerShopMonitor.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_ITEM_POPUP_MULTISEL MENU 
+BEGIN
+    POPUP "Item Context Menu"
+    BEGIN
+        POPUP "Copy Items HTML Links"
+        BEGIN
+            MENUITEM "Auno",                        ID_COPY_AUNO_ITEMREF
+            MENUITEM "AO Mainframe",                ID_COPY_JAYDEE_ITEMREF
+        END
+        POPUP "Copy Items VBB Links"
+        BEGIN
+            MENUITEM "Auno",                        ID_COPY_AUNO_ITEMREF_VBB
+            MENUITEM "AO Mainframe",                ID_COPY_JAYDEE_ITEMREF_VBB
+        END
+        MENUITEM "Copy Items to AO Script",     ID_COPY_AO_ITEMREF
+    END
+END
+
 #endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -160,7 +184,7 @@ BEGIN
             MENUITEM "AO Mainframe",                ID_VIEW_ITEMSTATS_JAYDEE
         END
         MENUITEM SEPARATOR
-        POPUP "Copy Item HTLM Link"
+        POPUP "Copy Item HTML Link"
         BEGIN
             MENUITEM "Auno",                        ID_COPY_AUNO_ITEMREF
             MENUITEM "AO Mainframe",                ID_COPY_JAYDEE_ITEMREF

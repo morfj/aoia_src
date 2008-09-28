@@ -177,11 +177,11 @@ LRESULT InventoryView::OnItemContextMenu(LPNMHDR lParam)
         GetCursorPos(&pos);
 
         WTL::CMenu menu;
-        menu.LoadMenu(IDR_ITEM_POPUP);
-        if (m_listview.GetSelectedCount() != 1) {
-            menu.EnableMenuItem(ID_SELL_ITEM_AOMARKET, MF_BYCOMMAND | MF_DISABLED);
-            menu.EnableMenuItem(ID_VIEW_ITEMSTATS_AUNO, MF_BYCOMMAND | MF_DISABLED);
-            menu.EnableMenuItem(ID_VIEW_ITEMSTATS_JAYDEE, MF_BYCOMMAND | MF_DISABLED);
+        if (m_listview.GetSelectedCount() > 1) {
+            menu.LoadMenu(IDR_ITEM_POPUP_MULTISEL);
+        }
+        else {
+            menu.LoadMenu(IDR_ITEM_POPUP);
         }
         WTL::CMenuHandle popup = menu.GetSubMenu(0);
         int cmd = popup.TrackPopupMenu(TPM_LEFTALIGN | TPM_TOPALIGN, pos.x, pos.y, m_hWnd);
