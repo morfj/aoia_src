@@ -140,21 +140,6 @@ LRESULT InventoryView::OnColumnClick(LPNMHDR lParam)
 }
 
 
-LRESULT InventoryView::OnItemActivate(LPNMHDR lParam)
-{
-    LPNMITEMACTIVATE param = (LPNMITEMACTIVATE)lParam;
-
-    int sel = param->iItem;
-    if (sel >= 0)
-    {
-        DWORD_PTR data = m_listview.GetItemData(sel);
-        m_infoview.SetCurrentItem( (unsigned int) data );
-    }
-
-    return 0;
-}
-
-
 LRESULT InventoryView::OnItemChanged(LPNMHDR lParam)
 {
     LPNMLISTVIEW pnmv = (LPNMLISTVIEW)lParam; 
@@ -806,9 +791,12 @@ void InventoryView::OnSelectionChanged()
     int count = m_listview.GetSelectedCount();
     if (count == 1) {
         m_toolbar.EnableButton(ID_SELL_ITEM_AOMARKET, TRUE);
+        DWORD_PTR data = m_listview.GetItemData(m_listview.GetNextItem(-1, LVNI_SELECTED));
+        m_infoview.SetCurrentItem((unsigned int)data);
     }
     else {
         m_toolbar.EnableButton(ID_SELL_ITEM_AOMARKET, FALSE);
+        m_infoview.SetCurrentItem(0);
     }
 }
 
@@ -914,6 +902,40 @@ LRESULT InfoView::OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, 
 {
     LPMSG pMsg = (LPMSG)lParam;
     return this->PreTranslateMsg(pMsg);
+}
+
+
+LRESULT InfoView::OnButtonClicked(WORD commandID, WORD buttonID, HWND hButton, BOOL &bHandled)
+{
+    if (m_currentItem == 0) {
+        return 0;
+    }
+
+    InventoryView::ItemServer server;
+    switch (buttonID) {
+        case IDC_JAYDEE:
+            server = InventoryView::SERVER_JAYDEE;
+            break;
+        case IDC_AUNO:
+            server = InventoryView::SERVER_AUNO;
+            break;
+        default:
+            assert(false);  // Wrong button ID?
+            return 0;
+    }
+    std::tstring url = InventoryView::GetServerItemURLTemplate(server);
+
+    g_DBManager.Lock();
+    OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo(m_currentItem);
+    g_DBManager.UnLock();
+
+    boost::replace_all(url, _T("%lowid%"), pItemInfo->itemloid);
+    boost::replace_all(url, _T("%hiid%"), pItemInfo->itemhiid);
+    boost::replace_all(url, _T("%ql%"), pItemInfo->itemql);
+
+    ShellExecute(NULL, _T("open"), url.c_str(), NULL, NULL, SW_SHOWDEFAULT);
+
+    return 0;
 }
 
 

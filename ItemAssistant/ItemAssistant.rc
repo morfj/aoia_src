@@ -118,36 +118,6 @@ IDR_MAINFRAME           BITMAP                  "res\\mainfram.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// HTML
-//
-
-IDR_HTML1               HTML                    "res\\html1.htm"
-IDR_HTML2               HTML                    "res\\html2.htm"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Toolbar
-//
-
-IDR_MAINFRAME TOOLBAR  16, 16
-BEGIN
-    BUTTON      ID_FILE_NEW
-    BUTTON      ID_FILE_OPEN
-    BUTTON      ID_FILE_SAVE
-    SEPARATOR
-    BUTTON      ID_EDIT_CUT
-    BUTTON      ID_EDIT_COPY
-    BUTTON      ID_EDIT_PASTE
-    SEPARATOR
-    BUTTON      ID_FILE_PRINT
-    BUTTON      ID_APP_ABOUT
-    SEPARATOR
-    BUTTON      ID_EDIT_CLEAR
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // Menu
 //
 
@@ -209,6 +179,36 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Exit",                        ID_APP_EXIT
     END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// HTML
+//
+
+IDR_HTML1               HTML                    "res\\html1.htm"
+IDR_HTML2               HTML                    "res\\html2.htm"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_MAINFRAME TOOLBAR  16, 16
+BEGIN
+    BUTTON      ID_FILE_NEW
+    BUTTON      ID_FILE_OPEN
+    BUTTON      ID_FILE_SAVE
+    SEPARATOR
+    BUTTON      ID_EDIT_CUT
+    BUTTON      ID_EDIT_COPY
+    BUTTON      ID_EDIT_PASTE
+    SEPARATOR
+    BUTTON      ID_FILE_PRINT
+    BUTTON      ID_APP_ABOUT
+    SEPARATOR
+    BUTTON      ID_EDIT_CLEAR
 END
 
 
@@ -334,8 +334,9 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_LISTVIEW,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_DISABLED | WS_TABSTOP,7,18,159,24,WS_EX_CLIENTEDGE
     LTEXT           "Item Information",IDC_STATIC,7,7,55,8
-    PUSHBUTTON      "AODB.info",IDC_AODB,116,47,50,14
-    PUSHBUTTON      "AUNO.org",IDC_AUNO,63,47,50,14
+    PUSHBUTTON      "AOMainFrame",IDC_JAYDEE,116,47,50,14
+    PUSHBUTTON      "AUNO",IDC_AUNO,63,47,50,14
+    LTEXT           "Show Item Stats:",IDC_BUTTON_LABEL,8,50,56,8
 END
 
 IDD_DUAL_PROGRESS DIALOGEX 0, 0, 318, 105

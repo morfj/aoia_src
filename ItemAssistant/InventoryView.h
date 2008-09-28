@@ -27,20 +27,24 @@ public:
     BEGIN_MSG_MAP(InfoView)
         MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
         MESSAGE_HANDLER(WM_FORWARDMSG, OnForwardMsg)
+        COMMAND_CODE_HANDLER(BN_CLICKED, OnButtonClicked)
         CHAIN_MSG_MAP(CDialogResize<InfoView>)
         DEFAULT_REFLECTION_HANDLER()
     END_MSG_MAP()
 
     BEGIN_DLGRESIZE_MAP(InfoView)
         DLGRESIZE_CONTROL(IDC_LISTVIEW, DLSZ_SIZE_X | DLSZ_SIZE_Y)
+        DLGRESIZE_CONTROL(IDC_BUTTON_LABEL, DLSZ_MOVE_Y)
         DLGRESIZE_CONTROL(IDC_AUNO, DLSZ_MOVE_X | DLSZ_MOVE_Y)
         DLGRESIZE_CONTROL(IDC_AODB, DLSZ_MOVE_X | DLSZ_MOVE_Y)
     END_DLGRESIZE_MAP()
 
+    void SetCurrentItem(unsigned int item);
+
+protected:
     LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
     LRESULT OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-
-    void SetCurrentItem(unsigned int item);
+    LRESULT OnButtonClicked(WORD commandID, WORD buttonID, HWND hButton, BOOL &bHandled);
 
 private:
     InventoryView* m_pParent;
@@ -140,7 +144,7 @@ public:
         COMMAND_ID_HANDLER(ID_VIEW_ITEMSTATS_AUNO, OnShowItemRef)
         COMMAND_ID_HANDLER(ID_VIEW_ITEMSTATS_JAYDEE, OnShowItemRef)
         NOTIFY_CODE_HANDLER_EX(LVN_COLUMNCLICK, OnColumnClick)
-        NOTIFY_CODE_HANDLER_EX(LVN_ITEMACTIVATE, OnItemActivate)
+        //NOTIFY_CODE_HANDLER_EX(LVN_ITEMACTIVATE, OnItemActivate)
         NOTIFY_CODE_HANDLER_EX(LVN_ITEMCHANGED, OnItemChanged)
         NOTIFY_HANDLER_EX(IDW_LISTVIEW, NM_RCLICK, OnItemContextMenu)
         CHAIN_MSG_MAP(inherited)
@@ -151,14 +155,12 @@ public:
     LRESULT OnCreate(LPCREATESTRUCT createStruct);
     LRESULT OnSize(UINT wParam, CSize newSize);
     LRESULT OnPostCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-    //LRESULT OnNotify(int wParam, LPNMHDR lParam);
     LRESULT OnFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnFindToggle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnFindHide(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnInfo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnColumnClick(LPNMHDR lParam);
-    LRESULT OnItemActivate(LPNMHDR lParam);
     LRESULT OnItemChanged(LPNMHDR lParam);
     LRESULT OnItemContextMenu(LPNMHDR lParam);
     LRESULT OnSellItemAoMarket(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
@@ -172,21 +174,21 @@ public:
     void UpdateListView(std::tstring const& where);
     void OnSelectionChanged();
 
-protected:
     enum ItemServer {
         SERVER_AUNO = 1,
         SERVER_JAYDEE,
         SERVER_AO,
     };
 
+    static std::tstring GetServerItemURLTemplate( ItemServer server );
+
+protected:
     enum ExportFormat {
         FORMAT_HTML = 1,
         FORMAT_VBB,
         FORMAT_AO,
         FORMAT_CSV,
     };
-
-    std::tstring GetServerItemURLTemplate( ItemServer server );
 
     //void AddItemToView(Native::DbKey const& key, Native::DbItem const& item);
     void AddToTreeView(unsigned int charId, unsigned int contId);
