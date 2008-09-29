@@ -4,6 +4,7 @@
 #include <boost/lexical_cast.hpp>
 #include <shared/AODatabaseParser.h>
 #include <shared/AODatabaseWriter.h>
+#include <shared/FileUtils.h>
 #include <sstream>
 #include "ProgressDialog.h"
 
@@ -67,7 +68,7 @@ bool DBManager::Init(std::tstring dbfile)
 
     if (requestFolder)
     {
-        AODir = GetFolder(NULL, _T("Please locate the AO directory:"));
+        AODir = BrowseForFolder(NULL, _T("Please locate the AO directory:"));
         if (AODir.empty()) {
             return false;
         }
@@ -134,34 +135,6 @@ bool DBManager::Init(std::tstring dbfile)
 void DBManager::Term()
 {
     SQLite::Db::Term();
-}
-
-
-std::tstring DBManager::GetFolder(HWND hWndOwner, std::tstring const& title)
-{
-    BROWSEINFO udtBI;
-    ITEMIDLIST *udtIDList;
-
-    /* Initialise */
-    udtBI.hwndOwner = hWndOwner;
-    udtBI.pidlRoot = NULL;
-    udtBI.pszDisplayName = NULL;
-    udtBI.lpszTitle = title.c_str();
-    udtBI.ulFlags = BIF_RETURNONLYFSDIRS;
-    udtBI.lpfn = NULL;
-    udtBI.lParam = NULL;
-    udtBI.iImage = 0;
-
-    /* Prompt user for folder */
-    udtIDList = SHBrowseForFolder(&udtBI);
-
-    /* Extract pathname */
-    TCHAR strPath[MAX_PATH];
-    if (!SHGetPathFromIDList(udtIDList, (TCHAR*)&strPath)) {
-        strPath[0] = 0;	// Zero-length if failure
-    }
-
-    return std::tstring(strPath);
 }
 
 

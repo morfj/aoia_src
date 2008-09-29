@@ -59,6 +59,7 @@
 #define IDC_SQL_EDIT                    1022
 #define IDC_LISTVIEW                    1023
 #define IDC_AUNO                        1024
+#define IDC_AODB                        1025
 #define IDC_JAYDEE                      1025
 #define IDC_IE_PLACEHOLDER              1028
 #define IDC_SHOW_ALL                    1029
@@ -104,6 +105,9 @@
 #define ID_VIEW_ITEMSTATS_AUNO          32816
 #define ID_VIEW_ITEMSTATS_JAYDEE        32817
 #define ID_SELL_ITEM_AOMARKET           32819
+#define ID_ITEMCONTEXTMENU_EXPORTTO     32820
+#define ID_EXPORTTOCSV_AUNO             32821
+#define ID_EXPORTTOCSV_JAYDEE           32823
 #define ATL_IDS_IDLEMESSAGE             0xE001
 #define ID_FILE_NEW                     0xE100
 #define ID_FILE_OPEN                    0xE101
@@ -208,7 +212,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        151
-#define _APS_NEXT_COMMAND_VALUE         32820
+#define _APS_NEXT_COMMAND_VALUE         32824
 #define _APS_NEXT_CONTROL_VALUE         1041
 #define _APS_NEXT_SYMED_VALUE           110
 #endif

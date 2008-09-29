@@ -143,6 +143,8 @@ public:
         COMMAND_ID_HANDLER(ID_COPY_AO_ITEMREF, OnCopyItemRef)
         COMMAND_ID_HANDLER(ID_VIEW_ITEMSTATS_AUNO, OnShowItemRef)
         COMMAND_ID_HANDLER(ID_VIEW_ITEMSTATS_JAYDEE, OnShowItemRef)
+        COMMAND_ID_HANDLER(ID_EXPORTTOCSV_AUNO, OnExportToCSV)
+        COMMAND_ID_HANDLER(ID_EXPORTTOCSV_JAYDEE, OnExportToCSV)
         NOTIFY_CODE_HANDLER_EX(LVN_COLUMNCLICK, OnColumnClick)
         //NOTIFY_CODE_HANDLER_EX(LVN_ITEMACTIVATE, OnItemActivate)
         NOTIFY_CODE_HANDLER_EX(LVN_ITEMCHANGED, OnItemChanged)
@@ -166,6 +168,7 @@ public:
     LRESULT OnSellItemAoMarket(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
     LRESULT OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
     LRESULT OnShowItemRef(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
+    LRESULT OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
 
     virtual void OnAOMessage(AO::Header* pMsg);
     virtual bool PreTranslateMsg(MSG* pMsg);

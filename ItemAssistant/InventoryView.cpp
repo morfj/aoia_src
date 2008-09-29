@@ -6,6 +6,7 @@
 #include <map>
 #include <set>
 #include <shared/AODB.h>
+#include <shared/FileUtils.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <ShellAPI.h>
@@ -392,6 +393,81 @@ LRESULT InventoryView::OnShowItemRef(WORD FromAccelerator, WORD CommandId, HWND 
     }
 
     ShellExecute(NULL, _T("open"), url.c_str(), NULL, NULL, SW_SHOWDEFAULT);
+
+    return 0;
+}
+
+
+LRESULT InventoryView::OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled)
+{
+    // Build the set of selected item indexes.
+    std::set<int> selectedIndexes;
+    if (m_listview.GetSelectedCount() < 1) {
+        return 0;
+    }
+    else if (m_listview.GetSelectedCount() == 1) {
+        selectedIndexes.insert(m_listview.GetNextItem(-1, LVNI_SELECTED));
+    }
+    else {
+        int itemId = m_listview.GetNextItem(-1, LVNI_SELECTED);
+        while (itemId >= 0) {
+            selectedIndexes.insert(itemId);
+            itemId = m_listview.GetNextItem(itemId, LVNI_SELECTED);
+        }
+    }
+
+    ItemServer server = SERVER_AUNO;
+    if (CommandId == ID_EXPORTTOCSV_JAYDEE) {
+        server = SERVER_JAYDEE;
+    }
+
+    std::tstring itemTemplate = _T("%lowid%,%hiid%,%ql%,\"%itemname%\",%itemlocation%,");
+    itemTemplate += GetServerItemURLTemplate(server);
+    std::tstring prefix = _T("LowID,HighID,QL,Name,Location,Link\n");
+    std::tstring separator = _T("\n");
+
+    // Ask user for name of CSV file
+    std::tstring filename = BrowseForOutputFile(GetTopLevelWindow(), _T("Select Name of Output File"), _T("CSV Files (Comma-Separated Values)\0*.csv\0\0"), _T("csv"));
+    if (filename.empty()) {
+        return 0;
+    }
+
+    // Output to the selected CSV file.
+#ifdef UNICODE
+    std::wofstream ofs(filename.c_str());
+#else
+    std::ofstream ofs(filename.c_str());
+#endif  // UNICODE
+
+    if (!ofs.is_open()) {
+        return 0;
+    }
+
+    g_DBManager.Lock();
+    ofs << prefix;
+    for (std::set<int>::iterator it = selectedIndexes.begin(); it != selectedIndexes.end(); ++it)
+    {
+        if (it != selectedIndexes.begin()) {
+            ofs << separator;
+        }
+
+        DWORD_PTR data = m_listview.GetItemData(*it);
+        OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo((unsigned int)data);
+
+        std::tstring itemlocation = pItemInfo->ownername;
+        itemlocation += _T(" -> ");
+        itemlocation += pItemInfo->containername;
+
+        std::tstring itemStr = itemTemplate;
+        boost::replace_all(itemStr, _T("%lowid%"), pItemInfo->itemloid);
+        boost::replace_all(itemStr, _T("%hiid%"), pItemInfo->itemhiid);
+        boost::replace_all(itemStr, _T("%ql%"), pItemInfo->itemql);
+        boost::replace_all(itemStr, _T("%itemname%"), pItemInfo->itemname);
+        boost::replace_all(itemStr, _T("%itemlocation%"), itemlocation);
+
+        ofs << itemStr;
+    }
+    g_DBManager.UnLock();
 
     return 0;
 }

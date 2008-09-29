@@ -92,7 +92,13 @@ BEGIN
             MENUITEM "Auno",                        ID_COPY_AUNO_ITEMREF_VBB
             MENUITEM "AO Mainframe",                ID_COPY_JAYDEE_ITEMREF_VBB
         END
-        MENUITEM "Copy Items to AO Script",     ID_COPY_AO_ITEMREF
+        MENUITEM SEPARATOR
+        MENUITEM "Export Items to AO Script",   ID_COPY_AO_ITEMREF
+        POPUP "Export Items to CSV File"
+        BEGIN
+            MENUITEM "Auno",                        ID_EXPORTTOCSV_AUNO
+            MENUITEM "AO Mainframe",                ID_EXPORTTOCSV_JAYDEE
+        END
     END
 END
 
@@ -164,7 +170,13 @@ BEGIN
             MENUITEM "Auno",                        ID_COPY_AUNO_ITEMREF_VBB
             MENUITEM "AO Mainframe",                ID_COPY_JAYDEE_ITEMREF_VBB
         END
-        MENUITEM "Copy Item to AO Script",      ID_COPY_AO_ITEMREF
+        MENUITEM SEPARATOR
+        MENUITEM "Export Item to AO Script",    ID_COPY_AO_ITEMREF
+        POPUP "Export Item to CSV File"
+        BEGIN
+            MENUITEM "Auno",                        ID_EXPORTTOCSV_AUNO
+            MENUITEM "AO Mainframe",                ID_EXPORTTOCSV_JAYDEE
+        END
         MENUITEM SEPARATOR
         MENUITEM "Sell Item at AO Market",      ID_SELL_ITEM_AOMARKET
     END

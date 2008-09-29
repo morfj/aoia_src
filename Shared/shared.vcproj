@@ -171,6 +171,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FileUtils.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Logger.cpp"
 				>
 			</File>
@@ -230,6 +234,10 @@
 			</File>
 			<File
 				RelativePath=".\ctree.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FileUtils.h"
 				>
 			</File>
 			<File
