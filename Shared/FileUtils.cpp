@@ -32,7 +32,7 @@ std::tstring BrowseForFolder(HWND hWndOwner, std::tstring const& title)
 }
 
 
-std::tstring BrowseForOutputFile(HWND hWndOwner, std::tstring const& title, std::tstring const& filter, std::tstring const& defaultExtension)
+std::tstring BrowseForOutputFile(HWND hWndOwner, std::tstring const& title, TCHAR* filter, std::tstring const& defaultExtension)
 {
     TCHAR strPath[MAX_PATH];
     ZeroMemory(strPath, sizeof(TCHAR) * MAX_PATH);
@@ -42,7 +42,7 @@ std::tstring BrowseForOutputFile(HWND hWndOwner, std::tstring const& title, std:
 
     ofn.lStructSize = sizeof(OPENFILENAME);
     ofn.hwndOwner = hWndOwner;
-    ofn.lpstrFilter = filter.c_str();
+    ofn.lpstrFilter = filter;
     ofn.nFilterIndex = 1;
     ofn.lpstrFile = strPath;
     ofn.nMaxFile = MAX_PATH;
