@@ -31,6 +31,7 @@ public:
         COMMAND_HANDLER(IDC_SHOW_PARTIALS, BN_CLICKED, OnBnClickedShowPartials)
         COMMAND_HANDLER(IDC_COMPLETABLE, BN_CLICKED, OnBnClickedCompletable)
         COMMAND_HANDLER(IDC_CHARCOMBO, CBN_SELCHANGE, OnCbnSelchangeCharcombo)
+        COMMAND_HANDLER(IDC_EXCLUDE_ASSEMBLED, BN_CLICKED, OnExcludeAssembledPatternsClicked)
         DEFAULT_REFLECTION_HANDLER()
     END_MSG_MAP()
 
@@ -44,6 +45,7 @@ protected:
     LRESULT OnBnClickedShowAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnBnClickedShowPartials(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnBnClickedCompletable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+    LRESULT OnExcludeAssembledPatternsClicked(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 private:
     PatternMatchView* m_pParent;
@@ -87,12 +89,14 @@ private:
 class AvailCalcThread : public Thread
 {
 public:
-    AvailCalcThread() : m_index(0), m_term(false), m_toon(0) { }
+    AvailCalcThread() : m_index(0), m_term(false), m_toon(0), m_excludeAssembled(false) { }
     virtual ~AvailCalcThread() { }
 
     void SetOwner(PatternMatchView* owner) { m_pOwner = owner; }
     void SetToon(unsigned int toon = 0) { m_toon = toon; }
     unsigned int Toon() const { return m_toon; }
+    void SetExcludeAssembled(bool newVal) { m_excludeAssembled = newVal; }
+    bool ExcludeAssembled() const { return m_excludeAssembled; }
     void StopPlease() { if (IsRunning()) { m_term = true; } }
 
     virtual DWORD ThreadProc();
@@ -102,6 +106,7 @@ private:
     int m_index;
     unsigned int m_toon;
     bool m_term;
+    bool m_excludeAssembled;
 };
 
 
@@ -126,7 +131,6 @@ public:
         COMMAND_ID_HANDLER(ID_HELP, OnHelp)
         MESSAGE_HANDLER(WM_UPDATE_PBLIST, OnUpdatePbListView)
         NOTIFY_CODE_HANDLER_EX(LVN_COLUMNCLICK, OnColumnClick)
-        NOTIFY_CODE_HANDLER_EX(LVN_ITEMACTIVATE, OnItemActivate)
         NOTIFY_CODE_HANDLER_EX(LVN_ITEMCHANGING, OnItemChanging)
         CHAIN_MSG_MAP(inherited)
         DEFAULT_REFLECTION_HANDLER()
@@ -150,9 +154,9 @@ public:
     PbList& PbListRef() { return m_pblist; }
     Mutex& PbListMutex() { return m_pblistMutex; }
 
-    void SetFilterSettings(unsigned int toonid, float availfilter);
+    void SetFilterSettings(unsigned int toonid, float availfilter, bool excludeAssembled);
 
-    static float CalcPbAvailability(unsigned int pbid, unsigned int toonid = 0);
+    static float CalcPbAvailability(unsigned int pbid, unsigned int toonid = 0, bool excludeAssembled = false);
 
 protected:
     enum {
@@ -165,7 +169,6 @@ protected:
     LRESULT OnRecalculate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnColumnClick(LPNMHDR lParam);
-    LRESULT OnItemActivate(LPNMHDR lParam);
     LRESULT OnUpdatePbListView(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled);
     LRESULT OnItemChanging(LPNMHDR lParam);
 

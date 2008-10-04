@@ -75,6 +75,7 @@
 #define IDC_QLMIN                       1038
 #define IDC_QLMAX                       1039
 #define IDC_BUTTON_LABEL                1040
+#define IDC_EXCLUDE_ASSEMBLED           1041
 #define ATL_IDC_TAB_CONTROL             0x3020
 #define ID_APPLY_NOW                    0x3021
 #define ID_WIZBACK                      0x3023
@@ -213,7 +214,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        151
 #define _APS_NEXT_COMMAND_VALUE         32824
-#define _APS_NEXT_CONTROL_VALUE         1041
+#define _APS_NEXT_CONTROL_VALUE         1042
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

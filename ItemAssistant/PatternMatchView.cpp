@@ -129,9 +129,9 @@ void PatternMatchView::SetBossAvail(unsigned int pbid, float avail)
 }
 
 
-void PatternMatchView::SetFilterSettings(unsigned int toonid, float availfilter)
+void PatternMatchView::SetFilterSettings(unsigned int toonid, float availfilter, bool excludeAssembled)
 {
-    if (toonid != m_availCalc.Toon())
+    if (toonid != m_availCalc.Toon() || excludeAssembled != m_availCalc.ExcludeAssembled())
     {
         SetBossAvail(0, -1.0f);
 
@@ -148,6 +148,7 @@ void PatternMatchView::SetFilterSettings(unsigned int toonid, float availfilter)
 
         // Restart thread
         m_availCalc.SetToon(toonid);
+        m_availCalc.SetExcludeAssembled(excludeAssembled);
         m_availCalc.Begin();
     }
 
@@ -334,20 +335,6 @@ LRESULT PatternMatchView::OnColumnClick(LPNMHDR lParam)
 }
 
 
-LRESULT PatternMatchView::OnItemActivate(LPNMHDR lParam)
-{
-    //LPNMITEMACTIVATE param = (LPNMITEMACTIVATE)lParam;
-
-    //unsigned int data = m_listview.GetItemData(param->iItem);
-
-    //PatternReport report(data, m_toonid);
-
-    //m_webview.SetHTML( report.toString() );
-
-    return 0;
-}
-
-
 LRESULT PatternMatchView::OnItemChanging(LPNMHDR lParam)
 {
     LPNMLISTVIEW pItem = (LPNMLISTVIEW)lParam;
@@ -467,14 +454,21 @@ int PatternMatchView::CompareStr(LPARAM param1, LPARAM param2, LPARAM sort)
 }
 
 
-float PatternMatchView::CalcPbAvailability(unsigned int pbid, unsigned int toonid)
+float PatternMatchView::CalcPbAvailability(unsigned int pbid, unsigned int toonid, bool excludeAssembled)
 {
     std::map<std::tstring, unsigned int> vals;
 
+    // Get a list of all pattern pieces for the specified pocket boss (optionally exclude ABCD assemblies)
+    SQLite::TablePtr pIDs;
     g_DBManager.Lock();
-    SQLite::TablePtr pIDs = g_DBManager.ExecTable(STREAM2STR(
-        "SELECT aoid, pattern FROM tblPatterns WHERE name = (SELECT name FROM tblPocketBoss WHERE pbid = " << pbid << ")"
-        ));
+    {
+        std::tstringstream sql;
+        sql << _T("SELECT aoid, pattern FROM tblPatterns WHERE name = (SELECT name FROM tblPocketBoss WHERE pbid = ") << pbid << _T(")");
+        if (excludeAssembled) {
+            sql << _T("AND pattern != 'ABCD'");
+        }
+        pIDs = g_DBManager.ExecTable(sql.str());
+    }
     g_DBManager.UnLock();
 
     if (pIDs == NULL) {
@@ -648,7 +642,14 @@ void FilterView::UpdateFilterSettings()
     {
         availfilter = 1.0f;
     }
-    m_pParent->SetFilterSettings(toonid, availfilter);
+
+    bool excludeAssembled = false;
+
+    if (IsDlgButtonChecked(IDC_EXCLUDE_ASSEMBLED)) {
+        excludeAssembled = true;
+    }
+
+    m_pParent->SetFilterSettings(toonid, availfilter, excludeAssembled);
 }
 
 
@@ -686,6 +687,13 @@ LRESULT FilterView::OnBnClickedShowPartials(WORD /*wNotifyCode*/, WORD /*wID*/, 
 
 
 LRESULT FilterView::OnBnClickedCompletable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+    UpdateFilterSettings();
+    return 0;
+}
+
+
+LRESULT FilterView::OnExcludeAssembledPatternsClicked(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
     UpdateFilterSettings();
     return 0;
@@ -827,7 +835,7 @@ DWORD AvailCalcThread::ThreadProc()
             {
                 unsigned int pbid = list[m_index]->pbid;
                 m_pOwner->PbListMutex().MutexOff();
-                float avail = PatternMatchView::CalcPbAvailability(pbid, m_toon);
+                float avail = PatternMatchView::CalcPbAvailability(pbid, m_toon, m_excludeAssembled);
                 m_pOwner->PbListMutex().MutexOn();
                 m_pOwner->SetBossAvail(pbid, avail);
                 unsigned short percent = (unsigned int)(((m_index + 1) * 100) / list.size());
