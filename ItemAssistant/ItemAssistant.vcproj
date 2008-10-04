@@ -403,10 +403,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\trayiconimpl.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Version.h"
 				>
 			</File>
