@@ -29,6 +29,7 @@ Version 0.9.0                                       Release Date: ??/??/????
     * Some context menu commands now work with multiple selection of items.
     * Copying item references to AO script format now also writes the result
       to a script called 'aoia' to the scripts folder of Anarchy Online.
+    * Added CSV export to inventory context menu.
 
 Version 0.8.4                                       Release Date: 31/03/2008
     * Updated DB scheme to fix issue with 32 bit unsigned character IDs.
