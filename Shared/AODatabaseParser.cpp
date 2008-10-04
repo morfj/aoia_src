@@ -39,10 +39,10 @@ AODatabaseParser::AODatabaseParser(std::string const& aodbfile)
     m_aodbFile->dfilno = -1;
     m_aodbFile->dreclen = 8;
     m_aodbFile->dxtdsiz = 4096;
-    m_aodbFile->dfilmod = 0xC7;
+    m_aodbFile->dfilmod = 0x0D; // ctSHARED | ctVIRTUAL | ctVLENGTH | ctREADFIL
     m_aodbFile->dnumidx = 1;
     m_aodbFile->ixtdsiz = 4096;
-    m_aodbFile->ifilmod = 0x43;
+    m_aodbFile->ifilmod = 0x09; // ctSHARED | ctVIRTUAL | ctREADFIL
     m_aodbFile->ix = m_aodbIndex.get();
     m_aodbFile->rfstfld = "Type";
     m_aodbFile->rlstfld = "Blob";
