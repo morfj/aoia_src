@@ -296,7 +296,13 @@ VOID CALLBACK DirChangeCompletionRoutine( DWORD dwErrorCode, DWORD
 
         if(!popupText.str().empty())
         {
-            ServicesSingleton::Instance()->ShowTrayIconBalloon(from_ascii_copy(popupText.str()));
+           //max string 256 bytes...
+              std::string smallString = popupText.str();
+              if(smallString.length()>256)
+              {
+                 smallString = smallString.substr(0,252) + "...";
+              }
+            ServicesSingleton::Instance()->ShowTrayIconBalloon(from_ascii_copy(smallString));
         }
     }	
 }
