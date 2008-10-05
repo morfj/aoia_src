@@ -774,11 +774,24 @@ void InventoryView::UpdateListView(std::tstring const& where)
 {
     m_listview.DeleteAllItems();
 
+    std::string selectStr =
+        "SELECT "
+        "   tItems.itemidx, "
+        "   tItems.owner, "
+        "   CASE "
+        "       WHEN ((SELECT ql FROM tblAO WHERE aoid = keyhigh)-(SELECT ql FROM tblAO WHERE aoid = keylow))/2+(SELECT ql FROM tblAO WHERE aoid = keylow) > ql "
+        "       THEN (SELECT name FROM tblAO WHERE aoid = keylow) "
+        "       ELSE (SELECT name FROM tblAO WHERE aoid = keyhigh) "
+        "   END AS name, "
+        "   tItems.ql AS QL, "
+        "   tItems.stack AS Stack, "
+        "   tToons.charname AS Character, "
+        "   tItems.parent AS Container "
+        "FROM "
+        "   tItems JOIN tToons ON tToons.charid = tItems.owner ";
+
     std::tstringstream sql;
-    //sql << "SELECT substr(name,0,length(name)-1) AS Name, tItems.ql AS QL, stack AS Stack, owner AS Character, parent AS Container FROM tItems JOIN tblAO ON keylow = aoid";
-    sql << _T("SELECT tItems.itemidx, owner, name AS Name, tItems.ql AS QL, stack AS Stack, ")
-        << _T("(SELECT tToons.charname FROM tToons WHERE tToons.charid = owner) AS Character, ")
-        << _T("parent AS Container FROM tItems JOIN tblAO ON keylow = aoid");
+    sql << from_ascii_copy(selectStr);
 
     if (!where.empty())
     {
