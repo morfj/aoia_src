@@ -11,6 +11,7 @@
 
 namespace bfs = boost::filesystem;
 
+#define CURRENT_DB_VERSION 2
 
 /*********************************************************/
 /* DB Manager Implementation                             */
@@ -105,7 +106,7 @@ bool DBManager::Init(std::tstring dbfile)
     }
 
     unsigned int dbVersion = GetDBVersion();
-    if (dbVersion < 1) {
+    if (dbVersion < CURRENT_DB_VERSION) {
         if (IDOK != MessageBox( NULL, _T("AO Item Assistant needs to update its database file to a newer version."), 
             _T("Question - AO Item Assistant"), MB_OKCANCEL | MB_ICONQUESTION))
         {
@@ -113,7 +114,7 @@ bool DBManager::Init(std::tstring dbfile)
         }
         UpdateDBVersion(dbVersion);
     }
-    else if (dbVersion > 1)
+    else if (dbVersion > CURRENT_DB_VERSION)
     {
         MessageBox( NULL, _T("AO Item Assistant has detected a too new version of its database file. You should upgrade the software to continue."),
             _T("Error - AO Item Assistant"), MB_OK | MB_ICONERROR);
@@ -447,7 +448,17 @@ void DBManager::UpdateDBVersion(unsigned int fromVersion) const
 
     case 1:
         {
-
+            Begin();
+            Exec(_T("CREATE TABLE tToons2 (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR)"));
+            Exec(_T("INSERT INTO tToons2 (charid, charname) SELECT charid, charname FROM tToons"));
+            Exec(_T("DROP TABLE tToons"));
+            Exec(_T("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR)"));
+            Exec(_T("INSERT INTO tToons (charid, charname) SELECT charid, charname FROM tToons2"));
+            Exec(_T("DROP TABLE tToons2"));
+            Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));
+            Exec(_T("DROP VIEW vSchemeVersion"));
+            Exec(_T("CREATE VIEW vSchemeVersion AS SELECT '2' AS Version"));
+            Commit();
         }
         // Dropthrough
 
@@ -466,8 +477,8 @@ void DBManager::CreateDBScheme() const
     Exec(_T("CREATE VIEW vInvItems AS SELECT * FROM tItems WHERE parent=2"));
     Exec(_T("CREATE INDEX iOwner ON tItems (owner)"));
     Exec(_T("CREATE INDEX iParent ON tItems (parent)"));
-    Exec(_T("CREATE TABLE tToons (charid, charname)"));
+    Exec(_T("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR)"));
     Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));
-    Exec(_T("CREATE VIEW vSchemeVersion AS SELECT '1' AS Version"));
+    Exec(STREAM2STR(_T("CREATE VIEW vSchemeVersion AS SELECT '") << CURRENT_DB_VERSION << _T("' AS Version")));
     Commit();
 }
