@@ -32,6 +32,11 @@ Version 0.9.0                                       Release Date: ??/??/????
     * Added CSV export to inventory context menu.
     * Specifying minimum and maximum QL level when looking for an item is now 
       possible.
+    * Items are now shown with the correct interpolated name.
+    * Fixed an issue that would cause the character ID to be shown instead of 
+      the character name.
+    * The Pattern Matcher now has an option to exclude already assembled ABCD 
+      patterns from the availability calculation.
 
 Version 0.8.4                                       Release Date: 31/03/2008
     * Updated DB scheme to fix issue with 32 bit unsigned character IDs.
