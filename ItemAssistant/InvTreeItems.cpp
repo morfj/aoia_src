@@ -305,8 +305,6 @@ std::vector<MFTreeViewItem*> CharacterTreeViewItem::GetChildren() const
 
 unsigned int CharacterTreeViewItem::AppendMenuCmd(HMENU hMenu, unsigned int firstID, WTL::CTreeItem item) const
 {
-   //m_commands[firstID] = InternalCommand::CMD_EDIT;
-   //AppendMenu(hMenu, MF_STRING, firstID++, _T("Edit Toon Name"));
    m_commands[firstID] = SqlTreeViewItemBase::CMD_DELETE;
    AppendMenu(hMenu, MF_STRING, firstID++, _T("Delete Items From DB"));
    return firstID;
@@ -319,11 +317,6 @@ bool CharacterTreeViewItem::HandleMenuCmd(unsigned int commandID, WTL::CTreeItem
    {
       switch(m_commands[commandID])
       {
-      case SqlTreeViewItemBase::CMD_EDIT:
-         {
-            item.EditLabel();
-         }
-         break;
       case SqlTreeViewItemBase::CMD_DELETE:
          {
             g_DBManager.Lock();
