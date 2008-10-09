@@ -18,7 +18,7 @@ have contributed either directly or indirectly include:
 
 Change Log:
 ===========
-Version 0.9.0                                       Release Date: 06/10/2008
+Version 0.9.0                                       Release Date: 09/10/2008
     * Now works on both WindowsXP as well as Vista (32 and 64 bit) without the
       need to be launched in compatibility mode.
 	* Added "-log" commandline option.
