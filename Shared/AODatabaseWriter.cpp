@@ -78,12 +78,18 @@ void AODatabaseWriter::WriteItem(boost::shared_ptr<ao_item> item)
         (AODB_ITEM_TEMPLATE,"Template")
         (AODB_ITEM_SPIRIT,  "Spirit");
 
-    if (item->name.empty() || item->ql == 0) {
-        return;
+    if (item->name.empty()) {
+        return; // Strange item
     }
 
     if (s_ItemTypeMap.find(item->type) == s_ItemTypeMap.end()) {
         assert(false);  // Found unknown object type!
+        return;
+    }
+
+    // Special case for getting item 212334 into the DB. Looks fubar'ed by funcom in 17.1 patch.
+    if (item->aoid != 212334 && item->ql == 0) {
+        Logger::instance()->log(STREAM2STR(_T("Skipped item with QL zero. AOID: ") << item->aoid));
         return;
     }
 
