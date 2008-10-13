@@ -109,7 +109,6 @@
 #define ID_ITEMCONTEXTMENU_EXPORTTO     32820
 #define ID_EXPORTTOCSV_AUNO             32821
 #define ID_EXPORTTOCSV_JAYDEE           32823
-#define ID_HELP_INDEX                   32824
 #define ID_HELP_SUPPORTFORUM            32825
 #define ID_HELP_CHECKFORUPDATES         32826
 #define ATL_IDS_IDLEMESSAGE             0xE001

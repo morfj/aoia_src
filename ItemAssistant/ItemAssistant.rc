@@ -146,10 +146,10 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "Support Forums...",           ID_HELP_SUPPORTFORUM
-        MENUITEM "Online Help...",              ID_HELP_INDEX
+        MENUITEM "&Support Forums...",          ID_HELP_SUPPORTFORUM
+        MENUITEM "&Online Help...",             ID_HELP_INDEX
         MENUITEM SEPARATOR
-        MENUITEM "Check for Updates...",        ID_HELP_CHECKFORUPDATES
+        MENUITEM "&Check for Updates...",       ID_HELP_CHECKFORUPDATES
         MENUITEM SEPARATOR
         MENUITEM "&About Item Assistant...",    ID_APP_ABOUT
     END
@@ -480,6 +480,13 @@ BEGIN
     ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
 END
 
+STRINGTABLE
+BEGIN
+    ID_HELP_SUPPORTFORUM    "Go to the on-line support forum\nGo To Support Forum"
+    ID_HELP_INDEX           "Go to the on-line documentation\nGo To On-Line Help"
+    ID_HELP_CHECKFORUPDATES "Check for a newer version of this application\nPerform Update Check On-Line"
+END
+
 STRINGTABLE 
 BEGIN
     ID_WINDOW_NEW           "Open another window for the active document\nNew Window"
@@ -503,6 +510,7 @@ BEGIN
     ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
     ID_EDIT_UNDO            "Undo the last action\nUndo"
     ID_EDIT_REDO            "Redo the previously undone action\nRedo"
+    ID_INV_FIND             "Find matching items\nFind Items"
 END
 
 STRINGTABLE 
