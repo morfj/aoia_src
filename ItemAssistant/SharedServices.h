@@ -35,6 +35,9 @@ public:
     /// (ex: topic = "patternmatcher" will expand to http://ia.frellu.net/help.php?topic=patternmatcher&version=0.9.0")
     static void ShowHelp(std::tstring const& topic);
 
+    /// Opens the specified URL in a new browser window.
+    static void OpenURL(std::tstring const& url);
+
 protected:
     std::vector<std::tstring> GetAccountNames() const;
     std::tstring MakeContainerName(unsigned int charid, unsigned int containerid) const;

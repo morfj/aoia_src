@@ -5,6 +5,8 @@
 #include "shared/aopackets.h"
 #include "InjectionSupport.h"
 #include "ntray.h"
+#include "Version.h"
+
 
 // Delay loaded function definition
 typedef  BOOL (WINAPI *ChangeWindowMessageFilterFunc)(UINT message, DWORD dwFlag);
@@ -168,6 +170,27 @@ LRESULT CMainFrame::OnTrayShow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
     else {
         SendMessage(WM_SYSCOMMAND, SC_MINIMIZE, NULL);
     }
+    return 0;
+}
+
+
+LRESULT CMainFrame::OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+    SharedServices::ShowHelp(_T(""));
+    return 0;
+}
+
+
+LRESULT CMainFrame::OnCheckForUpdates(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+    SharedServices::OpenURL(STREAM2STR(_T("http://ia.frellu.net/?topic=checkversion&version=") << g_versionNumber));
+    return 0;
+}
+
+
+LRESULT CMainFrame::OnSupportForum(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+    SharedServices::OpenURL(_T("http://apps.sourceforge.net/phpbb/aoia/"));
     return 0;
 }
 

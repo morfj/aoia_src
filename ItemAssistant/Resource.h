@@ -109,6 +109,9 @@
 #define ID_ITEMCONTEXTMENU_EXPORTTO     32820
 #define ID_EXPORTTOCSV_AUNO             32821
 #define ID_EXPORTTOCSV_JAYDEE           32823
+#define ID_HELP_INDEX                   32824
+#define ID_HELP_SUPPORTFORUM            32825
+#define ID_HELP_CHECKFORUPDATES         32826
 #define ATL_IDS_IDLEMESSAGE             0xE001
 #define ID_FILE_NEW                     0xE100
 #define ID_FILE_OPEN                    0xE101
@@ -213,7 +216,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        151
-#define _APS_NEXT_COMMAND_VALUE         32824
+#define _APS_NEXT_COMMAND_VALUE         32827
 #define _APS_NEXT_CONTROL_VALUE         1042
 #define _APS_NEXT_SYMED_VALUE           110
 #endif

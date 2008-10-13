@@ -146,6 +146,11 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
+        MENUITEM "Support Forums...",           ID_HELP_SUPPORTFORUM
+        MENUITEM "Online Help...",              ID_HELP_INDEX
+        MENUITEM SEPARATOR
+        MENUITEM "Check for Updates...",        ID_HELP_CHECKFORUPDATES
+        MENUITEM SEPARATOR
         MENUITEM "&About Item Assistant...",    ID_APP_ABOUT
     END
 END

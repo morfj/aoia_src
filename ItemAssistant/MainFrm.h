@@ -37,6 +37,9 @@ public:
         COMMAND_ID_HANDLER(ID_VIEW_STATUS_BAR, OnViewStatusBar)
         COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
         COMMAND_ID_HANDLER(ID_TRAY_SHOW, OnTrayShow)
+        COMMAND_ID_HANDLER(ID_HELP_INDEX, OnHelp)
+        COMMAND_ID_HANDLER(ID_HELP_CHECKFORUPDATES, OnCheckForUpdates)
+        COMMAND_ID_HANDLER(ID_HELP_SUPPORTFORUM, OnSupportForum)
         MSG_WM_COPYDATA(OnAOMessage)
         MSG_WM_TIMER(OnTimer)
         MSG_WM_ERASEBKGND(OnEraseBkgnd)
@@ -54,6 +57,9 @@ public:
     LRESULT OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnTrayShow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+    LRESULT OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+    LRESULT OnCheckForUpdates(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+    LRESULT OnSupportForum(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnAOMessage(HWND wnd, PCOPYDATASTRUCT pData);
     LRESULT OnTimer(UINT wParam, TIMERPROC lParam);
     LRESULT OnEraseBkgnd(HDC dc) { return 1; }

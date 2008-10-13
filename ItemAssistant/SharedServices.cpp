@@ -239,6 +239,18 @@ void SharedServices::SetTrayIcon(boost::shared_ptr<CTrayNotifyIcon> trayIcon)
 
 void SharedServices::ShowHelp(std::tstring const& topic)
 {
-    std::tstring helpUrl = STREAM2STR(_T("http://ia-help.frellu.net/?topic=") << topic << _T("&version=") << g_versionNumber);
-    ShellExecute(NULL, _T("open"), helpUrl.c_str(), NULL, NULL, SW_NORMAL);
+    std::tstringstream url;
+    url << _T("http://ia-help.frellu.net/?");
+    if (!topic.empty()) {
+        url << _T("topic=") << topic << _T("&");
+    }
+    url << _T("version=") << g_versionNumber;
+    SharedServices::OpenURL(url.str());
 }
+
+
+void SharedServices::OpenURL(std::tstring const& url)
+{
+    ShellExecute(NULL, _T("open"), url.c_str(), NULL, NULL, SW_NORMAL);
+}
+
