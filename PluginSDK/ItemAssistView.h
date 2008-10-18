@@ -31,7 +31,7 @@ public:
         return false;
     }
 
-    virtual void OnAOMessage(AO::Header *pMsg)
+    virtual void OnAOMessage(AOMessageBase &msg)
     {
         // Override in derived classes
     }

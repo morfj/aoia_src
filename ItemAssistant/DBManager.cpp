@@ -11,7 +11,7 @@
 
 namespace bfs = boost::filesystem;
 
-#define CURRENT_DB_VERSION 2
+#define CURRENT_DB_VERSION 3
 
 /*********************************************************/
 /* DB Manager Implementation                             */
@@ -359,6 +359,38 @@ void DBManager::SetToonName(unsigned int charid, std::tstring const& newName)
 }
 
 
+void DBManager::UpdateToonShopId(unsigned int charid, unsigned int shopid)
+{
+    assert(charid != 0);
+    assert(shopid != 0);
+    g_DBManager.Begin();
+    g_DBManager.Exec(STREAM2STR("UPDATE OR IGNORE tToons SET shopid = " << shopid << " WHERE charid = " << charid));
+    g_DBManager.Commit();
+}
+
+
+unsigned int DBManager::GetShopOwner(unsigned int shopid)
+{
+    assert(shopid != 0);
+
+    unsigned int result = 0;
+
+    SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR("SELECT charid FROM tToons WHERE shopid = " << shopid));
+
+    try
+    {
+	    if (pT != NULL && pT->Rows()) {
+	        result = boost::lexical_cast<unsigned int>(pT->Data()[0]);
+	    }
+    }
+    catch (boost::bad_lexical_cast &/*e*/)
+    {
+    }
+
+    return result;
+}
+
+
 OwnedItemInfoPtr DBManager::GetOwnedItemInfo(unsigned int itemID)
 {
     OwnedItemInfoPtr pRetVal(new OwnedItemInfo());
@@ -462,6 +494,22 @@ void DBManager::UpdateDBVersion(unsigned int fromVersion) const
         }
         // Dropthrough
 
+    case 2: // Update from v2 is the added shopid column in the toons table
+        {
+            Begin();
+            Exec(_T("CREATE TABLE tToons2 (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0')"));
+            Exec(_T("INSERT INTO tToons2 (charid, charname) SELECT charid, charname FROM tToons"));
+            Exec(_T("DROP TABLE tToons"));
+            Exec(_T("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0')"));
+            Exec(_T("INSERT INTO tToons (charid, charname) SELECT charid, charname FROM tToons2"));
+            Exec(_T("DROP TABLE tToons2"));
+            Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));
+            Exec(_T("DROP VIEW vSchemeVersion"));
+            Exec(_T("CREATE VIEW vSchemeVersion AS SELECT '3' AS Version"));
+            Commit();
+        }
+        // Dropthrough
+
     default:
         break;
     }
@@ -477,7 +525,7 @@ void DBManager::CreateDBScheme() const
     Exec(_T("CREATE VIEW vInvItems AS SELECT * FROM tItems WHERE parent=2"));
     Exec(_T("CREATE INDEX iOwner ON tItems (owner)"));
     Exec(_T("CREATE INDEX iParent ON tItems (parent)"));
-    Exec(_T("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR)"));
+    Exec(_T("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0')"));
     Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));
     Exec(STREAM2STR(_T("CREATE VIEW vSchemeVersion AS SELECT '") << CURRENT_DB_VERSION << _T("' AS Version")));
     Commit();

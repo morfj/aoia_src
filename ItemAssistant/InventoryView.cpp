@@ -624,21 +624,18 @@ LRESULT InventoryView::OnPostCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 }
 
 
-void InventoryView::OnAOMessage(AO::Header* pMsg)
+void InventoryView::OnAOMessage(AOMessageBase &msg)
 {
-    ATLASSERT(pMsg != NULL);
-    Native::AOMessageHeader msg(pMsg);
-
-    switch(msg.msgid())
+    switch(msg.messageId())
     {
     case AO::MSG_BANK:
         {
-            Native::AOBank bank((AO::Bank*)pMsg);
+            Native::AOBank bank((AO::Bank*)msg.start());
             g_DBManager.Lock();
             g_DBManager.Begin();
             {  // Remove old stuff from the bank. Every update is a complete update.
                 std::tstringstream sql;
-                sql << _T("DELETE FROM tItems WHERE owner = ") << msg.charid() << _T(" AND parent = 1");
+                sql << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() << _T(" AND parent = 1");
                 g_DBManager.Exec(sql.str());
             }
             for (unsigned int i = 0; i < bank.numitems(); i++)
@@ -652,7 +649,7 @@ void InventoryView::OnAOMessage(AO::Header* pMsg)
                     1,                           // 1 = bank container
                     item.index(),
                     item.containerid().High(),
-                    msg.charid());
+                    msg.characterId());
             }
             g_DBManager.Commit();
             g_DBManager.UnLock();
@@ -661,7 +658,7 @@ void InventoryView::OnAOMessage(AO::Header* pMsg)
 
     case AO::MSG_CONTAINER:
         {
-            Native::AOContainer bp((AO::Header*)pMsg);
+            Native::AOContainer bp((AO::Header*)msg.start());
             g_DBManager.Lock();
             g_DBManager.Begin();
             {
@@ -682,7 +679,7 @@ void InventoryView::OnAOMessage(AO::Header* pMsg)
                     bp.containerid().High(),
                     item.index(),
                     0,
-                    msg.charid());
+                    msg.characterId());
             }
             g_DBManager.Commit();
             g_DBManager.UnLock();
@@ -692,7 +689,7 @@ void InventoryView::OnAOMessage(AO::Header* pMsg)
 
     case AO::MSG_FULLSYNC:
         {
-            Native::AOEquip equip((AO::Equip*)pMsg);
+            Native::AOEquip equip((AO::Equip*)msg.start());
             g_DBManager.Lock();
             g_DBManager.Begin();
             {
@@ -713,7 +710,7 @@ void InventoryView::OnAOMessage(AO::Header* pMsg)
                     2,             // parent 2 = equip
                     item.index(),
                     item.containerid().High(),
-                    msg.charid());
+                    msg.characterId());
             }
             g_DBManager.Commit();
             g_DBManager.UnLock();
@@ -725,18 +722,71 @@ void InventoryView::OnAOMessage(AO::Header* pMsg)
     case AO::MSG_MOB_SYNC:
         {
             // Make sure this is the message for the currently playing toon (and not other mobs in vicinity).
-            if (pMsg->charid == pMsg->target.high)
+            if (msg.characterId() == msg.entityId())
             {
-                AO::MobInfo* pMobInfo = (AO::MobInfo*)pMsg;
+                AO::MobInfo* pMobInfo = (AO::MobInfo*)msg.start();
                 std::string name(&(pMobInfo->characterName.str), pMobInfo->characterName.strLen - 1);
 
-                Native::AOMessageHeader header(pMsg);
-
                 g_DBManager.Lock();
-                g_DBManager.SetToonName(header.charid(), from_ascii_copy(name));
+                g_DBManager.SetToonName(msg.characterId(), from_ascii_copy(name));
                 g_DBManager.UnLock();
             }
         }
+        break;
+
+    case AO::MSG_SHOP_INFO:
+        {
+            AOPlayerShopInfo shop(msg.start(), msg.size());
+            if (shop.shopId() != 0 && shop.ownerId() != 0)
+            {
+                g_DBManager.UpdateToonShopId(shop.ownerId(), shop.shopId());
+            }
+        }
+        break;
+
+    case AO::MSG_SHOP_ITEMS:
+        {
+            AOPlayerShopContent shop(msg.start(), msg.size());
+
+            // This message should only update the shops for already registered shop IDs, and then use the character 
+            // ID of who-ever that shop is registered to. This will allow you to update all your toons shops without 
+            // logging them in. (You only need to visit the shop with one of them.)
+
+            unsigned int owner = g_DBManager.GetShopOwner(shop.shopid());
+
+            if (owner != 0)
+            {
+                g_DBManager.Lock();
+                g_DBManager.Begin();
+                {
+                    // Remove old contents from container
+                    std::tstringstream sql;
+                    sql << _T("DELETE FROM tItems WHERE parent = 3 AND owner = ") << owner;
+                    g_DBManager.Exec(sql.str());
+                }
+                // Register container contents
+                for (unsigned int i = 0; i < shop.numitems(); i++)
+                {
+                    AOContainerItem item = shop.item(i);
+                    unsigned int price = shop.price(item.index());
+
+                    g_DBManager.InsertItem(
+                        item.itemId().low(),
+                        item.itemId().high(),
+                        item.ql(),
+                        item.stack(),
+                        3,
+                        item.index(),
+                        0,
+                        owner);
+                }
+                g_DBManager.Commit();
+                g_DBManager.UnLock();
+            }
+        }
+        break;
+
+    default:
         break;
     }
 }

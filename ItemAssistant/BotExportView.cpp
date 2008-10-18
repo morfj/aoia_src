@@ -31,6 +31,6 @@ LRESULT BotExportView::OnCreate(LPCREATESTRUCT createStruct)
 }
 
 
-void BotExportView::OnAOMessage(AO::Header* pMsg)
+void BotExportView::OnAOMessage(AOMessageBase &msg)
 {
 }

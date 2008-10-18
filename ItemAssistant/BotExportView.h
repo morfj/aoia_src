@@ -22,7 +22,7 @@ public:
       DEFAULT_REFLECTION_HANDLER()
 	END_MSG_MAP()
 
-	virtual void OnAOMessage(AO::Header* pMsg);
+	virtual void OnAOMessage(AOMessageBase &msg);
 
 protected:
    LRESULT OnCreate(LPCREATESTRUCT createStruct);

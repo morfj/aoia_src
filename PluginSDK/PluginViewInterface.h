@@ -2,12 +2,12 @@
 #define PLUGINVIEWINTERFACE_H
 
 #include <boost/smart_ptr.hpp>
-#include "shared/aopackets.h"
-
+#include <ItemAssistant/AOMessageParsers.h> // Todo, move parsers into the SDK
+using namespace Parsers;
 
 struct PluginViewInterface
 {
-    virtual void OnAOMessage(AO::Header *pMsg) = 0;
+    virtual void OnAOMessage(AOMessageBase &msg) = 0;
     virtual bool PreTranslateMsg(MSG* pMsg) = 0;
     virtual HWND GetWindow() const = 0;
     virtual void OnActive(bool doActivation) = 0;

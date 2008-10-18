@@ -39,6 +39,9 @@ public:
     std::tstring GetToonName(unsigned int charid) const;
     void SetToonName(unsigned int charid, std::tstring const& newName);
 
+    void UpdateToonShopId(unsigned int charid, unsigned int shopid);
+    unsigned int GetShopOwner(unsigned int shopid);
+
     OwnedItemInfoPtr GetOwnedItemInfo(unsigned int itemID);
 
     void Lock() { m_mutex.MutexOn(); }

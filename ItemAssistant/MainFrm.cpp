@@ -200,14 +200,12 @@ LRESULT CMainFrame::OnAOMessage(HWND wnd, PCOPYDATASTRUCT pData)
     char* datablock = (char*)(pData->lpData);
     unsigned int datasize = pData->cbData;
 
-    using namespace AO;
-
-    Header* msg = (Header*)datablock;
-    unsigned int msgId = _byteswap_ulong(msg->msgid);
-
-    ATLASSERT(datasize == _byteswap_ushort(msg->msgsize));
-
-    m_tabbedChildWindow.OnAOMessage(msg);
+    AOMessageBase msg(datablock, datasize);
+    //if (msg.headerType() != AOMessageBase::UNKNOWN_MESSAGE) 
+    {
+        //assert(msg.size() == datasize);
+        m_tabbedChildWindow.OnAOMessage(msg);
+    }
 
     return 0;
 }

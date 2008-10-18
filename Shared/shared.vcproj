@@ -179,6 +179,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Parser.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\SQLite.cpp"
 				>
 			</File>
@@ -246,6 +250,10 @@
 			</File>
 			<File
 				RelativePath=".\Mutex.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Parser.h"
 				>
 			</File>
 			<File

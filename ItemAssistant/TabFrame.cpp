@@ -113,11 +113,11 @@ PluginViewInterface* TabFrame::GetActivePluginView()
 }
 
 
-void TabFrame::OnAOMessage(AO::Header *pMsg)
+void TabFrame::OnAOMessage(AOMessageBase &msg)
 {
     for (unsigned int i = 0; i < m_viewPlugins.size(); i++)
     {
-        m_viewPlugins[i]->OnAOMessage(pMsg);
+        m_viewPlugins[i]->OnAOMessage(msg);
     }
 }
 

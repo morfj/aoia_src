@@ -61,10 +61,11 @@ public:
     LRESULT OnClear(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnSize(UINT wParam, CSize newSize);
 
-    virtual void OnAOMessage(AO::Header* pMsg);
+    virtual void OnAOMessage(AOMessageBase &msg);
 
 protected:
-    void DumpMessageToStream(std::ostream &out, AO::Header* pMsg);
+    void DumpMessageToStream(std::ostream &out, AOMessageBase &msg);
+    bool SearchMessageForBinarySequence(AOMessageBase &msg, unsigned char* pArray, unsigned int arraySize);
 
 private:
     WTL::CListViewCtrl m_listview;

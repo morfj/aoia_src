@@ -26,7 +26,7 @@ public:
     LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 
     PluginViewInterface* GetActivePluginView();
-    void OnAOMessage(AO::Header *pMsg);
+    void OnAOMessage(AOMessageBase &msg);
     void SetToolBarPanel(HWND panel) { m_rebarControl.Attach(panel); }
 
     /// Sets the state of the toolbar for the active view.
