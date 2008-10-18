@@ -2,9 +2,17 @@ Installation:
 =============
 - Unzip and run from your location of choice.
 
+When upgrading from a previous version I recommend making a copy in a safe
+location of your old ItemAssistant.db file just to be on the safe side.
+If the automated migration to the new version creates wierd results please
+send a detailed description of the problem and attach BOTH the old and the 
+newly converted ItemAssistant.db file.
+
+Support may be found at the forum: http://apps.sourceforge.net/phpbb/aoia/
+
 Usage:
 ======
-Online help system is available at http://ia.frellu.net/help
+Online help system is available at http://ia-help.frellu.net
 
 Aknowledgements:
 ================
@@ -18,10 +26,14 @@ have contributed either directly or indirectly include:
 
 Change Log:
 ===========
+Version 0.9.1                                       Release Date: ??/??/2008
+    * Added experimental tracking of player-shop contents.
+    * Updated the help menu a bit.
+
 Version 0.9.0                                       Release Date: 09/10/2008
     * Now works on both WindowsXP as well as Vista (32 and 64 bit) without the
       need to be launched in compatibility mode.
-	* Added "-log" commandline option.
+    * Added "-log" commandline option.
     * Playershop monitor added.
     * The application will now parse the original AO database to create its 
       own item database.
