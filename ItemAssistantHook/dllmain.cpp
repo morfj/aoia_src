@@ -1,6 +1,3 @@
-// dbtest.cpp : Defines the entry point for the DLL application.
-//
-
 #include "stdafx.h"
 #include "dllmain.h"
 #include <shared/aopackets.h>
@@ -9,6 +6,8 @@
 #include <stdlib.h>
 #include <set>
 #include <queue>
+#include <boost/smart_ptr.hpp>
+#include <boost/thread.hpp>
 
 
 typedef void Message_t;
@@ -16,15 +15,17 @@ typedef void Message_t;
 Message_t* ( * pOriginalDataBlockToMessage )( int _Size, void* _pDataBlock );
 void LoadMessageFilter(HKEY hKeyParent, LPCTSTR lpszKeyName);
 
-//Db db(NULL, 0);
-int g_counter = -1;
+DWORD g_lastTick = 0;
+DWORD g_lastThreadTick = 0;
 std::set<unsigned int> g_messageFilter;
 HANDLE g_hEvent;
 
 typedef std::queue<COPYDATASTRUCT*> COPYDATASTRUCTQUEUE;
 
 COPYDATASTRUCTQUEUE g_dataQueue;
-CRITICAL_SECTION g_CritSection;
+boost::mutex g_dataQueueMutex;
+
+HWND g_targetWnd = NULL;   // TODO: Make this a set/list that is dynamically updated
 
 using namespace AO;
 
@@ -33,48 +34,59 @@ void WorkerThreadMethod(void*)
 {
     while ((g_hEvent != NULL) && (WaitForSingleObject(g_hEvent,INFINITE) == WAIT_OBJECT_0))
     {
-        CCritSecLock cs(g_CritSection,true);
-
-        if (g_hEvent != NULL)
-        {
-            HWND hWnd;
-            if( hWnd = FindWindow ( "ItemAssistantWindowClass", NULL ) ) // TODO make this a list in registry
-            {
-                while (!g_dataQueue.empty())
-                {
-                    COPYDATASTRUCT * pData = g_dataQueue.front();
-                    SendMessage( hWnd, WM_COPYDATA, 0, ( LPARAM ) pData );
-                    g_dataQueue.pop();
-
-                    delete[] pData->lpData;
-                    delete pData;
-                }
-            }
-        }
-        else
-        {
+        if (g_hEvent == NULL) {
             break;
         }
-    }
 
-    DeleteCriticalSection(&g_CritSection);
+        DWORD tick = GetTickCount();
+        if (tick < g_lastThreadTick) {
+            // Overflow
+            g_lastThreadTick = tick;
+        }
+
+        if ((tick - g_lastThreadTick > 10000) || g_targetWnd == NULL) {
+            // We either don't have a valid window target OR it has been more than 10 sec since we last update the target.
+            g_targetWnd  = FindWindow ( "ItemAssistantWindowClass", NULL ); // TODO: make the class name a list in registry
+            g_lastThreadTick = GetTickCount();
+        }
+
+        while (!g_dataQueue.empty())
+        {
+            COPYDATASTRUCT * pData = NULL;
+
+            {   // Guard scope
+                boost::lock_guard<boost::mutex> guard(g_dataQueueMutex);
+
+                pData = g_dataQueue.front();
+                g_dataQueue.pop();
+            }
+
+            if (g_targetWnd == NULL) {
+                // We have data, but no target window, so just delete the message
+                delete[] pData->lpData;
+                delete pData;
+                continue;
+            }
+
+            // To avoid blocking the main thread, we should not have a lock on the queue while we process the message.
+            SendMessage( g_targetWnd, WM_COPYDATA, 0, ( LPARAM ) pData );
+
+            delete[] pData->lpData;
+            delete pData;
+        }
+    }
 }
 
 
 void StartWorkerThread()
 {
-    InitializeCriticalSection(&g_CritSection);
     g_hEvent = CreateEvent(NULL,FALSE,FALSE,"IA_Worker");
-
     _beginthread(WorkerThreadMethod,0,0);
 }
 
 
 void EndWorkerThread()
 {
-    CCritSecLock cs(g_CritSection,true);
-    //      EnterCriticalSection(&g_CritSection);
-
     SetEvent(g_hEvent);
     CloseHandle(g_hEvent);
     g_hEvent = NULL;
@@ -83,20 +95,23 @@ void EndWorkerThread()
 
 Message_t* DataBlockToMessageHook( int _Size, void* _pDataBlock )
 {
-    if (++g_counter > 10)
-    {
-        g_counter = 0;
-    }
+    // Retrieves the number of milliseconds that have elapsed since the system was started, up to 49.7 days.
+    DWORD time = GetTickCount();
 
-    if (g_counter == 0)
-    {
+    if (time < g_lastTick) {
+        // Overflow so just reset the g_lastTick
+        g_lastTick = time;
+    }
+    if (time - g_lastTick > 10000) {
+        // 10 sec since last update
+        g_lastTick = time;
         LoadMessageFilter(HKEY_CURRENT_USER, "Software\\AOMessageHook\\MessageIDs");
     }
 
     Header * msg = (Header*)_pDataBlock;
     unsigned int msgId = _byteswap_ulong(msg->msgid);
 
-    if (g_messageFilter.find(msgId) != g_messageFilter.end() || g_messageFilter.size() == 0)
+    if (g_messageFilter.size() == 0 || g_messageFilter.find(msgId) != g_messageFilter.end())
     {
         COPYDATASTRUCT * pData = new COPYDATASTRUCT;
         if (pData != NULL)
@@ -108,7 +123,10 @@ Message_t* DataBlockToMessageHook( int _Size, void* _pDataBlock )
             if (pData->lpData != NULL)
             {
                 memcpy(pData->lpData, _pDataBlock, _Size);
-                g_dataQueue.push(pData);
+                {
+                    boost::lock_guard<boost::mutex> guard(g_dataQueueMutex);
+                    g_dataQueue.push(pData);
+                }
                 SetEvent(g_hEvent);
             }
         }
