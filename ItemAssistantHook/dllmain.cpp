@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <set>
+#include <queue>
 
 
 typedef void Message_t;
@@ -18,8 +19,66 @@ void LoadMessageFilter(HKEY hKeyParent, LPCTSTR lpszKeyName);
 //Db db(NULL, 0);
 int g_counter = -1;
 std::set<unsigned int> g_messageFilter;
+HANDLE g_hEvent;
+
+typedef std::queue<COPYDATASTRUCT*> COPYDATASTRUCTQUEUE;
+
+COPYDATASTRUCTQUEUE g_dataQueue;
+CRITICAL_SECTION g_CritSection;
 
 using namespace AO;
+
+
+void WorkerThreadMethod(void*)
+{
+    while ((g_hEvent != NULL) && (WaitForSingleObject(g_hEvent,INFINITE) == WAIT_OBJECT_0))
+    {
+        CCritSecLock cs(g_CritSection,true);
+
+        if (g_hEvent != NULL)
+        {
+            HWND hWnd;
+            if( hWnd = FindWindow ( "ItemAssistantWindowClass", NULL ) ) // TODO make this a list in registry
+            {
+                while (!g_dataQueue.empty())
+                {
+                    COPYDATASTRUCT * pData = g_dataQueue.front();
+                    SendMessage( hWnd, WM_COPYDATA, 0, ( LPARAM ) pData );
+                    g_dataQueue.pop();
+
+                    delete[] pData->lpData;
+                    delete pData;
+                }
+            }
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    DeleteCriticalSection(&g_CritSection);
+}
+
+
+void StartWorkerThread()
+{
+    InitializeCriticalSection(&g_CritSection);
+    g_hEvent = CreateEvent(NULL,FALSE,FALSE,"IA_Worker");
+
+    _beginthread(WorkerThreadMethod,0,0);
+}
+
+
+void EndWorkerThread()
+{
+    CCritSecLock cs(g_CritSection,true);
+    //      EnterCriticalSection(&g_CritSection);
+
+    SetEvent(g_hEvent);
+    CloseHandle(g_hEvent);
+    g_hEvent = NULL;
+}
 
 
 Message_t* DataBlockToMessageHook( int _Size, void* _pDataBlock )
@@ -35,19 +94,23 @@ Message_t* DataBlockToMessageHook( int _Size, void* _pDataBlock )
     }
 
     Header * msg = (Header*)_pDataBlock;
-
     unsigned int msgId = _byteswap_ulong(msg->msgid);
 
     if (g_messageFilter.find(msgId) != g_messageFilter.end() || g_messageFilter.size() == 0)
     {
-        HWND hWnd;
-        if( hWnd = FindWindow ( "ItemAssistantWindowClass", NULL ) ) // TODO make this a list in registry
+        COPYDATASTRUCT * pData = new COPYDATASTRUCT;
+        if (pData != NULL)
         {
-            COPYDATASTRUCT Data;
-            Data.cbData = _Size;
-            Data.lpData = _pDataBlock;
+            pData->dwData = 0;
+            pData->cbData = _Size;
+            pData->lpData = new unsigned char[_Size];//_pDataBlock;
 
-            SendMessage( hWnd, WM_COPYDATA, 0, ( LPARAM )&Data );
+            if (pData->lpData != NULL)
+            {
+                memcpy(pData->lpData, _pDataBlock, _Size);
+                g_dataQueue.push(pData);
+                SetEvent(g_hEvent);
+            }
         }
     }
 
@@ -96,6 +159,8 @@ int ProcessAttach( HINSTANCE _hModule )
     DetourAttach((PVOID*)&pOriginalDataBlockToMessage, DataBlockToMessageHook);
     DetourTransactionCommit();
 
+    StartWorkerThread();
+
     return TRUE;
 }
 
@@ -106,6 +171,8 @@ int ProcessDetach( HINSTANCE _hModule )
     DetourUpdateThread(GetCurrentThread());
     DetourDetach((PVOID*)&pOriginalDataBlockToMessage, DataBlockToMessageHook);
     DetourTransactionCommit();
+
+    EndWorkerThread();
 
     return TRUE;
 }
