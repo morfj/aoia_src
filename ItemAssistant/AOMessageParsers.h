@@ -322,9 +322,7 @@ namespace Parsers {
             // ...but has a different ending.
             skip(4);    // ?
             m_shopid = popInteger();
-            skip(4);    // ?
-            m_credits = popInteger();
-            skip(4);
+            skip(12);    // ?
             for (unsigned int i = 0; i < 21; ++i) {
                 m_prices[i] = popInteger();
             }
@@ -336,7 +334,6 @@ namespace Parsers {
         AOContainerItem item(int index) const { return m_items.at(index); }
         unsigned int shopid() const { return m_shopid; }
         unsigned int price(int index) const { return m_prices[index]; }
-        unsigned int credits() const { return m_credits; }
 
     private:
         unsigned char m_slots;
@@ -344,7 +341,6 @@ namespace Parsers {
         std::vector<AOContainerItem> m_items;
         unsigned int m_shopid;
         unsigned int m_prices[21];     // Array of prices per shop slot
-        unsigned int m_credits;        // Uncollected credits.
     };
 
 };  // namespace Parsers
