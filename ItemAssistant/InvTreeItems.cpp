@@ -85,7 +85,7 @@ void ContainerTreeViewItem::OnSelected()
 
    if (m_containerid == 0)
    {
-      sql << _T("> 2 AND parent NOT IN (SELECT DISTINCT children FROM tItems)");
+      sql << _T("> 3 AND parent NOT IN (SELECT DISTINCT children FROM tItems)");
    }
    else
    {

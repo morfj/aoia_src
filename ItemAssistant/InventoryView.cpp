@@ -796,7 +796,7 @@ void InventoryView::CleanupDB(unsigned int charid)
 {
     // Statement to delete all the orfaned containers for this toon.
     std::tstringstream sql;
-    sql << _T("DELETE FROM tItems WHERE owner = ") << charid << _T(" AND parent > 2 AND parent NOT IN (SELECT DISTINCT children FROM tItems)");
+    sql << _T("DELETE FROM tItems WHERE owner = ") << charid << _T(" AND parent > 3 AND parent NOT IN (SELECT DISTINCT children FROM tItems)");
 
     g_DBManager.Lock();
     g_DBManager.Exec(sql.str());
