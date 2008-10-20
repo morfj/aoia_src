@@ -126,10 +126,11 @@ namespace Parsers {
     public:
         enum HeaderType {
             UNKNOWN_MESSAGE,
-            MOBILE_ENTITY_MESSAGE,
-            STATIC_ENTITY_MESSAGE,
-            B_MESSAGE,
-            E_MESSAGE,
+            MSG_TYPE_1 = 0xDFDF0001,
+            MSG_TYPE_A = 0xDFDF000A,
+            MSG_TYPE_B = 0xDFDF000B,
+            MSG_TYPE_D = 0xDFDF000D,
+            MSG_TYPE_E = 0xDFDF000E,
         };
 
         AOMessageBase(char *pRaw, unsigned int size)
@@ -139,18 +140,21 @@ namespace Parsers {
             // Parse and validate header
             unsigned int t = popInteger();
             if (t == 0xDFDF000A) {
-                m_type = MOBILE_ENTITY_MESSAGE;
+                m_type = MSG_TYPE_A;
             }
             else if (t == 0xDFDF000D) {
-                m_type = STATIC_ENTITY_MESSAGE;
+                m_type = MSG_TYPE_D;
                 char c = popChar();
                 assert(c == 0x0A);
             }
             else if (t == 0xDFDF000B) {
-                m_type = B_MESSAGE;
+                m_type = MSG_TYPE_B;
             }
             else if (t == 0xDFDF000E) {
-                m_type = E_MESSAGE;
+                m_type = MSG_TYPE_E;
+            }
+            else if (t == MSG_TYPE_1) {
+                m_type = MSG_TYPE_1;
             }
             else {
                 Logger::instance()->log(STREAM2STR(_T("Error unknown message header: ") << t));
