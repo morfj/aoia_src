@@ -187,8 +187,9 @@ void AoMsgView::OnAOMessage(AOMessageBase &msg)
 
     int id = m_listview.AddItem(m_listview.GetItemCount(), 0, msgString);
 
-    char* pdata = (char*)malloc(msg.size());
-    memcpy(pdata, msg.start(), msg.size());
+    char* pdata = (char*)malloc(msg.end() - msg.start());
+    memcpy(pdata, msg.start(), msg.end() - msg.start());
+
 
     m_listview.SetItemData(id, (DWORD_PTR)pdata);
     m_listview.SetItemText(id, 1, sizeStr);
