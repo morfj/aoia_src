@@ -16,20 +16,38 @@ PlayershopView::PlayershopView(void)
 : m_sortColumn(0)
 {
     m_hWakeupEvent = CreateEvent(0,false,false,0);
-    m_directoryWatch.reset(new WatchDirectoryThread(m_hWakeupEvent));
-    m_directoryWatch->Begin();
 }
 
 
 PlayershopView::~PlayershopView(void)
 {
-    SetEvent( m_hWakeupEvent );
-    m_directoryWatch->End();
-    CloseHandle(m_hWakeupEvent);
-    m_hWakeupEvent = NULL;
-    m_directoryWatch.reset();
+   if(m_directoryWatch != NULL)
+   {
+       SetEvent( m_hWakeupEvent );
+       m_directoryWatch->End();
+       CloseHandle(m_hWakeupEvent);
+       m_hWakeupEvent = NULL;
+       m_directoryWatch.reset();
+   }
 }
 
+void PlayershopView::StartMonitoring()
+{
+    m_directoryWatch.reset(new WatchDirectoryThread(m_hWakeupEvent));
+    m_directoryWatch->Begin();
+}
+
+void PlayershopView::StopMonitoring()
+{
+   if(m_directoryWatch != NULL)
+   {
+       SetEvent( m_hWakeupEvent );
+       m_directoryWatch->End();
+//       CloseHandle(m_hWakeupEvent);
+//       m_hWakeupEvent = NULL;
+       m_directoryWatch.reset();
+   }
+}
 
 LRESULT PlayershopView::OnColumnClick(LPNMHDR lParam)
 {
@@ -153,6 +171,19 @@ LRESULT PlayershopView::OnPostCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 LRESULT PlayershopView::OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
     SharedServices::ShowHelp(_T("playershop"));
+    return 0;
+}
+
+LRESULT PlayershopView::OnPause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+   if(m_directoryWatch != NULL)
+   {
+      StopMonitoring();
+   }
+   else
+   {
+      StartMonitoring();
+   }
     return 0;
 }
 

@@ -76,6 +76,8 @@ LRESULT TabFrame::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandl
     AddTab(m_PlayershopView, _T("Playershop Monitor"));
     m_viewPlugins.push_back(&m_PlayershopView);
 
+    m_PlayershopView.StartMonitoring();
+
     //m_BotExportView.Create(*this, 0, 0, style);
     //AddTab(m_BotExportView, "Bot Export");
     //m_viewPlugins.push_back(&m_BotExportView);
