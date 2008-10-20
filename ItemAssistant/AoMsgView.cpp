@@ -96,32 +96,32 @@ void AoMsgView::OnAOMessage(AOMessageBase &msg)
     unsigned int msgid = msg.messageId();
 
     // Search message for the playershop container ID
-    {
-        unsigned char ids[] = { 0x00, 0xC7, 0x90, 0x19 };
-        bool found = false;
-        found = SearchMessageForBinarySequence(msg, ids, ARRAYSIZE(ids));
+    //{
+    //    unsigned char ids[] = { 0x00, 0xC7, 0x90, 0x19 };
+    //    bool found = false;
+    //    found = SearchMessageForBinarySequence(msg, ids, ARRAYSIZE(ids));
 
-        if (found) {
-            std::ofstream ofs;
-            ofs.open("c:\\temp\\aoia_search_hits.bin", std::ios_base::out | std::ios_base::app);
-            DumpMessageToStream(ofs, msg);
-            ofs << "--------";
-        }
-    }
+    //    if (found) {
+    //        std::ofstream ofs;
+    //        ofs.open("c:\\temp\\aoia_search_hits.bin", std::ios_base::out | std::ios_base::app);
+    //        DumpMessageToStream(ofs, msg);
+    //        ofs << "--------";
+    //    }
+    //}
 
     switch(msgid)
     {
-    case AO::MSG_FULLSYNC:
-        {
-            Native::AOEquip equip((AO::Equip*)msg.start());
+    //case AO::MSG_FULLSYNC:
+    //    {
+    //        Native::AOEquip equip((AO::Equip*)msg.start());
 
-            unsigned int numitems = equip.numitems();
+    //        unsigned int numitems = equip.numitems();
 
-            std::ofstream ofs;
-            ofs.open("c:\\temp\\fullsync.bin", std::ios_base::out | std::ios_base::binary);
-            DumpMessageToStream(ofs, msg);
-        }
-        break;
+    //        std::ofstream ofs;
+    //        ofs.open("c:\\temp\\fullsync.bin", std::ios_base::out | std::ios_base::binary);
+    //        DumpMessageToStream(ofs, msg);
+    //    }
+    //    break;
 
     case AO::MSG_MOB_SYNC:
         {
@@ -152,13 +152,13 @@ void AoMsgView::OnAOMessage(AOMessageBase &msg)
         }
         break;
 
-    case AO::MSG_SHOP_ITEMS:
-        {
-            std::ofstream ofs;
-            ofs.open("c:\\temp\\shop_content_msg.bin", std::ios_base::out | std::ios_base::binary);
-            DumpMessageToStream(ofs, msg);
-        }
-        break;
+    //case AO::MSG_SHOP_ITEMS:
+    //    {
+    //        std::ofstream ofs;
+    //        ofs.open("c:\\temp\\shop_content_msg.bin", std::ios_base::out | std::ios_base::binary);
+    //        DumpMessageToStream(ofs, msg);
+    //    }
+    //    break;
 
     //case AO::MSG_SHOP_INFO:
     //    {
@@ -190,9 +190,13 @@ void AoMsgView::OnAOMessage(AOMessageBase &msg)
     char* pdata = (char*)malloc(msg.end() - msg.start());
     memcpy(pdata, msg.start(), msg.end() - msg.start());
 
-
     m_listview.SetItemData(id, (DWORD_PTR)pdata);
     m_listview.SetItemText(id, 1, sizeStr);
+
+    std::ofstream ofs;
+    ofs.open("c:\\temp\\messages.bin", std::ios_base::out | std::ios_base::binary | std::ios_base::app);
+    DumpMessageToStream(ofs, msg);
+    ofs << "========" << std::flush;
 }
 
 
