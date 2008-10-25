@@ -22,13 +22,18 @@ have contributed either directly or indirectly include:
     * auno          - aoppa source was a big help.
     * morb, gnarf   - clicksaver rocks and showed me the technique that made 
                       it all possible.
+    * RobotJunk     - Multi-thread patch for the hook dll.
     * Everyone else that has provided feedback and done testing.
 
 Change Log:
 ===========
-Version 0.9.1                                       Release Date: ??/??/2008
+Version 0.9.1                                       Release Date: 25/10/2008
     * Added experimental tracking of player-shop contents.
     * Updated the help menu a bit.
+    * Reduced lag by making the AO hook multi-threaded and cache relevant 
+      information for a longer period of time.
+    * Fixed pause button and tray popup in the Player Shop Monitor.
+    * Fixed problem with some Inamorata Rifles showing an empty name.
 
 Version 0.9.0                                       Release Date: 09/10/2008
     * Now works on both WindowsXP as well as Vista (32 and 64 bit) without the
