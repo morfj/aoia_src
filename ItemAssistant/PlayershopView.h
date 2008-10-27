@@ -8,26 +8,30 @@
 #include "MFTreeView.h"
 #include "PsmTreeItems.h"
 
+#define WM_PSM_UPDATE WM_USER+1
+
 
 class WatchDirectoryThread
     : public Thread
 {
 public:
-    WatchDirectoryThread(HANDLE hWakeupEvent)
-        : m_hWakeupEvent(hWakeupEvent)
+    WatchDirectoryThread(HANDLE hWakeupEvent, PlayershopView* owner)
+        : m_hWakeupEvent(hWakeupEvent), m_pOwner(owner)
     { }
     virtual ~WatchDirectoryThread() { }
 
     //void RefreshTree(LPTSTR lpDrive);
     //void RefreshDirectory(LPTSTR lpDir);
-
+    
     virtual DWORD ThreadProc();
+
 
 protected:
     void WatchDirectory(LPTSTR lpDir);
 
 private:
     HANDLE m_hWakeupEvent;
+    PlayershopView* m_pOwner;
 };
 
 
@@ -56,6 +60,7 @@ public:
         MSG_WM_CREATE(OnCreate)
         MSG_WM_SIZE(OnSize)
         MESSAGE_HANDLER(WM_POSTCREATE, OnPostCreate)
+        MESSAGE_HANDLER(WM_PSM_UPDATE, OnContentUpdate)
         COMMAND_ID_HANDLER(ID_HELP, OnHelp)
         COMMAND_ID_HANDLER(ID_PAUSE_TOGGLE, OnPause)
         /*      COMMAND_ID_HANDLER(ID_INV_FIND, OnFind)
@@ -71,11 +76,11 @@ public:
     LRESULT OnCreate(LPCREATESTRUCT createStruct);
     LRESULT OnSize(UINT wParam, CSize newSize);
     LRESULT OnPostCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+    LRESULT OnContentUpdate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
     LRESULT OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnPause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnColumnClick(LPNMHDR lParam);
     LRESULT OnItemActivate(LPNMHDR lParam);
-
    void StartMonitoring();
    void StopMonitoring();
 

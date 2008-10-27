@@ -33,7 +33,7 @@ PlayershopView::~PlayershopView(void)
 
 void PlayershopView::StartMonitoring()
 {
-    m_directoryWatch.reset(new WatchDirectoryThread(m_hWakeupEvent));
+    m_directoryWatch.reset(new WatchDirectoryThread(m_hWakeupEvent,this));
     m_directoryWatch->Begin();
 }
 
@@ -161,9 +161,6 @@ LRESULT PlayershopView::OnSize(UINT wParam, CSize newSize)
 
 LRESULT PlayershopView::OnPostCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
-    //SetSplitterPos works best after the default WM_CREATE has been handled
-    //	m_splitter.SetSplitterPos(200);
-
     return 0;
 }
 
@@ -240,6 +237,14 @@ int PlayershopView::CompareStr(LPARAM param1, LPARAM param2, LPARAM sort)
     return result;
 }
 
+LRESULT PlayershopView::OnContentUpdate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+{
+   CTreeItem item = m_treeview.GetSelectedItem();
+   // Force refresh of current selection
+   m_treeview.SelectItem(NULL);
+   m_treeview.SelectItem(item);
+   return 0;
+}
 
 void PlayershopView::OnActive(bool doActivation)
 {
@@ -265,6 +270,7 @@ typedef struct DIR_WATCH
     OVERLAPPED overlapped;
     _FILE_NOTIFY_INFORMATION* fileNotifyInfo;
     LPTSTR     lpDir;
+    PlayershopView* pOwner;
 } *HDIR_MONITOR;
 
 
@@ -282,10 +288,18 @@ VOID CALLBACK DirChangeCompletionRoutine( DWORD dwErrorCode, DWORD
     std::tstring filename(f.str());
     const wchar_t* ptr = filename.c_str();
 
+
+    // Send a message to the view to refresh the listing. 
+    // This is placed here instead of inside if to be able to refresh in case of deleted files as well
+    // This is might trigger a bit to many refreshes of the gui
+    pMonitor->pOwner->PostMessage(WM_PSM_UPDATE);
+
     // Proceed only if the directory change notification is triggered by
     // the file PlayerShopLog.html
     if(boost::find_last(ptr, "PlayerShopLog.html"))
     {
+
+
         boost::filesystem::path p(to_utf8_copy(filename),boost::filesystem::native);
 
         std::ifstream in(p.string().c_str());
@@ -368,6 +382,7 @@ void WatchDirectoryThread::WatchDirectory(LPTSTR lpDir)
 
     pMonitor->lpDir = lpDir;
     pMonitor->fileNotifyInfo = (_FILE_NOTIFY_INFORMATION*)buffer;
+    pMonitor->pOwner = m_pOwner;
 
     while (IsRunning()) 
     { 
