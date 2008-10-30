@@ -268,7 +268,7 @@ void PlayershopView::OnActive(bool doActivation)
 typedef struct DIR_WATCH
 {
     OVERLAPPED overlapped;
-    _FILE_NOTIFY_INFORMATION* fileNotifyInfo;
+    FILE_NOTIFY_INFORMATION* fileNotifyInfo;
     LPTSTR     lpDir;
     PlayershopView* pOwner;
 } *HDIR_MONITOR;
@@ -278,78 +278,89 @@ VOID CALLBACK DirChangeCompletionRoutine( DWORD dwErrorCode, DWORD
                                          dwNumberOfBytesTransfered,  LPOVERLAPPED lpOverlapped)
 {
     HDIR_MONITOR pMonitor  = (HDIR_MONITOR) lpOverlapped;
-    //   _FILE_NOTIFY_INFORMATION* fileNotifyInfo = (_FILE_NOTIFY_INFORMATION*)&lpOverlapped;
-    // The string returned is not null terminated, lets terminate it
-    pMonitor->fileNotifyInfo->FileName[pMonitor->fileNotifyInfo->FileNameLength/2]=0;
-
-    std::tstringstream f;
-    f << pMonitor->lpDir << "\\" << pMonitor->fileNotifyInfo->FileName;
-
-    std::tstring filename(f.str());
-    const wchar_t* ptr = filename.c_str();
-
-
-    // Send a message to the view to refresh the listing. 
-    // This is placed here instead of inside if to be able to refresh in case of deleted files as well
-    // This is might trigger a bit to many refreshes of the gui
-    pMonitor->pOwner->PostMessage(WM_PSM_UPDATE);
-
-    // Proceed only if the directory change notification is triggered by
-    // the file PlayerShopLog.html
-    if(boost::find_last(ptr, "PlayerShopLog.html"))
+    FILE_NOTIFY_INFORMATION* fileNotifyInfo = pMonitor->fileNotifyInfo;
+    
+    do
     {
+       char* pIndexer = (char*)fileNotifyInfo;
+    // The string returned is not null terminated, lets terminate it
+       fileNotifyInfo->FileName[fileNotifyInfo->FileNameLength/2]=0;
 
+       std::tstringstream f;
+       f << pMonitor->lpDir << "\\" << fileNotifyInfo->FileName; //pMonitor->fileNotifyInfo->FileName;
 
-        boost::filesystem::path p(to_utf8_copy(filename),boost::filesystem::native);
+       std::tstring filename(f.str());
+       const wchar_t* ptr = filename.c_str();
 
-        std::ifstream in(p.string().c_str());
-        std::string line;
-        std::string text;
-        std::vector<std::tstring> v;
-        while(in){
-            line.clear();
-            std::getline(in,line);
-            if(!line.empty())
-            {
-                text += line;
-            }
-        }
+       // Proceed only if the directory change notification is triggered by
+       // the file PlayerShopLog.html and is a remove or modify
+       if((fileNotifyInfo->Action==FILE_ACTION_MODIFIED||fileNotifyInfo->Action==FILE_ACTION_REMOVED)&&
+          boost::find_last(ptr, "PlayerShopLog.html"))
+       {
 
-        // Now that we have the whole file, lets parse it
+           // Send a message to the view to refresh the listing. 
+           pMonitor->pOwner->PostMessage(WM_PSM_UPDATE); //refresh listing always (remove items if file is deleted)
 
-        // Text located between the two following tags is to be considered an item sold
-        std::string startTag = "<div indent=wrapped>" ;
-        std::string endTag   = "</div>" ;
-        std::ostringstream popupText;
-        while(text.length() > 0)
-        {
-            std::string::size_type start = text.find( startTag, 0 );
-            std::string::size_type end  = text.find( endTag , 0 );
-            if( start != std::string::npos && end != std::string::npos)
-            {
-                // adding text for ballon message
-                popupText << text.substr(start+startTag.length(),end-start-startTag.length()) << "\r\n";
-
-                // remove the already processed part of the string
-                text = text.substr(end+endTag.length());
-            }
-            else
-            {
-                text = "";
-            }
-        }
-
-        if(!popupText.str().empty())
-        {
-           //max string 256 bytes...
-              std::string smallString = popupText.str();
-              if(smallString.length()>256)
-              {
-                 smallString = smallString.substr(0,252) + "...";
+           if(fileNotifyInfo->Action!=FILE_ACTION_REMOVED) // if FILE_ACTION_REMOVED, file removed, nothing to parse
+           {
+              boost::filesystem::path p(to_utf8_copy(filename),boost::filesystem::native);
+              std::ifstream in(p.string().c_str());
+              std::string line;
+              std::string text;
+              std::vector<std::tstring> v;
+              while(in){
+                  line.clear();
+                  std::getline(in,line);
+                  if(!line.empty())
+                  {
+                      text += line;
+                  }
               }
-            ServicesSingleton::Instance()->ShowTrayIconBalloon(from_ascii_copy(smallString));
-        }
-    }	
+
+              // Now that we have the whole file, lets parse it
+
+              // Text located between the two following tags is to be considered an item sold
+              std::string startTag = "<div indent=wrapped>" ;
+              std::string endTag   = "</div>" ;
+              std::ostringstream popupText;
+              while(text.length() > 0)
+              {
+                  std::string::size_type start = text.find( startTag, 0 );
+                  std::string::size_type end  = text.find( endTag , 0 );
+                  if( start != std::string::npos && end != std::string::npos)
+                  {
+                      // adding text for ballon message
+                      popupText << text.substr(start+startTag.length(),end-start-startTag.length()) << "\r\n";
+
+                      // remove the already processed part of the string
+                      text = text.substr(end+endTag.length());
+                  }
+                  else
+                  {
+                      text = "";
+                  }
+              }
+
+              if(!popupText.str().empty())
+              {
+                 //max string 256 bytes...
+                    std::string smallString = popupText.str();
+                    if(smallString.length()>256)
+                    {
+                       smallString = smallString.substr(0,252) + "...";
+                    }
+                  ServicesSingleton::Instance()->ShowTrayIconBalloon(from_ascii_copy(smallString));
+              }
+          }
+       }
+
+       if(fileNotifyInfo->NextEntryOffset==0)
+       {
+          break;
+       }
+       fileNotifyInfo = (FILE_NOTIFY_INFORMATION*)&pIndexer[fileNotifyInfo->NextEntryOffset];
+
+    }while(true);
 }
 
 
@@ -394,7 +405,7 @@ void WatchDirectoryThread::WatchDirectory(LPTSTR lpDir)
             pMonitor->fileNotifyInfo,
             2048,
             TRUE,
-            FILE_NOTIFY_CHANGE_LAST_WRITE|FILE_NOTIFY_CHANGE_CREATION,
+            FILE_NOTIFY_CHANGE_LAST_WRITE|FILE_ACTION_REMOVED|FILE_ACTION_MODIFIED,
             &bytesReturned,
             &pMonitor->overlapped,
             DirChangeCompletionRoutine
