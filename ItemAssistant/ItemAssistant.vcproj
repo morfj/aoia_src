@@ -209,10 +209,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\BotExportView.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\DBManager.cpp"
 				>
 			</File>
@@ -320,10 +316,6 @@
 			</File>
 			<File
 				RelativePath=".\Application.h"
-				>
-			</File>
-			<File
-				RelativePath=".\BotExportView.h"
 				>
 			</File>
 			<File

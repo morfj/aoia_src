@@ -136,6 +136,10 @@ namespace Parsers {
         AOMessageBase(char *pRaw, unsigned int size)
             : Parser(pRaw, size) 
             , m_type(UNKNOWN_MESSAGE)
+            , m_size(0)
+            , m_characterid(0)
+            , m_messageid(0)
+            , m_entityid(0)
         {
             // Parse and validate header
             unsigned int t = popInteger();

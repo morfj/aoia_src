@@ -624,7 +624,7 @@ LRESULT InventoryView::OnPostCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 }
 
 
-void InventoryView::OnAOMessage(AOMessageBase &msg)
+void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 {
     switch(msg.messageId())
     {

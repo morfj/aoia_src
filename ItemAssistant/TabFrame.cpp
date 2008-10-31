@@ -78,10 +78,6 @@ LRESULT TabFrame::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandl
 
     m_PlayershopView.StartMonitoring();
 
-    //m_BotExportView.Create(*this, 0, 0, style);
-    //AddTab(m_BotExportView, "Bot Export");
-    //m_viewPlugins.push_back(&m_BotExportView);
-
 #ifdef _DEBUG
     m_MsgView.Create(*this, 0, 0, style);
     AddTab(m_MsgView, _T("Messages (Debug)"));
@@ -115,11 +111,20 @@ PluginViewInterface* TabFrame::GetActivePluginView()
 }
 
 
-void TabFrame::OnAOMessage(AOMessageBase &msg)
+void TabFrame::OnAOServerMessage(AOMessageBase &msg)
 {
     for (unsigned int i = 0; i < m_viewPlugins.size(); i++)
     {
-        m_viewPlugins[i]->OnAOMessage(msg);
+        m_viewPlugins[i]->OnAOServerMessage(msg);
+    }
+}
+
+
+void TabFrame::OnAOClientMessage(AOMessageBase &msg)
+{
+    for (unsigned int i = 0; i < m_viewPlugins.size(); i++)
+    {
+        m_viewPlugins[i]->OnAOClientMessage(msg);
     }
 }
 

@@ -4,7 +4,6 @@
 #include "InventoryView.h"
 #include "AoMsgView.h"
 #include "PatternMatchView.h"
-#include "BotExportView.h"
 #include "PlayershopView.h"
 
 class TabFrame
@@ -26,7 +25,8 @@ public:
     LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 
     PluginViewInterface* GetActivePluginView();
-    void OnAOMessage(AOMessageBase &msg);
+    void OnAOServerMessage(AOMessageBase &msg);
+    void OnAOClientMessage(AOMessageBase &msg);
     void SetToolBarPanel(HWND panel) { m_rebarControl.Attach(panel); }
 
     /// Sets the state of the toolbar for the active view.
@@ -39,7 +39,6 @@ private:
     AoMsgView                  m_MsgView;
     PatternMatchView           m_PatternView;
     PlayershopView             m_PlayershopView;
-    BotExportView              m_BotExportView;
 
     WTL::CReBarCtrl m_rebarControl;
     WTL::CToolBarCtrl m_activeViewToolbar;

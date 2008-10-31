@@ -31,7 +31,12 @@ public:
         return false;
     }
 
-    virtual void OnAOMessage(AOMessageBase &msg)
+    virtual void OnAOServerMessage(AOMessageBase &msg)
+    {
+        // Override in derived classes
+    }
+
+    virtual void OnAOClientMessage(AOMessageBase &msg)
     {
         // Override in derived classes
     }

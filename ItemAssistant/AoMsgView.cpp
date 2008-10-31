@@ -90,7 +90,7 @@ LRESULT AoMsgView::OnClear(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/,
 }
 
 
-void AoMsgView::OnAOMessage(AOMessageBase &msg)
+void AoMsgView::OnAOServerMessage(AOMessageBase &msg)
 {
     CString msgString, sizeStr;
     unsigned int msgid = msg.messageId();
@@ -195,6 +195,15 @@ void AoMsgView::OnAOMessage(AOMessageBase &msg)
 
     std::ofstream ofs;
     ofs.open("c:\\temp\\messages.bin", std::ios_base::out | std::ios_base::binary | std::ios_base::app);
+    DumpMessageToStream(ofs, msg);
+    ofs << "========" << std::flush;
+}
+
+
+void AoMsgView::OnAOClientMessage(AOMessageBase &msg)
+{
+    std::ofstream ofs;
+    ofs.open("c:\\temp\\client_messages.bin", std::ios_base::out | std::ios_base::binary | std::ios_base::app);
     DumpMessageToStream(ofs, msg);
     ofs << "========" << std::flush;
 }

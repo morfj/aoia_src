@@ -27,6 +27,13 @@ have contributed either directly or indirectly include:
 
 Change Log:
 ===========
+Version 0.9.2                                       Release Date: ??/11/2008
+    * Enhanced the player-shop monitor to refresh the view when something 
+      changes on disc. Cleaned up file system monitoring.
+    * Added more logging to make it easier to submit bug reports.
+    * Added experimental hooking of messages sent from the client. Up until 
+      now only messages from the server have been intercepted.
+
 Version 0.9.1                                       Release Date: 25/10/2008
     * Added experimental tracking of player-shop contents.
     * Updated the help menu a bit.

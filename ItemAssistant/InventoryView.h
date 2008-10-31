@@ -170,7 +170,7 @@ public:
     LRESULT OnShowItemRef(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
     LRESULT OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
 
-    virtual void OnAOMessage(AOMessageBase &msg);
+    virtual void OnAOServerMessage(AOMessageBase &msg);
     virtual bool PreTranslateMsg(MSG* pMsg);
 
     void HideFindWindow();

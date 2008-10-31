@@ -5,10 +5,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <set>
-#include <queue>
 #include <boost/smart_ptr.hpp>
 #include <boost/thread.hpp>
+#include "DataQueue.h"
 
+enum MessageType {
+    TYPE_INCOMING = 1,
+    TYPE_OUTGOIING = 2,
+};
 
 typedef void Message_t;
 
@@ -20,16 +24,16 @@ DWORD g_lastThreadTick = 0;
 std::set<unsigned int> g_messageFilter;
 HANDLE g_hEvent;
 
-typedef std::queue<COPYDATASTRUCT*> COPYDATASTRUCTQUEUE;
-
-COPYDATASTRUCTQUEUE g_dataQueue;
-boost::mutex g_dataQueueMutex;
+DataQueue g_dataQueue;
 
 HWND g_targetWnd = NULL;   // TODO: Make this a set/list that is dynamically updated
 
 using namespace AO;
 
+PDETOUR_TRAMPOLINE Trampoline = NULL;
 
+
+/// Thread function that dispatches queued message blocks to the AOIA application.
 void WorkerThreadMethod(void*)
 {
     while ((g_hEvent != NULL) && (WaitForSingleObject(g_hEvent,INFINITE) == WAIT_OBJECT_0))
@@ -52,27 +56,20 @@ void WorkerThreadMethod(void*)
 
         while (!g_dataQueue.empty())
         {
-            COPYDATASTRUCT * pData = NULL;
-
-            {   // Guard scope
-                boost::lock_guard<boost::mutex> guard(g_dataQueueMutex);
-
-                pData = g_dataQueue.front();
-                g_dataQueue.pop();
-            }
+            DataItemPtr item = g_dataQueue.pop();
 
             if (g_targetWnd == NULL) {
                 // We have data, but no target window, so just delete the message
-                delete[] pData->lpData;
-                delete pData;
                 continue;
             }
 
-            // To avoid blocking the main thread, we should not have a lock on the queue while we process the message.
-            SendMessage( g_targetWnd, WM_COPYDATA, 0, ( LPARAM ) pData );
+            COPYDATASTRUCT data;
+            data.dwData = item->type();
+            data.lpData = item->data();
+            data.cbData = item->size();
 
-            delete[] pData->lpData;
-            delete pData;
+            // To avoid blocking the main thread, we should not have a lock on the queue while we process the message.
+            SendMessage( g_targetWnd, WM_COPYDATA, 0, ( LPARAM ) &data );
         }
     }
 }
@@ -93,6 +90,7 @@ void EndWorkerThread()
 }
 
 
+/// Hook function that is called for all incoming messages from the server to the AO client.
 Message_t* DataBlockToMessageHook( int _Size, void* _pDataBlock )
 {
     // Retrieves the number of milliseconds that have elapsed since the system was started, up to 49.7 days.
@@ -113,29 +111,16 @@ Message_t* DataBlockToMessageHook( int _Size, void* _pDataBlock )
 
     if (g_messageFilter.size() == 0 || g_messageFilter.find(msgId) != g_messageFilter.end())
     {
-        COPYDATASTRUCT * pData = new COPYDATASTRUCT;
-        if (pData != NULL)
-        {
-            pData->dwData = 0;
-            pData->cbData = _Size;
-            pData->lpData = new unsigned char[_Size];//_pDataBlock;
-
-            if (pData->lpData != NULL)
-            {
-                memcpy(pData->lpData, _pDataBlock, _Size);
-                {
-                    boost::lock_guard<boost::mutex> guard(g_dataQueueMutex);
-                    g_dataQueue.push(pData);
-                }
-                SetEvent(g_hEvent);
-            }
-        }
+        DataItemPtr item(new DataItem(TYPE_INCOMING, _Size, (char*)_pDataBlock));
+        g_dataQueue.push(item);
+        SetEvent(g_hEvent);
     }
 
     return pOriginalDataBlockToMessage( _Size, _pDataBlock );
 }
 
 
+/// Loads a list of message IDs that should be passed on to the AOIA application
 void LoadMessageFilter(HKEY hKeyParent, LPCTSTR lpszKeyName)
 {
     g_messageFilter.empty();
@@ -167,14 +152,91 @@ void LoadMessageFilter(HKEY hKeyParent, LPCTSTR lpszKeyName)
 }
 
 
+#pragma pack(push, 1)
+
+typedef struct {
+    DWORD edi;
+    DWORD esi;
+    DWORD ebp;
+    DWORD esp;
+    DWORD ebx;
+    DWORD edx;
+    DWORD ecx;
+    DWORD eax;
+} CPU_CONTEXT;
+
+#pragma pack(pop)
+
+
+/// Hook function that is called before a message is sent from the AO client to the server.
+void OnConnectionSend(void * connection, unsigned char * _msgData, unsigned int len)
+{
+#ifdef DEBUG
+    Header * msg = (Header*)_msgData;
+    unsigned int msgId = _byteswap_ulong(msg->msgid);
+
+    std::ostringstream s;
+    s << "OnConnectionSend( len: " << len << ", msgId: " << std::hex << msgId << std::endl;
+
+    OutputDebugString(s.str().c_str());
+#endif
+
+    DataItemPtr item(new DataItem(TYPE_OUTGOIING, len, (char*)_msgData));
+    g_dataQueue.push(item);
+    SetEvent(g_hEvent);
+}
+
+
+__declspec(naked) void SendConnectionHook (CPU_CONTEXT saved_regs, void * ret_addr, DWORD arg1, DWORD arg2, DWORD arg3)
+{
+    DWORD edi_value;
+    DWORD old_last_error;
+
+    __asm
+    {
+        pushad;   /* first "argument", which is also used to store registers */
+        push ecx; /* padding so that ebp+8 refers to the first "argument" */
+
+        /* set up standard prologue */
+        push ebp;
+        mov ebp, esp;
+        sub esp, __LOCAL_SIZE;
+    }
+
+    edi_value = saved_regs.edi;
+    old_last_error = GetLastError();
+    OnConnectionSend((void *) saved_regs.ecx, (unsigned char *) arg3, arg2);
+    SetLastError(old_last_error);
+
+    __asm
+    {
+        /* standard epilogue */
+        mov esp, ebp;
+        pop ebp;
+
+        pop ecx; /* clear padding */
+        popad; /* clear first "argument" */
+        jmp [Trampoline];
+    }
+}
+
+
 int ProcessAttach( HINSTANCE _hModule )
 {
-    // Hook DataBlockToMessage
+    // Hook ::DataBlockToMessage() (incoming)
     pOriginalDataBlockToMessage = (Message_t *(__cdecl*)(int,void*))::GetProcAddress(::GetModuleHandle("MessageProtocol.dll"), "?DataBlockToMessage@@YAPAVMessage_t@@IPAX@Z");
 
     DetourTransactionBegin();
     DetourUpdateThread(GetCurrentThread());
     DetourAttach((PVOID*)&pOriginalDataBlockToMessage, DataBlockToMessageHook);
+    DetourTransactionCommit();
+
+    // Hook Connection::Send() (outgoing)
+    PVOID Func =  (int (__stdcall *)(unsigned int, unsigned short, void const *))::GetProcAddress(::GetModuleHandle("Connection.dll"), "?Send@Connection_t@@QAEHIIPBX@Z");
+    PVOID DetourPtr;
+    PVOID TargetPtr;
+    DetourTransactionBegin();
+    DetourAttachEx(&Func, SendConnectionHook, &Trampoline, &TargetPtr, &DetourPtr );
     DetourTransactionCommit();
 
     StartWorkerThread();

@@ -61,7 +61,8 @@ public:
     LRESULT OnClear(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnSize(UINT wParam, CSize newSize);
 
-    virtual void OnAOMessage(AOMessageBase &msg);
+    virtual void OnAOServerMessage(AOMessageBase &msg);
+    virtual void OnAOClientMessage(AOMessageBase &msg);
 
 protected:
     void DumpMessageToStream(std::ostream &out, AOMessageBase &msg);

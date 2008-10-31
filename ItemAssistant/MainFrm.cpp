@@ -200,11 +200,13 @@ LRESULT CMainFrame::OnAOMessage(HWND wnd, PCOPYDATASTRUCT pData)
     char* datablock = (char*)(pData->lpData);
     unsigned int datasize = pData->cbData;
 
-    AOMessageBase msg(datablock, datasize);
-    //if (msg.headerType() != AOMessageBase::UNKNOWN_MESSAGE) 
-    {
-        //assert(msg.size() == datasize);
-        m_tabbedChildWindow.OnAOMessage(msg);
+    if (pData->dwData == 1) {
+        AOMessageBase msg(datablock, datasize);
+        m_tabbedChildWindow.OnAOServerMessage(msg);
+    }
+    else if (pData->dwData == 2) {
+        AOMessageBase msg(datablock, datasize);
+        m_tabbedChildWindow.OnAOClientMessage(msg);
     }
 
     return 0;
