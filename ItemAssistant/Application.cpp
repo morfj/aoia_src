@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "Application.h"
+#include "Version.h"
 
 
 Application::Application()
@@ -16,10 +17,10 @@ bool Application::init(std::tstring const& cmdLine)
 {
     // Check to see if logging should be enabled
     if (cmdLine.find(_T("-log")) != std::tstring::npos) {
-        Logger::instance()->init(_T("ItemAssistant.log"));
+        Logger::instance()->init(_T("ItemAssistant.log"), g_versionNumber);
     }
     else {
-        Logger::instance()->init();
+        Logger::instance()->init(_T(""), g_versionNumber);
     }
 
     std::tstring dbfile;
@@ -29,6 +30,7 @@ bool Application::init(std::tstring const& cmdLine)
     }
 
     if (!g_DBManager.Init(dbfile)) {
+        Logger::instance()->log(_T("Failed to insitialize DB Manager. Aborting!"));
         return false;
     }
 

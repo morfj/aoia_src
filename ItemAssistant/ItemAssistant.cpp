@@ -37,13 +37,27 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
     AtlAxWinInit();
 
-    if (!App::Instance()->init( lpCmdLine )) {
-        return 0;
+    int nRet = 0;
+
+    try
+    {
+	    if (!App::Instance()->init( lpCmdLine )) {
+	        return 0;
+	    }
+	
+	    nRet = App::Instance()->run(lpCmdLine, nCmdShow);
+	
+	    App::Instance()->destroy();
     }
-
-    int nRet = App::Instance()->run(lpCmdLine, nCmdShow);
-
-    App::Instance()->destroy();
+    catch (std::exception& e)
+    {
+        Logger::instance()->log(_T("Unhandled exception caught:"));
+        Logger::instance()->log(from_ascii_copy(e.what()));
+    }
+    catch (...)
+    {
+        Logger::instance()->log(_T("Unhandled exception caught."));
+    }
 
     _Module.Term();
     ::CoUninitialize();
