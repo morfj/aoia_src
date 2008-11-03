@@ -11,17 +11,17 @@ namespace Shared
         /// Unique point of access
         static T* Instance()
         {
-            if (!instance_)
+            if (!ms_instance)
             {
-                instance_ = new T;
+                ms_instance = new T;
             }
-            return instance_;
+            return ms_instance;
         }
 
         static void DestroyInstance()
         {
-            delete instance_;
-            instance_ = NULL;
+            delete ms_instance;
+            ms_instance = NULL;
         }
 
     private:
@@ -35,10 +35,10 @@ namespace Shared
         {
         }
 
-        static T* instance_;
+        static T* ms_instance;
     };
 
     /// Static class member initialisation.
-    template <typename T> T* Singleton<T>::instance_ = NULL;
+    template <typename T> T* Singleton<T>::ms_instance = NULL;
 
 }   // namespace

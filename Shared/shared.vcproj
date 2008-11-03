@@ -175,10 +175,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Logger.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\Parser.cpp"
 				>
 			</File>
@@ -242,10 +238,6 @@
 			</File>
 			<File
 				RelativePath=".\FileUtils.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Logger.h"
 				>
 			</File>
 			<File

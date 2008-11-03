@@ -6,17 +6,17 @@
 
 
 // This is an example of an exported variable
-ITEMASSISTANTCORE_API int nItemAssistantCore=0;
+//ITEMASSISTANTCORE_API int nItemAssistantCore=0;
 
 // This is an example of an exported function.
-ITEMASSISTANTCORE_API int fnItemAssistantCore(void)
-{
-	return 42;
-}
+//ITEMASSISTANTCORE_API int fnItemAssistantCore(void)
+//{
+//	return 42;
+//}
 
 // This is the constructor of a class that has been exported.
 // see ItemAssistantCore.h for the class definition
-CItemAssistantCore::CItemAssistantCore()
-{
-	return;
-}
+//CItemAssistantCore::CItemAssistantCore()
+//{
+//	return;
+//}

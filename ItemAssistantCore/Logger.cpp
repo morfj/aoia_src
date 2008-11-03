@@ -1,9 +1,12 @@
 #include "StdAfx.h"
 #include "Logger.h"
 
-boost::shared_ptr<Logger> g_logger;
 
 #define LB "\r\n"
+
+
+Logger* Logger::ms_instance = NULL;
+
 
 Logger::Logger()
   : m_enabled(false)
@@ -11,17 +14,18 @@ Logger::Logger()
 }
 
 
-Logger::~Logger(void)
+Logger::~Logger()
 {
 }
 
 
-Logger* Logger::instance()
+Logger& Logger::instance()
 {
-    if (!g_logger) {
-        g_logger.reset(new Logger());
+    if (!ms_instance) {
+        ms_instance = new Logger();
     }
-    return g_logger.get();
+    assert(ms_instance);
+    return *ms_instance;
 }
 
 

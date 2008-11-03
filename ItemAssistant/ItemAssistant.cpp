@@ -51,12 +51,12 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
     }
     catch (std::exception& e)
     {
-        Logger::instance()->log(_T("Unhandled exception caught:"));
-        Logger::instance()->log(from_ascii_copy(e.what()));
+        Logger::instance().log(_T("Unhandled exception caught:"));
+        Logger::instance().log(from_ascii_copy(e.what()));
     }
     catch (...)
     {
-        Logger::instance()->log(_T("Unhandled exception caught."));
+        Logger::instance().log(_T("Unhandled exception caught."));
     }
 
     _Module.Term();

@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "Application.h"
 #include "Version.h"
+#include <PluginSubSystem/PluginManager.h>
 
 
 Application::Application()
@@ -17,10 +18,10 @@ bool Application::init(std::tstring const& cmdLine)
 {
     // Check to see if logging should be enabled
     if (cmdLine.find(_T("-log")) != std::tstring::npos) {
-        Logger::instance()->init(_T("ItemAssistant.log"), g_versionNumber);
+        Logger::instance().init(_T("ItemAssistant.log"), g_versionNumber);
     }
     else {
-        Logger::instance()->init(_T(""), g_versionNumber);
+        Logger::instance().init(_T(""), g_versionNumber);
     }
 
     std::tstring dbfile;
@@ -30,9 +31,12 @@ bool Application::init(std::tstring const& cmdLine)
     }
 
     if (!g_DBManager.Init(dbfile)) {
-        Logger::instance()->log(_T("Failed to insitialize DB Manager. Aborting!"));
+        Logger::instance().log(_T("Failed to insitialize DB Manager. Aborting!"));
         return false;
     }
+
+    boost::shared_ptr<PluginManager> pluginManager = PluginManager::Instance();
+    pluginManager->AddLibraries(_T("./Plugins"));
 
     return true;
 }
@@ -44,7 +48,7 @@ void Application::destroy()
     g_DBManager.Term();
     g_DBManager.UnLock();
 
-    Logger::instance()->destroy();
+    Logger::instance().destroy();
 }
 
 

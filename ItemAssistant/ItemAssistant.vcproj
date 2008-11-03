@@ -66,7 +66,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
-				AdditionalDependencies="shared.lib tinyxml.lib sqlite3.lib"
+				AdditionalDependencies="shared.lib tinyxml.lib sqlite3.lib PluginSubSystem.lib ItemAssistantCore.lib"
 				OutputFile="$(OutDir)/ItemAssistant.exe"
 				AdditionalLibraryDirectories="&quot;$(SolutionDir)$(ConfigurationName)&quot;;&quot;$(SolutionDir)Externals\SQLite\&quot;;&quot;$(SolutionDir)Externals\boost_bin\&quot;"
 				EnableUAC="false"
@@ -149,7 +149,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
-				AdditionalDependencies="shared.lib tinyxml.lib sqlite3.lib"
+				AdditionalDependencies="shared.lib tinyxml.lib sqlite3.lib PluginSubSystem.lib ItemAssistantCore.lib"
 				OutputFile="$(OutDir)/ItemAssistant.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(SolutionDir)$(ConfigurationName)&quot;;&quot;$(SolutionDir)Externals\SQLite\&quot;;&quot;$(SolutionDir)Externals\boost_bin\&quot;"
@@ -250,10 +250,6 @@
 			</File>
 			<File
 				RelativePath=".\PlayershopView.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\PluginManager.cpp"
 				>
 			</File>
 			<File
@@ -360,10 +356,6 @@
 			</File>
 			<File
 				RelativePath=".\PlayershopView.h"
-				>
-			</File>
-			<File
-				RelativePath=".\PluginManager.h"
 				>
 			</File>
 			<File

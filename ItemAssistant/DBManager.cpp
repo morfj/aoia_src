@@ -160,7 +160,7 @@ bool DBManager::SyncLocalItemsDB(std::tstring const& localfile, std::tstring con
     }
 
     if (!exists(original)) {
-        Logger::instance()->log(_T("Could not locate the original AO database."));
+        Logger::instance().log(_T("Could not locate the original AO database."));
         return hasLocalDB;
     }
 
@@ -280,19 +280,19 @@ bool DBManager::SyncLocalItemsDB(std::tstring const& localfile, std::tstring con
     }
     catch (std::bad_alloc &e) {
         assert(false);
-        Logger::instance()->log(STREAM2STR(_T("Error creating item database. ") << e.what()));
+        Logger::instance().log(STREAM2STR(_T("Error creating item database. ") << e.what()));
         return false;
     }
     catch (AODatabaseParser::CTreeDbException &e) {
         assert(false);
-        Logger::instance()->log(STREAM2STR(_T("Error parsing the AO Database. ") << e.what()));
+        Logger::instance().log(STREAM2STR(_T("Error parsing the AO Database. ") << e.what()));
         MessageBox( NULL, _T("Unable to parse the AO database.\n\rPlease make sure Anarchy Online is not running and try again."),
             _T("Error - AO Item Assistant"), MB_OK | MB_ICONERROR);
         return false;
     }
     catch (std::exception &e) {
         assert(false);
-        Logger::instance()->log(STREAM2STR(_T("Error creating item database. ") << e.what()));
+        Logger::instance().log(STREAM2STR(_T("Error creating item database. ") << e.what()));
         return false;
     }
 

@@ -29,9 +29,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AORipper", "AORipper\AORipp
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PluginSubSystem", "PluginSubSystem\PluginSubSystem.vcproj", "{B912EDCF-83BE-4A3E-A05D-F04D662F1C62}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ItemAssistantCorePS", "ItemAssistantCore\ItemAssistantCorePS.vcproj", "{0F7B4C72-0B40-4D9C-BA20-A3283F2D4CA7}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ItemAssistantCore", "ItemAssistantCore\ItemAssistantCore.vcproj", "{D9EFFCC4-4544-4E8F-9920-2F7CD55D814B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{370E1E96-79A9-4C9D-83B2-6E8298A90655} = {370E1E96-79A9-4C9D-83B2-6E8298A90655}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -71,8 +72,6 @@ Global
 		{B912EDCF-83BE-4A3E-A05D-F04D662F1C62}.Debug|Win32.Build.0 = Debug|Win32
 		{B912EDCF-83BE-4A3E-A05D-F04D662F1C62}.Release|Win32.ActiveCfg = Release|Win32
 		{B912EDCF-83BE-4A3E-A05D-F04D662F1C62}.Release|Win32.Build.0 = Release|Win32
-		{0F7B4C72-0B40-4D9C-BA20-A3283F2D4CA7}.Debug|Win32.ActiveCfg = Debug|Win32
-		{0F7B4C72-0B40-4D9C-BA20-A3283F2D4CA7}.Release|Win32.ActiveCfg = Release|Win32
 		{D9EFFCC4-4544-4E8F-9920-2F7CD55D814B}.Debug|Win32.ActiveCfg = Debug|Win32
 		{D9EFFCC4-4544-4E8F-9920-2F7CD55D814B}.Debug|Win32.Build.0 = Debug|Win32
 		{D9EFFCC4-4544-4E8F-9920-2F7CD55D814B}.Release|Win32.ActiveCfg = Release|Win32

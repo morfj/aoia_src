@@ -161,7 +161,7 @@ namespace Parsers {
                 m_type = MSG_TYPE_1;
             }
             else {
-                Logger::instance()->log(STREAM2STR(_T("Error unknown message header: ") << t));
+                Logger::instance().log(STREAM2STR(_T("Error unknown message header: ") << t));
                 return;
             }
 

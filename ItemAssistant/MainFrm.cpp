@@ -270,7 +270,7 @@ void CMainFrame::Inject()
         InjectDLL(AOProcessId, temp.str());
     }
     else {
-        Logger::instance()->log(_T("Could not locate Anarchy Online window."));
+        Logger::instance().log(_T("Could not locate Anarchy Online window."));
     }
 }
 

@@ -10,13 +10,20 @@
 #define ITEMASSISTANTCORE_API __declspec(dllimport)
 #endif
 
+#define SINGLETON(classname)            \
+    private:                            \
+        classname();                    \
+        classname(const classname &);   \
+    public:                             \
+        static classname & instance();
+
 // This class is exported from the ItemAssistantCore.dll
-class ITEMASSISTANTCORE_API CItemAssistantCore {
-public:
-	CItemAssistantCore(void);
-	// TODO: add your methods here.
-};
-
-extern ITEMASSISTANTCORE_API int nItemAssistantCore;
-
-ITEMASSISTANTCORE_API int fnItemAssistantCore(void);
+//class ITEMASSISTANTCORE_API CItemAssistantCore {
+//public:
+//	CItemAssistantCore(void);
+//	// TODO: add your methods here.
+//};
+//
+//extern ITEMASSISTANTCORE_API int nItemAssistantCore;
+//
+//ITEMASSISTANTCORE_API int fnItemAssistantCore(void);

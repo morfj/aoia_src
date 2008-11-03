@@ -3,7 +3,7 @@
 #include "ctree.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/assign.hpp>
-#include "Logger.h"
+#include <ItemAssistantCore/Logger.h>
 
 #define BUFFER_SIZE 1024*1024
 
@@ -551,10 +551,10 @@ AOItemParser::AOItemParser(char* pBuffer, unsigned int bufSize)
                         this->defmap = m;
                     }
                     else if (fkey == 0x03) {
-                        Logger::instance()->log(STREAM2STR("AOID " << this->aoid << "had a skillmap, but it was not att or def (0x03)"));
+                        Logger::instance().log(STREAM2STR("AOID " << this->aoid << "had a skillmap, but it was not att or def (0x03)"));
                     }
                     else {
-                        Logger::instance()->log(STREAM2STR("AOID " << this->aoid << "had a skillmap, but it was not att or def (0x" << std::hex << fkey << ")"));
+                        Logger::instance().log(STREAM2STR("AOID " << this->aoid << "had a skillmap, but it was not att or def (0x" << std::hex << fkey << ")"));
                         assert(false);
                         //debugf(DEBUG_INFO, "item had a skillmap, but it was not att or def (0x%x)\n", fkey);
                     }
@@ -611,7 +611,7 @@ AOItemParser::AOItemParser(char* pBuffer, unsigned int bufSize)
             else
             {
                 // Unknown key found.
-                Logger::instance()->log(STREAM2STR("Unknown key found while parsing item database. AOID = " << this->aoid << " KEY = 0x" << std::hex << key));
+                Logger::instance().log(STREAM2STR("Unknown key found while parsing item database. AOID = " << this->aoid << " KEY = 0x" << std::hex << key));
                 //assert(false);
                 //return;
                 //DATAFAIL(key);
