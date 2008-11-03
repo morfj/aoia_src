@@ -3,7 +3,7 @@
 
 boost::shared_ptr<Logger> g_logger;
 
-#define LB "\n\r"
+#define LB "\r\n"
 
 Logger::Logger()
   : m_enabled(false)
@@ -28,15 +28,22 @@ Logger* Logger::instance()
 void Logger::init(std::tstring const& filename, std::tstring const& versioninfo)
 {
     m_enabled = !filename.empty();
-    if (m_enabled) {
+    if (m_enabled)
+    {
         m_out.open(filename.c_str());
         log(STREAM2STR(
-                 "***********************"  << LB << std::flush
-              << "    Logging Started"      << LB << std::flush
-              << "***********************"  << LB << std::flush
-              << "Version: " << versioninfo << LB << std::flush
-              << "***********************"  << LB << std::flush
+                 "***********************"  << LB
+              << "    Logging Started"      << LB
+              << "***********************"  << LB
+              << "Version: " << versioninfo
         ));
+        {
+            TCHAR buffer[MAX_PATH];
+            DWORD size = GetCurrentDirectory(MAX_PATH, buffer);
+            buffer[size] = '\0';
+
+            log(STREAM2STR("Current Directory: " << buffer));
+        }
     }
 }
 
