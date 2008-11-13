@@ -14,6 +14,11 @@ Logger::Logger()
 }
 
 
+Logger::Logger(const Logger&)
+{
+}
+
+
 Logger::~Logger()
 {
 }
