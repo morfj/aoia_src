@@ -2,7 +2,7 @@
 #define PLUGINMANAGER_H
 
 #ifndef PLUGINSUBSYSTEM_DLL
-#pragma comment( lib, “PluginSubSystem.lib” )
+#pragma comment( lib, "PluginSubSystem.lib" )
 #define PLUGINSUBSYSTEM_API __declspec(dllimport)
 #else
 #define PLUGINSUBSYSTEM_API __declspec(dllexport)
