@@ -7,7 +7,7 @@
 #include <shared/FileUtils.h>
 #include <sstream>
 #include "ProgressDialog.h"
-
+#include <ItemAssistantCore/AOManager.h>
 
 namespace bfs = boost::filesystem;
 
@@ -30,74 +30,18 @@ DBManager::~DBManager(void)
 
 bool DBManager::Init(std::tstring dbfile)
 {
-    // Init the Copy of AO DB
-
-    std::tstring AODir;
-    bool requestFolder = true;
-
-    ATL::CRegKey regKey;
-    if (regKey.Open(HKEY_CURRENT_USER, _T("Software\\AOItemAssistant"), KEY_ALL_ACCESS) == ERROR_SUCCESS)
-    {
-        TCHAR ao_dir[MAX_PATH];
-        ULONG ao_dir_size = MAX_PATH;
-        ZeroMemory(ao_dir, MAX_PATH * sizeof(TCHAR));
-
-        if (regKey.QueryStringValue(_T("AOPath"), ao_dir, &ao_dir_size) == ERROR_SUCCESS)
-        {
-            AODir = std::tstring(ao_dir);
-            std::tstringstream AOExePath;
-            AOExePath << AODir << _T("\\anarchy.exe");
-
-            FILE* fp;
-            //char AOExePath[300];
-            //sprintf( AOExePath, "%s\\anarchy.exe", AODir.c_str() );
-            if( fopen_s( &fp, to_ascii_copy(AOExePath.str()).c_str(), "r" ) == S_OK )
-            {
-                requestFolder = false;
-                fclose( fp );
-            }
-        }
-        regKey.Close();
+    std::tstring aofolder = AOManager::instance().getAOFolder();
+    if (aofolder.empty()) {
+        return false;
     }
-    else
-    {
-        if (regKey.Create(HKEY_CURRENT_USER, _T("Software\\AOItemAssistant")) == ERROR_SUCCESS)
-        {
-            regKey.Close();
-        }
-    }
-
-    if (requestFolder)
-    {
-        AODir = BrowseForFolder(NULL, _T("Please locate the AO directory:"));
-        if (AODir.empty()) {
-            return false;
-        }
-
-        bfs::path pathOfExe(to_ascii_copy(AODir));
-        pathOfExe = pathOfExe / "anarchy.exe";
-        if (!bfs::exists(pathOfExe)) {
-            MessageBox( NULL, _T("This is not AO's directory."), _T("ERROR"), MB_OK | MB_ICONERROR);
-            return false;
-        }
-
-        if (regKey.Open(HKEY_CURRENT_USER, _T("Software\\AOItemAssistant"), KEY_ALL_ACCESS) == ERROR_SUCCESS)
-        {
-            regKey.SetStringValue(_T("AOPath"), AODir.c_str());
-            regKey.Close();
-        }
-    }
-
-    m_aofolder = AODir;
 
     if (dbfile.empty()) {
         dbfile = _T("ItemAssistant.db");
     }
 
-    bool dbfileExists = bfs::exists(to_ascii_copy(dbfile));
+    bool dbfileExists = bfs::exists(bfs::tpath(dbfile));
 
-    if (!SQLite::Db::Init(dbfile))
-    {
+    if (!SQLite::Db::Init(dbfile)) {
         return false;
     }
 
@@ -121,7 +65,7 @@ bool DBManager::Init(std::tstring dbfile)
         return false;
     }
 
-    if (!SyncLocalItemsDB(_T("aoitems.db"), m_aofolder)) {
+    if (!SyncLocalItemsDB(_T("aoitems.db"), aofolder)) {
         MessageBox( NULL, _T("AO Item Assistant can not start without a valid item database."),
             _T("Error - AO Item Assistant"), MB_OK | MB_ICONERROR);
         return false;

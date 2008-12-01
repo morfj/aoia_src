@@ -31,8 +31,6 @@ public:
     bool Init(std::tstring dbfile);
     void Term();
 
-    std::tstring AOFolder() const { return m_aofolder; }
-
     void InsertItem(unsigned int keylow, unsigned int keyhigh, unsigned short ql, unsigned short stack, 
         unsigned int parent, unsigned short slot, unsigned int children, unsigned int owner);
 
@@ -56,6 +54,5 @@ protected:
     void CreateDBScheme() const;
 
 private:
-    std::tstring   m_aofolder;
     Mutex          m_mutex;
 };

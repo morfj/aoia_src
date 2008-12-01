@@ -2,6 +2,7 @@
 #include "PlayershopView.h"
 #include <boost/algorithm/string/find.hpp>
 #include <Windows.h>
+#include <ItemAssistantCore/AOManager.h>
 
 
 enum ColumnID
@@ -426,7 +427,7 @@ void WatchDirectoryThread::WatchDirectory(LPTSTR lpDir)
 
 DWORD WatchDirectoryThread::ThreadProc()
 {
-    std::tstring directoryToWatch = STREAM2STR( g_DBManager.AOFolder() << _T("\\Prefs") );
+    std::tstring directoryToWatch = STREAM2STR( AOManager::instance().getAOFolder() << _T("\\Prefs") );
     WatchDirectory((LPTSTR)directoryToWatch.c_str());
     return 0;
 }

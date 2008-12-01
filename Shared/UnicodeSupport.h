@@ -2,12 +2,20 @@
 
 #include <string>
 #include <sstream>
+#include <boost/filesystem.hpp>
 
 namespace std {
    typedef basic_string<TCHAR> tstring;
    typedef basic_stringstream<TCHAR> tstringstream;
 }
 
+namespace boost { namespace filesystem {
+#ifdef UNICODE
+    typedef wpath tpath;
+#else
+    typedef path tpath;
+#endif
+}}  // namespace boost::filesystem
 
 std::string to_ascii_copy(std::wstring const& input);
 std::string to_ascii_copy(std::string const& input);

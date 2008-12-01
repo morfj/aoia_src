@@ -10,6 +10,7 @@
 #include "MainFrm.h"
 #include "ntray.h"
 #include "Version.h"
+#include <ItemAssistantCore/AOManager.h>
 
 
 namespace ba = boost::algorithm;
@@ -49,7 +50,7 @@ std::tstring SharedServices::GetContainerName(unsigned int charid, unsigned int 
     std::tstring filename;
     for (unsigned int i = 0; i < m_accounts.size(); i++)
     {
-        filename = STREAM2STR( g_DBManager.AOFolder() << _T("\\Prefs\\") << m_accounts[i] << _T("\\Char") << charid << _T("\\Containers\\Container_51017x") << containerid << _T(".xml") );
+        filename = STREAM2STR( AOManager::instance().getAOFolder() << _T("\\Prefs\\") << m_accounts[i] << _T("\\Char") << charid << _T("\\Containers\\Container_51017x") << containerid << _T(".xml") );
         if (PathFileExists(filename.c_str()))
         {
             WIN32_FILE_ATTRIBUTE_DATA atribs; 
@@ -198,7 +199,7 @@ std::vector<std::tstring> SharedServices::GetAccountNames() const
 {
     std::vector<std::tstring> result;
 
-    std::tstring path = g_DBManager.AOFolder();
+    std::tstring path = AOManager::instance().getAOFolder();
     path += _T("\\Prefs\\*");
 
     WIN32_FIND_DATA findData;

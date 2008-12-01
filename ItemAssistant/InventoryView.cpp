@@ -10,6 +10,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <ShellAPI.h>
+#include <ItemAssistantCore/AOManager.h>
 
 #define TIXML_USE_STL
 #include <TinyXml/tinyxml.h>
@@ -327,7 +328,7 @@ LRESULT InventoryView::OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND 
     // Output to the aoia script in the AO script folder.
     if (scriptOutput) {
         if (output.length() <= 4096) {
-            std::tstring filename = STREAM2STR(g_DBManager.AOFolder() << _T("\\scripts\\aoia"));
+            std::tstring filename = STREAM2STR(AOManager::instance().getAOFolder() << _T("\\scripts\\aoia"));
 #ifdef UNICODE
             std::wofstream ofs(filename.c_str());
 #else

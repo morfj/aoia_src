@@ -10,7 +10,7 @@ class ITEMASSISTANTCORE_API Logger
 {
     SINGLETON(Logger);
 public:
-    ~Logger(void);
+    ~Logger();
 
     void init(std::tstring const& filename, std::tstring const& versioninfo);
     void destroy();

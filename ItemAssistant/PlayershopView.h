@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PLAYERSHOPVIEW_H
+#define PLAYERSHOPVIEW_H
 
 #include <PluginSDK/ItemAssistView.h>
 #include <boost/filesystem/path.hpp>
@@ -20,11 +21,7 @@ public:
     { }
     virtual ~WatchDirectoryThread() { }
 
-    //void RefreshTree(LPTSTR lpDrive);
-    //void RefreshDirectory(LPTSTR lpDir);
-    
     virtual DWORD ThreadProc();
-
 
 protected:
     void WatchDirectory(LPTSTR lpDir);
@@ -81,9 +78,8 @@ public:
     LRESULT OnPause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnColumnClick(LPNMHDR lParam);
     LRESULT OnItemActivate(LPNMHDR lParam);
-   void StartMonitoring();
-   void StopMonitoring();
-
+    void StartMonitoring();
+    void StopMonitoring();
 
     void UpdateListView(std::tstring const& where);
     void UpdateListView(std::vector<std::tstring> v);
@@ -96,12 +92,9 @@ protected:
     static int CALLBACK CompareStr(LPARAM param1, LPARAM param2, LPARAM sort);
 
 private:
-    CSplitterWindow   m_splitter;
-
-    //MFTreeView        m_treeview;
-    PsmTreeView		   m_treeview;
-    CListViewCtrl     m_listview;
-    //CTreeItem         m_treeRoot;
+    CSplitterWindow m_splitter;
+    PsmTreeView m_treeview;
+    CListViewCtrl m_listview;
 
     PlayershopTreeRoot m_treeRoot;
     boost::shared_ptr<WatchDirectoryThread> m_directoryWatch;
@@ -111,3 +104,5 @@ private:
     int   m_sortColumn;
 };
 
+
+#endif // PLAYERSHOPVIEW_H
