@@ -5,7 +5,7 @@
 #define LB "\r\n"
 
 
-Logger* Logger::ms_instance = NULL;
+SINGLETON_IMPL(Logger);
 
 
 Logger::Logger()
@@ -21,16 +21,6 @@ Logger::Logger(const Logger&)
 
 Logger::~Logger()
 {
-}
-
-
-Logger& Logger::instance()
-{
-    if (!ms_instance) {
-        ms_instance = new Logger();
-    }
-    assert(ms_instance);
-    return *ms_instance;
 }
 
 

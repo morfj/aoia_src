@@ -6,7 +6,8 @@
 namespace bfs = boost::filesystem;
 namespace ba = boost::algorithm;
 
-boost::shared_ptr<PluginManager> PluginManager::ms_instance;
+
+SINGLETON_IMPL(PluginManager);
 
 
 PluginManager::PluginManager()
@@ -21,21 +22,6 @@ PluginManager::PluginManager(const PluginManager&)
 
 PluginManager::~PluginManager()
 {
-}
-
-
-boost::shared_ptr<PluginManager> PluginManager::Instance()
-{
-    if (!ms_instance) {
-        ms_instance.reset(new PluginManager());
-    }
-    return ms_instance;
-}
-
-
-void PluginManager::DestroyInstance()
-{
-    ms_instance.reset();
 }
 
 

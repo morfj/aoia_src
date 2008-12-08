@@ -7,15 +7,9 @@
 #ifdef ITEMASSISTANTCORE_EXPORTS
 #define ITEMASSISTANTCORE_API __declspec(dllexport)
 #else
+#pragma comment( lib, "ItemAssistantCore.lib" )
 #define ITEMASSISTANTCORE_API __declspec(dllimport)
 #endif
-
-#define SINGLETON(classname)            \
-    private:                            \
-        classname();                    \
-        classname(const classname &);   \
-    public:                             \
-        static classname & instance();
 
 // This class is exported from the ItemAssistantCore.dll
 //class ITEMASSISTANTCORE_API CItemAssistantCore {

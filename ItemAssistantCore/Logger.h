@@ -5,6 +5,8 @@
 #include <string>
 #include <fstream>
 #include <Shared/UnicodeSupport.h>
+#include <Shared/Singleton.h>
+
 
 class ITEMASSISTANTCORE_API Logger
 {
@@ -19,7 +21,6 @@ public:
 private:
     std::ofstream m_out;
     bool m_enabled;
-    static Logger *ms_instance;
 };
 
 #endif // LOGGER_H

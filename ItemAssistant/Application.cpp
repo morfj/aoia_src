@@ -35,8 +35,7 @@ bool Application::init(std::tstring const& cmdLine)
         return false;
     }
 
-    boost::shared_ptr<PluginManager> pluginManager = PluginManager::Instance();
-    pluginManager->AddLibraries(_T("./Plugins"));
+    PluginManager::instance().AddLibraries(_T("./Plugins"));
 
     return true;
 }

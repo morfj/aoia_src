@@ -1,9 +1,24 @@
 #pragma once
 
+/// Use this macro in the header of the class you wish to make a singleton.
+#define SINGLETON(classname)            \
+    private:                            \
+        classname();                    \
+        classname(const classname &);   \
+    public:                             \
+        static classname & instance();
+
+/// Use this macro in the cpp file of the class you wish to make a singleton.
+#define SINGLETON_IMPL(classname)                       \
+    classname& classname::instance()                    \
+    {                                                   \
+        static classname* s_instance = new classname(); \
+        return *s_instance;                             \
+    }
+
 
 namespace Shared
 {
-
     template<typename T>
     class Singleton
     {

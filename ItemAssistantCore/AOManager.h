@@ -3,6 +3,7 @@
 
 #include <ItemAssistantCore/ItemAssistantCore.h>
 #include <Shared/UnicodeSupport.h>
+#include <Shared/Singleton.h>
 #include <vector>
 #include <exception>
 
@@ -23,7 +24,6 @@ public:
     std::vector<std::tstring> getAccountNames() const;
 
 private:
-    static AOManager* ms_instance;
     mutable std::tstring m_aofolder;
 };
 

@@ -11,25 +11,19 @@
 #include <vector>
 #include <boost/smart_ptr.hpp>
 #include <shared/UnicodeSupport.h>
+#include <Shared/Singleton.h>
 
 class PLUGINSUBSYSTEM_API PluginManager
 {
+    SINGLETON(PluginManager);
 public:
     ~PluginManager();
 
-    static boost::shared_ptr<PluginManager> Instance();
-    static void DestroyInstance();
-
     void AddLibraries(std::tstring const& path);
-
     //std::vector<boost::shared_ptr<PluginViewInterface> > createPlugins();
 
 private:
-    PluginManager();                        // To prevent inheritance
-    PluginManager(const PluginManager&);    // Hide copy constructor
-
     std::vector<FARPROC> m_factories;
-    static boost::shared_ptr<PluginManager> ms_instance;
 };
 
 #endif // PLUGINMANAGER_H

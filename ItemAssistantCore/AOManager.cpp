@@ -8,7 +8,8 @@
 namespace bfs = boost::filesystem;
 
 
-AOManager* AOManager::ms_instance = NULL;
+SINGLETON_IMPL(AOManager);
+
 
 AOManager::AOManager()
 {
@@ -22,16 +23,6 @@ AOManager::AOManager(const AOManager&)
 
 AOManager::~AOManager()
 {
-}
-
-
-AOManager& AOManager::instance()
-{
-    if (!ms_instance) {
-        ms_instance = new AOManager();
-    }
-    assert(ms_instance);
-    return *ms_instance;
 }
 
 
