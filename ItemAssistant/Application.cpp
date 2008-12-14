@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "Application.h"
 #include "Version.h"
-#include <PluginSubSystem/PluginManager.h>
+#include <ItemAssistantCore/PluginManager.h>
 
 
 Application::Application()

@@ -14,7 +14,7 @@ class ITEMASSISTANTCORE_API AOManager
 public:
     ~AOManager();
 
-    struct AOManagerException : public std::exception {
+    struct ITEMASSISTANTCORE_API AOManagerException : public std::exception {
         AOManagerException(std::tstring const& message) : std::exception(to_ascii_copy(message).c_str()) {}
     };
 

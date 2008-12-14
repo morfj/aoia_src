@@ -1,19 +1,14 @@
 #ifndef PLUGINMANAGER_H
 #define PLUGINMANAGER_H
 
-#ifndef PLUGINSUBSYSTEM_DLL
-#pragma comment( lib, "PluginSubSystem.lib" )
-#define PLUGINSUBSYSTEM_API __declspec(dllimport)
-#else
-#define PLUGINSUBSYSTEM_API __declspec(dllexport)
-#endif
-
+#include <ItemAssistantCore/ItemAssistantCore.h>
 #include <vector>
 #include <boost/smart_ptr.hpp>
 #include <shared/UnicodeSupport.h>
 #include <Shared/Singleton.h>
 
-class PLUGINSUBSYSTEM_API PluginManager
+
+class ITEMASSISTANTCORE_API PluginManager
 {
     SINGLETON(PluginManager);
 public:

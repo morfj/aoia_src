@@ -29,15 +29,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AORipper", "AORipper\AORipp
 		{D9EFFCC4-4544-4E8F-9920-2F7CD55D814B} = {D9EFFCC4-4544-4E8F-9920-2F7CD55D814B}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PluginSubSystem", "PluginSubSystem\PluginSubSystem.vcproj", "{B912EDCF-83BE-4A3E-A05D-F04D662F1C62}"
-	ProjectSection(ProjectDependencies) = postProject
-		{370E1E96-79A9-4C9D-83B2-6E8298A90655} = {370E1E96-79A9-4C9D-83B2-6E8298A90655}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ItemAssistantCore", "ItemAssistantCore\ItemAssistantCore.vcproj", "{D9EFFCC4-4544-4E8F-9920-2F7CD55D814B}"
 	ProjectSection(ProjectDependencies) = postProject
 		{370E1E96-79A9-4C9D-83B2-6E8298A90655} = {370E1E96-79A9-4C9D-83B2-6E8298A90655}
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libs", "libs", "{E2D40310-9541-4F17-8685-E376F8A07DBB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -73,10 +70,6 @@ Global
 		{297D180C-B61D-4336-A206-28D9BD9849BB}.Debug|Win32.Build.0 = Debug|Win32
 		{297D180C-B61D-4336-A206-28D9BD9849BB}.Release|Win32.ActiveCfg = Release|Win32
 		{297D180C-B61D-4336-A206-28D9BD9849BB}.Release|Win32.Build.0 = Release|Win32
-		{B912EDCF-83BE-4A3E-A05D-F04D662F1C62}.Debug|Win32.ActiveCfg = Debug|Win32
-		{B912EDCF-83BE-4A3E-A05D-F04D662F1C62}.Debug|Win32.Build.0 = Debug|Win32
-		{B912EDCF-83BE-4A3E-A05D-F04D662F1C62}.Release|Win32.ActiveCfg = Release|Win32
-		{B912EDCF-83BE-4A3E-A05D-F04D662F1C62}.Release|Win32.Build.0 = Release|Win32
 		{D9EFFCC4-4544-4E8F-9920-2F7CD55D814B}.Debug|Win32.ActiveCfg = Debug|Win32
 		{D9EFFCC4-4544-4E8F-9920-2F7CD55D814B}.Debug|Win32.Build.0 = Debug|Win32
 		{D9EFFCC4-4544-4E8F-9920-2F7CD55D814B}.Release|Win32.ActiveCfg = Release|Win32
@@ -84,5 +77,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A91EC33D-AC2C-4833-BA5C-5124CEA3B83B} = {E2D40310-9541-4F17-8685-E376F8A07DBB}
+		{CE5A4E99-9463-4DD4-B0F4-A4C36168B0C2} = {E2D40310-9541-4F17-8685-E376F8A07DBB}
+		{370E1E96-79A9-4C9D-83B2-6E8298A90655} = {E2D40310-9541-4F17-8685-E376F8A07DBB}
+		{27846E26-FA81-4B43-997D-62B0338F1A37} = {E2D40310-9541-4F17-8685-E376F8A07DBB}
 	EndGlobalSection
 EndGlobal
