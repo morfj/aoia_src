@@ -213,6 +213,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\IdentifyView.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\InjectionSupport.cpp"
 				>
 			</File>
@@ -316,6 +320,10 @@
 			</File>
 			<File
 				RelativePath=".\DBManager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IdentifyView.h"
 				>
 			</File>
 			<File

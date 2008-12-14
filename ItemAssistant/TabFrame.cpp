@@ -78,6 +78,10 @@ LRESULT TabFrame::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandl
 
     m_PlayershopView.StartMonitoring();
 
+    m_identifyView.Create(*this, 0, 0, style);
+    AddTab(m_identifyView, _T("Identify"));
+    m_viewPlugins.push_back(&m_identifyView);
+
 #ifdef _DEBUG
     m_MsgView.Create(*this, 0, 0, style);
     AddTab(m_MsgView, _T("Messages (Debug)"));

@@ -108,7 +108,7 @@ bool DBManager::SyncLocalItemsDB(std::tstring const& localfile, std::tstring con
         return hasLocalDB;
     }
 
-    if (hasLocalDB && GetAODBSchemeVersion(localfile) == 1) {
+    if (hasLocalDB && GetAODBSchemeVersion(localfile) == 2) {
         std::time_t lastOriginalUpdateTime = bfs::last_write_time(original);
         if (lastOriginalUpdateTime <= lastUpdateTime) {
                 return true;

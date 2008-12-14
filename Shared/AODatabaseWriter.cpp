@@ -32,12 +32,20 @@ const std::string c_scheme_sql =
     "    [name] TEXT NOT NULL"
     "    );"
 
-    "CREATE VIEW vSchemeVersion AS SELECT '1' AS Version ; "
+    "CREATE TABLE tblIdentify ( "
+    "   [aoid] INTEGER NOT NULL PRIMARY KEY UNIQUE, "
+    "   [lowid] INTEGER NOT NULL, "
+    "   [highid] INTEGER NOT NULL, "
+    "   [purpose] TEXT"
+    "   );"
+
+    "CREATE VIEW vSchemeVersion AS SELECT '2' AS Version ; "
 
     ;
 
 
 const std::vector<std::string> c_datatransformation_sql = list_of
+    // tblPatterns
     ("INSERT OR REPLACE INTO tblPocketBoss (pbid, ql, name) SELECT aoid, ql, substr(name, 34, length(name)-34) AS name FROM tblAO WHERE name LIKE '%Novictalized Notum Crystal with%' AND LENGTH(name) > 35 ORDER BY aoid")
     ("INSERT OR REPLACE INTO tblPatterns (aoid, name, pattern) SELECT aoid, TRIM(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(name, 'Pattern', ''), 'of', ''), 'Aban', ''), 'Abhan', ''), '''', '')) AS name, 'A' AS Pattern FROM tblAO WHERE name LIKE 'ab%an pattern%'")
     ("INSERT OR REPLACE INTO tblPatterns (aoid, name, pattern) SELECT aoid, TRIM(REPLACE(REPLACE(REPLACE(REPLACE(name, 'Pattern', ''), 'of', ''), 'Bhotaar', ''), '''', '')) AS name, 'B' AS Pattern FROM tblAO WHERE name LIKE 'b%ar pattern%'")
@@ -46,6 +54,36 @@ const std::vector<std::string> c_datatransformation_sql = list_of
     ("INSERT OR REPLACE INTO tblPatterns (aoid, name, pattern) SELECT aoid, TRIM(REPLACE(REPLACE(REPLACE(REPLACE(name, 'Assembly', ''), 'of', ''), 'Aban-Bhotar', ''), '''', '')) AS name, 'AB' AS Pattern FROM tblAO WHERE name LIKE 'a%-b%ar assembly%'")
     ("INSERT OR REPLACE INTO tblPatterns (aoid, name, pattern) SELECT aoid, TRIM(REPLACE(REPLACE(name, 'Aban-Bhotar-Chi Assembly', ''), '''', '')) AS name, 'ABC' AS Pattern FROM tblAO WHERE name LIKE 'a%b%c% assembly%'")
     ("INSERT OR REPLACE INTO tblPatterns (aoid, name, pattern) SELECT aoid, TRIM(REPLACE(REPLACE(REPLACE(name, 'Complete Blueptrint Pattern of', ''), 'Complete Blueprint Pattern of', ''), '''', '')) AS name, 'ABCD' AS Pattern FROM tblAO WHERE name LIKE '%complete%pattern of ''%'")
+    // tblIdentify - AI Biomaterial
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247103, 247106, 247107, '(Alien Armor) Low tradeskill requirements')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247105, 247108, 247109, '(Alien Armor) High tradeskill requirements')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247698, 247673, 247674, '(Weapon Upgrade) Brawl, Fast Attack')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247700, 247675, 247676, '(Weapon Upgrade) Brawl, Dimach, Fast Attack')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247702, 247678, 247677, '(Weapon Upgrade) Brawl, Dimach, Fast Attack, Sneak Attack')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247704, 247680, 247679, '(Weapon Upgrade) Dimach, Fast Attack, Parry, Riposte')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247706, 247681, 247682, '(Weapon Upgrade) Dimach, Fast Attack, Sneak Attack, Parry, Riposte')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247708, 247683, 247684, '(Weapon Upgrade) Fling shot')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247710, 247685, 247686, '(Weapon Upgrade) Aimed Shot')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247712, 247687, 247688, '(Weapon Upgrade) Burst')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247714, 247689, 247690, '(Weapon Upgrade) Fling Shot, Burst')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247716, 247691, 247692, '(Weapon Upgrade) Burst, Full Auto')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247718, 247693, 247694, '(Weapon Upgrade) Fling Shot, Aimed Shot')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247720, 247695, 247696, '(Weapon Upgrade) Burst, Fling Shot, Full Auto')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (254804, 247765, 254805, '(Org City) High QL Buildings')")
+    // tblIdentify - Alaapaa
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269800, 168432, 168432, '(Bracer Gem) HP/ NR/ Nano')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269811, 168473, 168473, '(Bracer Gem) HP/ add Melee Dmg/ %-Reflect/Reflect-Dmg')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269812, 168553, 168553, '(Bracer Gem) HP/ add Fire Dmg/ %-Reflect/Reflect-Dmg')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269813, 168620, 168620, '(Bracer Gem) HP/ add Cold Dmg/ %-Reflect/Reflect-Dmg')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269814, 168717, 168717, '(Bracer Gem) HP/ add Projectile Dmg/ %-Reflect/Reflect-Dmg')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269815, 168843, 168843, '(Bracer Gem) HP/ add Poison Dmg/ %-Reflect/Reflect-Dmg')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269816, 229984, 229984, '')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269817, 230176, 230176, '')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269818, 230216, 230216, '')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269819, 230256, 230256, '')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (270000, 269999, 269999, '(Armor) Agent, Bureaucrat, Nano-Technician, or Meta-Physicist Robe')")
+
+    //("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (, , , '')")
     ;
 
 

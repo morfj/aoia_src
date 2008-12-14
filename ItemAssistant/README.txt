@@ -22,17 +22,21 @@ have contributed either directly or indirectly include:
     * auno          - aoppa source was a big help.
     * morb, gnarf   - clicksaver rocks and showed me the technique that made 
                       it all possible.
-    * RobotJunk     - Multi-thread patch for the hook dll.
+    * RobotJunk     - Multi-thread patch for the hook dll and Client-to-Server 
+                      message hooking.
     * Everyone else that has provided feedback and done testing.
 
 Change Log:
 ===========
-Version 0.9.2                                       Release Date: ??/11/2008
+Version 0.9.2                                       Release Date: ??/12/2008
     * Enhanced the player-shop monitor to refresh the view when something 
       changes on disc. Cleaned up file system monitoring.
     * Added more logging to make it easier to submit bug reports.
     * Added experimental hooking of messages sent from the client. Up until 
       now only messages from the server have been intercepted.
+    * Added "Identify" view that lets you quickly find any bio clumps or 
+      compounds from Alappa based on what they will turn into once 
+      tradeskilled.
 
 Version 0.9.1                                       Release Date: 25/10/2008
     * Added experimental tracking of player-shop contents.

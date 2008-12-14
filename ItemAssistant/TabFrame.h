@@ -1,10 +1,13 @@
-#pragma once
+#ifndef TABFRAME_H
+#define TABFRAME_H
 
 #include <PluginSDK/PluginViewInterface.h>
 #include "InventoryView.h"
 #include "AoMsgView.h"
 #include "PatternMatchView.h"
 #include "PlayershopView.h"
+#include "IdentifyView.h"
+
 
 class TabFrame
     : public CTabbedChildWindow< CDotNetTabCtrl<CTabViewTabItem> >
@@ -35,13 +38,16 @@ public:
 private:
     std::vector<PluginViewInterface*> m_viewPlugins;
 
-    InventoryView              m_InventoryView;
-    AoMsgView                  m_MsgView;
-    PatternMatchView           m_PatternView;
-    PlayershopView             m_PlayershopView;
+    InventoryView       m_InventoryView;
+    AoMsgView           m_MsgView;
+    PatternMatchView    m_PatternView;
+    PlayershopView      m_PlayershopView;
+    IdentifyView        m_identifyView;
 
     WTL::CReBarCtrl m_rebarControl;
     WTL::CToolBarCtrl m_activeViewToolbar;
 
     bool m_toobarVisibility;
 };
+
+#endif // TABFRAME_H
