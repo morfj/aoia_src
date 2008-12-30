@@ -209,6 +209,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DataGridControl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\DataGridModel.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\DBManager.cpp"
 				>
 			</File>
@@ -269,6 +277,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\QueryDataGridModel.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\SharedServices.cpp"
 				>
 			</File>
@@ -316,6 +328,14 @@
 			</File>
 			<File
 				RelativePath=".\Application.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DataGridControl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DataGridModel.h"
 				>
 			</File>
 			<File
@@ -376,6 +396,10 @@
 			</File>
 			<File
 				RelativePath=".\PsmTreeView.h"
+				>
+			</File>
+			<File
+				RelativePath=".\QueryDataGridModel.h"
 				>
 			</File>
 			<File

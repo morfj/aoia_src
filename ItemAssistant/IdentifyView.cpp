@@ -2,12 +2,15 @@
 #include "IdentifyView.h"
 #include <Shared/SQLite.h>
 #include "DBManager.h"
+#include "QueryDataGridModel.h"
 
 
 using namespace SQLite;
+using namespace aoia;
 
 
 IdentifyView::IdentifyView()
+    : m_datagrid(new DataGridControl())
 {
 }
 
@@ -19,10 +22,18 @@ IdentifyView::~IdentifyView()
 
 LRESULT IdentifyView::onCreate(LPCREATESTRUCT createStruct)
 {
+    RECT identRect = { 0, 0, 250, createStruct->cy };
+    RECT gridRect = { 250, 0, createStruct->cx - 250, createStruct->cy };
+
     // Create child windows
     DWORD style = WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS;
-    m_identifyableList.Create(m_hWnd, rcDefault, NULL, style, WS_EX_CLIENTEDGE);
-    m_itemList.Create(m_hWnd, rcDefault, NULL, style, WS_EX_CLIENTEDGE);
+    m_identifyableList.Create(m_hWnd, identRect, NULL, style, WS_EX_CLIENTEDGE);
+    m_identifyableList.SetDlgCtrlID(IDC_IDENTLIST);
+
+    m_datagrid->Create(m_hWnd, gridRect, NULL, style, WS_EX_CLIENTEDGE);
+    m_datagrid->SetDlgCtrlID(IDC_DATAGRID);
+
+    DlgResize_Init(false);
 
     // Populate the list of items we can identify
     TablePtr pTable = g_DBManager.ExecTable(_T("SELECT I.aoid, AO.name, I.purpose FROM tblIdentify I JOIN tblAO AO ON I.highid = AO.aoid"));
@@ -56,10 +67,25 @@ LRESULT IdentifyView::onCreate(LPCREATESTRUCT createStruct)
 }
 
 
-LRESULT IdentifyView::onSize(UINT wParam, CSize newSize)
+LRESULT IdentifyView::onListItemChanging(LPNMHDR lParam)
 {
-    m_identifyableList.SetWindowPos(NULL, 0, 0, newSize.cx / 3, newSize.cy, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_DEFERERASE | SWP_NOSENDCHANGING);
-    m_itemList.SetWindowPos(NULL, newSize.cx / 3, 0, newSize.cx, newSize.cy, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_DEFERERASE | SWP_NOSENDCHANGING);
+    // Check that it is an event from the correct child window.
+    if (lParam->hwndFrom == m_identifyableList.m_hWnd)
+    {
+        LPNMLISTVIEW pItem = (LPNMLISTVIEW)lParam;
 
-    return 0;
+        // Check to see if the change is a selection event.
+        if ( !(pItem->uOldState & LVIS_SELECTED) && (pItem->uNewState & LVIS_SELECTED) )
+        {
+            unsigned int aoid = m_identifyableList.GetItemData(pItem->iItem);
+
+            std::tstringstream sql;
+            sql << _T("SELECT * FROM tItems WHERE keyhigh = ") << aoid;
+
+            boost::shared_ptr<QueryDataGridModel> data(new QueryDataGridModel(sql.str()));
+            m_datagrid->setModel(data);
+        }
+    }
+
+    return FALSE;
 }
