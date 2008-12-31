@@ -3,6 +3,7 @@
 
 #include <PluginSDK/ItemAssistView.h>
 #include "DataGridControl.h"
+#include "IdentifyListDataModel.h"
 
 
 class IdentifyView
@@ -50,8 +51,8 @@ protected:
     };
 
 private:
-    WTL::CListViewCtrl m_identifyableList;
-    //WTL::CListViewCtrl m_itemList;
+    aoia::IdentifyListDataModelPtr m_identifyListModel;
+    aoia::DataGridControlPtr m_identifyList;
     aoia::DataGridControlPtr m_datagrid;
 };
 

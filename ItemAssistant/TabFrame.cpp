@@ -60,30 +60,32 @@ LRESULT TabFrame::OnSelChange(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
 
 LRESULT TabFrame::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
+    RECT defRect = { 0, 0, 640, 480 };
+
     baseClass::OnCreate(uMsg, wParam, lParam, bHandled);
 
     DWORD style = WS_CHILD | /*WS_VISIBLE |*/ WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 
-    m_InventoryView.Create(*this, 0, 0, style);
+    m_InventoryView.Create(*this, defRect, 0, style);
     AddTab(m_InventoryView, _T("Inventory"));
     m_viewPlugins.push_back(&m_InventoryView);
 
-    m_PatternView.Create(*this, 0, 0, style);
+    m_PatternView.Create(*this, defRect, 0, style);
     AddTab(m_PatternView, _T("Pattern Matcher"));
     m_viewPlugins.push_back(&m_PatternView);
 
-    m_PlayershopView.Create(*this, 0, 0, style);
+    m_PlayershopView.Create(*this, defRect, 0, style);
     AddTab(m_PlayershopView, _T("Playershop Monitor"));
     m_viewPlugins.push_back(&m_PlayershopView);
 
     m_PlayershopView.StartMonitoring();
 
-    m_identifyView.Create(*this, 0, 0, style);
+    m_identifyView.Create(*this, defRect, 0, style);
     AddTab(m_identifyView, _T("Identify"));
     m_viewPlugins.push_back(&m_identifyView);
 
 #ifdef _DEBUG
-    m_MsgView.Create(*this, 0, 0, style);
+    m_MsgView.Create(*this, defRect, 0, style);
     AddTab(m_MsgView, _T("Messages (Debug)"));
     m_viewPlugins.push_back(&m_MsgView);
 #endif

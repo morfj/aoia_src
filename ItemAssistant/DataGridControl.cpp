@@ -39,10 +39,10 @@ namespace aoia {
         }
 
         updateColumns();
+        autosizeColumns();
         for (unsigned int i = 0; i < m_model->getItemCount(); ++i) {
             m_listView.InsertItem(i, LPSTR_TEXTCALLBACK);
         }
-        autosizeColumns();
     }
 
 
@@ -116,21 +116,28 @@ namespace aoia {
         for (int i = 0; i < numCol; ++i) {
             m_listView.SetColumnWidth(i, LVSCW_AUTOSIZE);            
         }*/
-        
-        // Manually update
-        unsigned int numRows = m_listView.GetItemCount();        
-        TCHAR buffer[200];
+
+
         int numCol = m_listView.GetHeader().GetItemCount();
-        for (int i = 0; i < numCol; ++i) 
-        {            
-            unsigned int maxWidth = m_listView.GetStringWidth(m_model->getColumnName(i).c_str());
-            for(unsigned int rowIndex = 0; rowIndex < numRows; rowIndex++)
-            {
-                m_listView.GetItemText(rowIndex, i, buffer, 200);
-                maxWidth = max(maxWidth, (unsigned int)m_listView.GetStringWidth(buffer));
-            }
-            m_listView.SetColumnWidth(i, max(maxWidth + 15, (unsigned int)m_listView.GetColumnWidth(i)));       
-        }        
+        for (int i = 0; i < numCol; ++i)
+        {
+            m_listView.SetColumnWidth(i, LVSCW_AUTOSIZE_USEHEADER);            
+        }
+
+        // Manually update (this is not suited for virtual list views, as it loops all items anyway)
+        //unsigned int numRows = m_listView.GetItemCount();        
+        //TCHAR buffer[200];
+        //int numCol = m_listView.GetHeader().GetItemCount();
+        //for (int i = 0; i < numCol; ++i) 
+        //{            
+        //    unsigned int maxWidth = m_listView.GetStringWidth(m_model->getColumnName(i).c_str());
+        //    for(unsigned int rowIndex = 0; rowIndex < numRows; rowIndex++)
+        //    {
+        //        m_listView.GetItemText(rowIndex, i, buffer, 200);
+        //        maxWidth = max(maxWidth, (unsigned int)m_listView.GetStringWidth(buffer));
+        //    }
+        //    m_listView.SetColumnWidth(i, max(maxWidth + 15, (unsigned int)m_listView.GetColumnWidth(i)));       
+        //}        
     }
 
 }   // namespace

@@ -6,44 +6,10 @@
 namespace aoia {
 
     /**
-    * Observer interface the for implementations of the DataGridModelInterface.
-    */
-    //struct DataGridModelObserverInterface
-    //{
-    //    virtual void onItemAdded(DataGridModelInterface* source, unsigned int index) = 0;
-    //    virtual void onItemRemoved(DataGridModelInterface* source, unsigned int index) = 0;
-    //    virtual void onAllItemsRemoved(DataGridModelInterface* source) = 0;
-    //};
-    //
-    //typedef boost::shared_ptr<DataGridModelObserverInterface> DataGridModelObserverInterfacePtr;
-
-
-    /**
-    * Template for implementing a DataGridModelObserver.
-    * T must implement onItemAdded, onItemRemoved and onAllItemsRemoved.
-    */
-    //template <typename T>
-    //class DataGridModelObserver
-    //  : public DataGridModelObserverInterface
-    //{
-    //    DataGridModelObserver(T& owner)
-    //        : m_owner(owner)
-    //    { }
-    //
-    //    /// \sa DataGridModelObserverInterface
-    //    virtual void onItemAdded(DataGridModelInterface* source, unsigned int index) { m_owner.onItemAdded(index); }
-    //    virtual void onItemRemoved(DataGridModelInterface* source, unsigned int index) { m_owner.onItemRemoved(index); }
-    //    virtual void onAllItemsRemoved(DataGridModelInterface* source) { m_owner.onAllItemsRemoved(); }
-    //
-    //    T& m_owner;
-    //};
-
-
-    /**
      * \brief This is a list-view control implemented using the standard Win32 
      * control set up as a virtual list-view control.
      *
-     * Data is provided through a data-model implementing DataGridModelInterface.
+     * Data is provided through a data-model deriving from DataGridModel class.
      *
      * \note
      * If you are embedding this control in your window or dialog, remember to 
@@ -66,6 +32,7 @@ namespace aoia {
         END_MSG_MAP()
 
         void setModel(DataGridModelPtr model);
+        DataGridModelPtr getModel() const { return m_model; }
 
     protected:
         LRESULT onCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled);

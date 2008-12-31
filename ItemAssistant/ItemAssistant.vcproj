@@ -221,6 +221,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\IdentifyListDataModel.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\IdentifyView.cpp"
 				>
 			</File>
@@ -340,6 +344,10 @@
 			</File>
 			<File
 				RelativePath=".\DBManager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IdentifyListDataModel.h"
 				>
 			</File>
 			<File
