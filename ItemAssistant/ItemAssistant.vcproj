@@ -129,6 +129,7 @@
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)Externals\&quot;;&quot;$(SolutionDir)Externals\WTL\include\&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				IgnoreStandardIncludePath="false"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -149,7 +150,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
-				AdditionalDependencies="shared.lib tinyxml.lib sqlite3.lib PluginSubSystem.lib ItemAssistantCore.lib"
+				AdditionalDependencies="shared.lib tinyxml.lib sqlite3.lib ItemAssistantCore.lib"
 				OutputFile="$(OutDir)/ItemAssistant.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(SolutionDir)$(ConfigurationName)&quot;;&quot;$(SolutionDir)Externals\SQLite\&quot;;&quot;$(SolutionDir)Externals\boost_bin\&quot;"
@@ -184,7 +185,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="xcopy /Y $(SolutionDir)\Externals\SQLite\sqlite3.dll $(OutDir)&#x0D;&#x0A;xcopy /Y README.txt $(OutDir)&#x0D;&#x0A;"
+				CommandLine="xcopy /Y &quot;$(SolutionDir)\Externals\SQLite\sqlite3.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;xcopy /Y README.txt &quot;$(OutDir)&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
