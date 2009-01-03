@@ -126,7 +126,7 @@ void TabFrame::OnAOServerMessage(AOMessageBase &msg)
 }
 
 
-void TabFrame::OnAOClientMessage(AOMessageBase &msg)
+void TabFrame::OnAOClientMessage(AOClientMessageBase &msg)
 {
     for (unsigned int i = 0; i < m_viewPlugins.size(); i++)
     {
