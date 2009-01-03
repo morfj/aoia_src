@@ -36,7 +36,7 @@ public:
         // Override in derived classes
     }
 
-    virtual void OnAOClientMessage(AOMessageBase &msg)
+    virtual void OnAOClientMessage(AOClientMessageBase &msg)
     {
         // Override in derived classes
     }

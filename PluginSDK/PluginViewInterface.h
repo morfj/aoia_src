@@ -8,7 +8,7 @@ using namespace Parsers;
 struct PluginViewInterface
 {
     virtual void OnAOServerMessage(AOMessageBase &msg) = 0;
-    virtual void OnAOClientMessage(AOMessageBase &msg) = 0;
+    virtual void OnAOClientMessage(AOClientMessageBase &msg) = 0;
     virtual bool PreTranslateMsg(MSG* pMsg) = 0;
     virtual HWND GetWindow() const = 0;
     virtual void OnActive(bool doActivation) = 0;
