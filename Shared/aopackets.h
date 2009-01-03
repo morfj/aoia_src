@@ -64,8 +64,95 @@ namespace AO {
         unsigned int	msgid;		//
 
         // Target of message?
-        AoObjectId		target;		// 0x0000C350	dimension? (50000:<charid>) +  charid
+        AoObjectId		target;		// 0x0000C350	dimension? (50000:<charid>)
     };
+
+	struct ClientHeader
+    {
+		unsigned int	headerid;	// 0x0000000A
+		unsigned short	unknown1;	// 0x0000		protocol version?
+        unsigned short	msgsize_not_filled;	//				size incl header
+		unsigned int	clientid;	// 0x67a6de6a	ClientID?         
+        unsigned int	unknown2;	//??ex 00 00 00 02 or 00 00 0b ed  on logoff
+		unsigned int	msgid;
+        AoObjectId		charId;		// 0x0000C350	(50000:<charid>)
+    };
+
+	struct InvItemId
+	{
+		unsigned short	unknown4;//00 00 (part of fromType probably)
+		unsigned short	type;//00 68 for inventory etc..
+		unsigned short	containerTempId;//the temporary id of the container
+		unsigned short	itemSlotId;//The slot id of the item in its container/inventory.
+	};
+
+	struct MoveData
+	{
+		unsigned char	unknown1;//00
+
+		InvItemId		fromItem;
+
+		//unsigned short	unknown2;//00 00 (part of fromType maybe)
+		//unsigned short	fromType;
+		//unsigned short	fromContainerTempId;// If backpack: the slot id in the inventory that holds the container
+		//unsigned short	fromItemSlotId;//The slot id of the item in its container/inventory.
+		AoObjectId		toContainer;
+		unsigned short	unknown3; //00
+		unsigned short	targetSlot; //6f (invalid) except when moving to wear window.
+	};
+
+	struct MoveOperation
+	{
+		ClientHeader	header;
+		MoveData		moveData;
+	};
+
+	struct ItemMoved
+	{
+		Header			header;
+		MoveData		moveData;
+	};
+
+
+	struct OpenBackpackOperation
+	{
+		ClientHeader header;
+		unsigned char	unknown1;//01
+		unsigned int	unknown2;//00 00 00 00
+		unsigned int	counter;
+		unsigned int	unknown3;//00 00 00 03
+		unsigned int	openedbeforeCount; //00 00 00 03
+		AoObjectId		owner;//?
+		InvItemId		backPack;
+		//unsigned short	unknown4;//00 00 (part of fromType probably)
+		//unsigned short	fromType;//68 for inventory
+		//unsigned short	unknown5;//00 00 (fromContainerTempId probably, but we dont open a backpack from within another backpack)
+		//unsigned short	containerTempId;//temp id (temporary)
+
+		//01 00 00 00 00 00 00 00 1b 00 00 00 03 00 00 00 01 00 00 c3 50 67 a6 de 6a 00 00 00 68 00 00 00 43
+	};
+
+	struct ItemOperation
+	{
+		ClientHeader header;
+		//00 00 00 00 70 00 00 00 00 00 00 00 68 00 00 00 4e 00 01 3f 5d 00 01 3f 5c 00 00
+		unsigned char	unknown1;//01
+		unsigned int	operationId;//00 00 00 70 
+		unsigned int	unknown3;//00 00 00 00
+		InvItemId		itemToDelete;
+		AoObjectId		itemId;
+		unsigned short	zeroes2; //00 00
+	};
+
+	struct BoughtItemFromShop
+	{
+		Header			header;
+		//df df 00 0a 00 01 00 2d 00 00 0b c4 67 a6 de 6a 05 2e 2f 0c 00 00 c3 50 67 a6 de 6a 00 00 00 54 69 00 00 54 69 00 00 00 01 00 00 01 90 
+		unsigned char	unknown1;//00
+		AoObjectId		itemid;
+		unsigned int	ql;
+		unsigned int	stack;
+	};
 
     struct Container
     {
@@ -79,7 +166,7 @@ namespace AO {
     struct ContItem						// Size 0x20
     {
         unsigned int	index;
-        unsigned short	unknown0;	// 0x0021 ??
+        unsigned short	flags;	// 0x0021 ?? 1=normal item? 2=backpack 32 = nodrop? 34=nodrop bp?
         unsigned short	stack;
         AoObjectId      containerid;
         AoObjectId		itemid;		// low + high id
@@ -87,10 +174,11 @@ namespace AO {
         unsigned int	nullval;
     };
 
+
     struct ContEnd
     {
         AoObjectId		containerId;
-        unsigned int	counter;	// Number of times this message has been received?
+        unsigned int	tempContainerId;	// Virtual id of the container
         unsigned int	nullval;
     };
 
@@ -101,6 +189,8 @@ namespace AO {
         char           unknown2[9];
         unsigned int   mass;          // 1009*items+1009
     };
+
+
 
     struct Equip
     {
@@ -132,20 +222,24 @@ namespace AO {
         //MSG_UNKNOWN	=	0x5E477770,
         MSG_SKILLSYNC	=	0x3E205660,
         MSG_CONTAINER	=	0x4E536976,
-        MSG_BACKPACK   =  0x465A5D73,
-        MSG_CHAT		   =	0x5F4B442A,
+        MSG_BACKPACK	=	0x465A5D73,
+        MSG_CHAT		=	0x5F4B442A,
         MSG_MISSIONS	=	0x5C436609,
         //MSG_BANK		   =	0x7F283C34,
-        MSG_BANK       =  0x343c287f,    // size 2285.. dynamic most likely
-        MSG_POS_SYNC   =  0x5E477770,    // size = 55 bytes
-        MSG_UNKNOWN_1  =  0x25314D6D,    // size = 53 bytes
-        MSG_UNKNOWN_2  =  0x00000001,    // size = 40 bytes
-        MSG_UNKNOWN_3  =  0x0000000b,    // size = 548 bytes
-        MSG_FULLSYNC   =  0x29304349,    // size 4252.. dynamic?  Contains equip and inv + atribs (?) +++
-        MSG_UNKNOWN_4  =  0x54111123,
-        MSG_MOB_SYNC   =  0x271B3A6B,
-        MSG_SHOP_ITEMS =  0x353F4F52,     // Content of a player shop
-        MSG_SHOP_INFO  =  0x2e072a78,   // Information about a playershop. Received on zone into a playershop.
+        MSG_BANK		=	0x343c287f,    // size 2285.. dynamic most likely
+        MSG_POS_SYNC	=	0x5E477770,    // size = 55 bytes
+        MSG_UNKNOWN_1	=	0x25314D6D,    // size = 53 bytes
+        MSG_UNKNOWN_2	=	0x00000001,    // size = 40 bytes
+        MSG_UNKNOWN_3	=	0x0000000b,    // size = 548 bytes
+        MSG_FULLSYNC	=	0x29304349,    // size 4252.. dynamic?  Contains equip and inv + atribs (?) +++
+        MSG_UNKNOWN_4	=	0x54111123,
+        MSG_MOB_SYNC	=	0x271B3A6B,
+        MSG_SHOP_ITEMS	=	0x353F4F52,     // Content of a player shop
+        MSG_SHOP_INFO	=	0x2e072a78,   // Information about a playershop. Received on zone into a playershop.
+		MSG_ITEM_MOVE	=	0x47537a24,    //Client or server msg move item between inv/bank/wear/backpack
+		MSG_ITEM_BOUGHT	=	0x052e2f0c,	//Sent from server when buying stuff, 1 message pr item.
+		MSG_OPENBACKPACK=	0x52526858,//1196653092: from client when opening backpack
+		MSG_ITEM_OPERATION= 0x5e477770,  //from client when deleting an item, splitting or joingin +++
     };
 
     enum ToonAtribIds
