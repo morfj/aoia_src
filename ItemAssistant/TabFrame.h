@@ -29,7 +29,7 @@ public:
 
     PluginViewInterface* GetActivePluginView();
     void OnAOServerMessage(AOMessageBase &msg);
-    void OnAOClientMessage(AOMessageBase &msg);
+    void OnAOClientMessage(AOClientMessageBase &msg);
     void SetToolBarPanel(HWND panel) { m_rebarControl.Attach(panel); }
 
     /// Sets the state of the toolbar for the active view.
