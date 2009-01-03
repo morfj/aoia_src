@@ -17,6 +17,9 @@ enum MessageType {
 typedef void Message_t;
 
 Message_t* ( * pOriginalDataBlockToMessage )( int _Size, void* _pDataBlock );
+
+PVOID Func;
+
 void LoadMessageFilter(HKEY hKeyParent, LPCTSTR lpszKeyName);
 
 DWORD g_lastTick = 0;
@@ -48,7 +51,7 @@ void WorkerThreadMethod(void*)
             g_lastThreadTick = tick;
         }
 
-        if ((tick - g_lastThreadTick > 10000) || g_targetWnd == NULL) {
+        if ((tick - g_lastThreadTick > 10000) || (g_targetWnd == NULL)) {
             // We either don't have a valid window target OR it has been more than 10 sec since we last update the target.
             g_targetWnd  = FindWindow ( "ItemAssistantWindowClass", NULL ); // TODO: make the class name a list in registry
             g_lastThreadTick = GetTickCount();
@@ -69,7 +72,7 @@ void WorkerThreadMethod(void*)
             data.cbData = item->size();
 
             // To avoid blocking the main thread, we should not have a lock on the queue while we process the message.
-            SendMessage( g_targetWnd, WM_COPYDATA, 0, ( LPARAM ) &data );
+			SendMessage( g_targetWnd, WM_COPYDATA, 0, ( LPARAM ) &data );
         }
     }
 }
@@ -172,11 +175,11 @@ typedef struct {
 void OnConnectionSend(void * connection, unsigned char * _msgData, unsigned int len)
 {
 #ifdef DEBUG
-    Header * msg = (Header*)_msgData;
+    ClientHeader * msg = (ClientHeader*)_msgData;
     unsigned int msgId = _byteswap_ulong(msg->msgid);
 
     std::ostringstream s;
-    s << "OnConnectionSend( len: " << len << ", msgId: " << std::hex << msgId << std::endl;
+    s << "OnConnectionSend( len: " << len << ", msgId: 0x" << std::hex << msgId << std::endl;
 
     OutputDebugString(s.str().c_str());
 #endif
@@ -232,7 +235,7 @@ int ProcessAttach( HINSTANCE _hModule )
     DetourTransactionCommit();
 
     // Hook Connection::Send() (outgoing)
-    PVOID Func =  (int (__stdcall *)(unsigned int, unsigned short, void const *))::GetProcAddress(::GetModuleHandle("Connection.dll"), "?Send@Connection_t@@QAEHIIPBX@Z");
+    Func =  (int (__stdcall *)(unsigned int, unsigned short, void const *))::GetProcAddress(::GetModuleHandle("Connection.dll"), "?Send@Connection_t@@QAEHIIPBX@Z");
     PVOID DetourPtr;
     PVOID TargetPtr;
     DetourTransactionBegin();
@@ -247,10 +250,33 @@ int ProcessAttach( HINSTANCE _hModule )
 
 int ProcessDetach( HINSTANCE _hModule )
 {
-    DetourTransactionBegin();
-    DetourUpdateThread(GetCurrentThread());
-    DetourDetach((PVOID*)&pOriginalDataBlockToMessage, DataBlockToMessageHook);
-    DetourTransactionCommit();
+	#ifdef DEBUG
+		OutputDebugString("ProcessDetach");
+	#endif
+
+    LONG res1 = DetourTransactionBegin();
+    LONG res2 = DetourUpdateThread(GetCurrentThread());
+    LONG res3 = DetourDetach((PVOID*)&pOriginalDataBlockToMessage, DataBlockToMessageHook);
+    LONG res4 = DetourTransactionCommit();
+	
+	
+
+    LONG res5 = DetourTransactionBegin();
+    LONG res6 = DetourDetach(&Func, SendConnectionHook);
+
+	//#ifdef DEBUG
+	//	std::ostringstream s;
+	//	s << "ProcessDetach( r1: " << res1 << ", r2: " << res2 << ", r3: " << res3 << ", r4: " << res4 << ", r5: " << res5 << ", r6: " << res6 << std::endl;
+	//	OutputDebugString(s.str().c_str());
+	//#endif
+
+    LONG res7 = DetourTransactionCommit();
+
+	#ifdef DEBUG
+		std::ostringstream s2;
+		s2 << "ProcessDetach r7: " << res7 << std::endl;
+		OutputDebugString(s2.str().c_str());
+	#endif
 
     EndWorkerThread();
 
