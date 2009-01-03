@@ -79,7 +79,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="xcopy /Y $(ProjectDir)ctreestd.dll $(OutDir)"
+				CommandLine="xcopy /Y &quot;$(ProjectDir)ctreestd.dll&quot; &quot;$(OutDir)&quot;"
 			/>
 		</Configuration>
 		<Configuration
