@@ -194,6 +194,57 @@ std::map<std::tstring, std::tstring> SharedServices::GetAOItemInfo(unsigned int 
     return result;
 }
 
+void SharedServices::ClearInvSlotCache(unsigned int charId)
+{
+	//TODO: Clear cache for only 1 char (if duallogged)
+	if (m_InvSlotIndexCache.find(charId) != m_InvSlotIndexCache.end())
+	{
+		m_InvSlotIndexCache[charId].clear();
+	}
+}
+
+void SharedServices::UpdateInvSlotIndex(unsigned int charId, unsigned int fromId, unsigned int slotId)
+{
+	std::tstringstream strLog;
+    strLog << _T("UPDATEINVSLOT") << fromId << _T(" / ") << slotId;
+
+	OutputDebugString(strLog.str().c_str());
+
+	//__int64 key = ((__int64)charId) << 32;
+ //   key += fromId;
+	//m_InvSlotIndexCache[key] = slotId;
+
+	if (m_InvSlotIndexCache.find(charId) == m_InvSlotIndexCache.end())
+	{
+		std::map< __int32, unsigned int > newCharIdCache;
+		m_InvSlotIndexCache[charId] = newCharIdCache;
+	}
+
+	m_InvSlotIndexCache[charId][fromId] = slotId;
+	
+
+	
+}
+
+unsigned int SharedServices::GetInvSlotIndex(unsigned int charId, unsigned int fromId)
+{
+	if (m_InvSlotIndexCache.find(charId) != m_InvSlotIndexCache.end()
+		&& m_InvSlotIndexCache[charId].find(fromId) != m_InvSlotIndexCache[charId].end())
+	{
+		return (m_InvSlotIndexCache[charId][fromId]);
+	}
+
+	//__int64 key = ((__int64)charId) << 32;
+ //   key += fromId;
+
+	//if  (m_InvSlotIndexCache.find(key) != m_InvSlotIndexCache.end())
+	//{
+	//	return (m_InvSlotIndexCache[key]);
+	//}
+
+	return 0;
+}
+
 
 std::vector<std::tstring> SharedServices::GetAccountNames() const
 {

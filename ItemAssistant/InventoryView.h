@@ -170,6 +170,7 @@ public:
     LRESULT OnShowItemRef(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
     LRESULT OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
 
+	virtual void OnAOClientMessage(AOClientMessageBase &msg);
     virtual void OnAOServerMessage(AOMessageBase &msg);
     virtual bool PreTranslateMsg(MSG* pMsg);
 
@@ -219,4 +220,6 @@ private:
 
     bool  m_sortDesc;
     int   m_sortColumn;
+
+	unsigned int GetFromContainerId(unsigned int charId, unsigned short fromType, unsigned short fromSlotId);
 };

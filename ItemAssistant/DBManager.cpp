@@ -313,6 +313,43 @@ void DBManager::UpdateToonShopId(unsigned int charid, unsigned int shopid)
 }
 
 
+unsigned int DBManager::FindNextAvailableContainerSlot(unsigned int charId, unsigned int containerId)
+{
+	unsigned short posSlot = 0;
+
+	if (containerId == 2)
+		posSlot = 64; //start at slot 64 for inventory!
+
+	SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR("SELECT slot FROM tItems WHERE parent = " << containerId << " AND slot >= " << posSlot
+		<< " AND owner = " << charId << " ORDER by slot"));
+	
+	if (pT == NULL || !pT->Rows())
+		return 0; //empty backpack
+
+	unsigned int count = pT->Rows();
+
+	for (unsigned i=0;i<count;i++)
+	{
+		try
+		{
+			if (posSlot < boost::lexical_cast<unsigned short>(pT->Data(i,0)))
+			{
+				return posSlot; //we found a free slot in-between
+			}
+		}
+		catch (boost::bad_lexical_cast &/*e*/)
+		{
+			//return 0xff; //Can't really imagine this to be possible
+		}
+
+		posSlot++;
+	}
+
+	return posSlot; //we return the next available slot
+
+}
+
+
 unsigned int DBManager::GetShopOwner(unsigned int shopid)
 {
     assert(shopid != 0);

@@ -624,11 +624,390 @@ LRESULT InventoryView::OnPostCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
     return 0;
 }
 
+void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
+{
+
+
+    switch(msg.messageId())
+    {
+	case 0x1b: //zone
+		{
+			
+		}
+		break;
+
+	case AO::MSG_OPENBACKPACK:// 0x52526858://1196653092:
+		{
+
+			return;
+			Native::AOOpenBackpackOperation moveOp((AO::OpenBackpackOperation*)msg.start());
+
+			OutputDebugString(moveOp.print().c_str());
+			
+		}
+		break;
+	case AO::MSG_ITEM_OPERATION: //0x5e477770
+		{
+
+			Native::AOItemOperation itemOp((AO::ItemOperation*)msg.start());
+
+			unsigned int opId = itemOp.operationId();
+
+			std::tstringstream sql;
+
+			//TODO: switch statement
+			if (opId == 0x34)
+			{
+				//split! itemHigh is the count of the new item. this gets a new slotId
+				//the new item gets the count of the existing.
+				//the one with 
+
+				g_DBManager.Lock();
+				g_DBManager.Begin();
+				unsigned int fromContainerId = GetFromContainerId(msg.characterId(), itemOp.fromType(), itemOp.fromContainerTempId());
+
+				if (fromContainerId == 0)
+				{
+					OutputDebugString(_T("From container not found!"));
+			 		return; //we dont have the value cached, either a bug or ia was started after the bp was opened. Or unknown from type
+				}
+
+				unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(msg.characterId(), fromContainerId);
+
+				std::tstringstream sqlInsert;
+
+				sqlInsert << _T("INSERT INTO tItems (keylow, keyhigh, ql, stack, parent, slot, children, owner)")
+				<< _T(" SELECT keylow, keyhigh, ql, ") << itemOp.itemId().High()
+				<< _T(", parent, ") << nextFreeInvSlot << _T(", children, owner FROM tItems")
+				<< _T(" WHERE owner = ") << msg.characterId() 
+				<< _T(" AND parent = ") << fromContainerId
+				<< _T(" AND slot = ") << itemOp.fromItemSlotId();
+
+			//	OutputDebugString(sqlInsert.str().c_str());
+				g_DBManager.Exec(sqlInsert.str());
+
+				sql << _T("UPDATE tItems SET stack = stack - ") << itemOp.itemId().High()
+				<< _T(" WHERE owner = ") << msg.characterId() 
+				<< _T(" AND parent = ") << fromContainerId
+				<< _T(" AND slot = ") << itemOp.fromItemSlotId();
+
+			//	OutputDebugString(sql.str().c_str());
+
+				g_DBManager.Exec(sql.str());
+				g_DBManager.Commit();
+				g_DBManager.UnLock();
+
+			}
+			else if (opId == 0x35)
+			{
+				//OutputDebugString(itemOp.print().c_str());
+
+				//user joined two stacks!
+				//itemHigh is the slot id of the other item (gets deleted)
+				//itemLow is the fromType of the other item
+
+				g_DBManager.Lock();
+				g_DBManager.Begin();
+				unsigned int fromContainerId = GetFromContainerId(msg.characterId(), itemOp.fromType(), itemOp.fromContainerTempId());
+
+				if (fromContainerId == 0)
+				{
+					OutputDebugString(_T("From container not found!"));
+			 		return; //we dont have the value cached, either a bug or ia was started after the bp was opened. Or unknown from type
+				}
+
+				std::tstringstream sqlUpd;
+				sqlUpd << _T("UPDATE tItems SET stack = ")
+				 << _T(" (tItems.stack + (SELECT tItems2.stack FROM tItems tItems2 WHERE")
+				 << _T(" tItems2.owner = ") << msg.characterId() 
+				 << _T(" AND tItems2.parent = ") << fromContainerId
+				 << _T(" AND tItems2.slot = ") << itemOp.itemId().High() << _T("))") 
+				<< _T(" WHERE owner = ") << msg.characterId() 
+				<< _T(" AND parent = ") << fromContainerId
+				<< _T(" AND slot = ") << itemOp.fromItemSlotId();
+
+				//OutputDebugString(sqlUpd.str().c_str());
+				g_DBManager.Exec(sqlUpd.str());
+
+				sql << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
+				<< _T(" AND parent = ") << fromContainerId
+				<< _T(" AND slot = ") << itemOp.itemId().High();//itemId().High();
+
+				g_DBManager.Exec(sql.str());
+				g_DBManager.Commit();
+				g_DBManager.UnLock();
+			}
+			else if (opId == 0x70)
+			{
+				g_DBManager.Lock();
+				g_DBManager.Begin();
+				unsigned int fromContainerId = GetFromContainerId(msg.characterId(), itemOp.fromType(), itemOp.fromContainerTempId());
+
+				if (fromContainerId == 0)
+				{
+					OutputDebugString(_T("From container not found!"));
+			 		return; //we dont have the value cached, either a bug or ia was started after the bp was opened. Or unknown from type
+				}
+
+				//user deleted an item!
+				sql << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
+				<< _T(" AND parent = ") << fromContainerId
+				<< _T(" AND keylow = ") << itemOp.itemId().Low()
+				<< _T(" AND keyhigh = ") << itemOp.itemId().High()
+				<< _T(" AND slot = ") << itemOp.fromItemSlotId();
+
+				g_DBManager.Exec(sql.str());
+				g_DBManager.Commit();
+				g_DBManager.UnLock();
+
+			}
+			else if (opId == 0x13) //0x69  from = 0c350+ a char Id
+			{
+				//when you run a nano, this one fires
+				return;
+			}
+			else if (opId == 0xB3) 
+				//0x69  from = 0c350+ a char Id = ?
+				//0xD2  =when you tradeskill? pb
+			{
+				//When you hit a perk, this one fires
+				
+				return;
+			}
+			else
+
+			{
+				sql << _T("Unknown operation Id:") <<std::hex << opId;
+				OutputDebugString(sql.str().c_str());
+				OutputDebugString(itemOp.print().c_str());
+				return;
+			}
+			
+		}
+		break;
+		
+		
+	case AO::MSG_ITEM_MOVE: //0x47537a24://1196653092:
+		{
+			return;
+			//(AO::MoveOperation*)msg.start();
+		/*	Native::AOMoveOperation moveOp((AO::MoveOperation*)msg.start());
+
+			//{frominv}=00 00 00 68 fra inv
+			//{frominv}= 00 69 fra bank
+			//{frombp} =00 6b fra backpack
+			//{fromWear1}= 00 65
+
+			unsigned int newParent;
+			//{toBp1} =00 00 c7 49 21 46 92 6e
+			//{toBp2} =00 00 c7 49 21 b2 55 e9
+			//{toBp}  =00 00 c7 49 + 4 byte container Id
+			//{toBank}=00 00 de ad + siste 4 bytes i char id.
+			//{toWear}=00 00 c3 50 44 bb 17 ae 
+
+			if (moveOp.toContainer().Low() == 0xc749)
+				newParent = moveOp.toContainer().High();
+			else if (moveOp.toContainer().Low() == 0xdead)
+				newParent = 1;
+			else if (moveOp.toContainer().Low() == 0xc350)
+				newParent = 2;
+			else
+				return;
+
+			OutputDebugString(_T("move"));
+
+			unsigned int fromContainerId = GetFromContainerId(moveOp.charid(), moveOp.fromType(), moveOp.fromContSlotId());
+
+			if (fromContainerId == 0)
+			{
+				OutputDebugString(_T("From container not found!"));
+			 	return; //we dont have the value cached, either a bug or ia was started after the bp was opened. Or unknown from type
+			}
+
+			unsigned short newSlot = moveOp.targetSlotId();
+
+			g_DBManager.Lock();
+            g_DBManager.Begin();
+
+	//		g_DBManager.MoveItem(newParent, newSlot move everything here?
+
+			if (newSlot = 0x6f)
+				newSlot = g_DBManager.FindNextAvailableContainerSlot(moveOp.charid(), newParent);
+			
+			//TODO:if (newSlot > 63+30??) calc a new one!!
+
+			//if (moveOp.fromType() == 0x006b) //from a backpack
+            {
+				
+                // Remove old contents from BP
+                std::tstringstream sql;
+     //           sql << _T("UPDATE OR IGNORE tItems, tItems tContFrom SET tItems.parent = ") << newParent
+					//<< _T(" AND tItems.slot = ") << newSlot
+					//<< _T(" WHERE tItems.parent = tContFrom.children And tContFrom.parent = 2 And tContFrom.slot = ") << fromSlotId
+					//<< _T(" AND tContFrom.owner = ") << moveOp.charid() << _T(" AND tItems.owner = ") << moveOp.charid()
+					//<< _T(" AND tItems.slot = ") << moveOp.fromItemSlotId();
+
+				sql << _T("UPDATE tItems SET parent = ") << newParent
+					<< _T(", slot = ") << newSlot
+				    << _T(" WHERE parent = ") << fromContainerId
+					<< _T(" AND slot = ") << moveOp.fromItemSlotId()
+					<< _T(" AND owner = ") << moveOp.charid();//tContFrom.children And tContFrom.parent = 2 And tContFrom.slot = ") << fromSlotId
+					//<< _T(" AND tContFrom.owner = ") << moveOp.charid() << _T(" AND tItems.owner = ") << moveOp.charid()
+					//<< _T(" AND tItems.slot = ") << moveOp.fromItemSlotId();
+		    
+				//std::tstringstream sql;
+    //            sql << _T("SELECT * FROM tItems, tItems tContFrom ")
+				//	<< _T(" WHERE tItems.parent = ") << fromContainerId << _T(" AND tItems.owner = ") << moveOp.charid()
+				//	<< _T(" AND tItems.slot = ") << moveOp.fromItemSlotId();
+
+				
+
+				OutputDebugString(sql.str().c_str());
+				OutputDebugString(moveOp.print().c_str());
+
+				
+
+                g_DBManager.Exec(sql.str());
+
+				g_DBManager.Commit();
+                g_DBManager.UnLock();
+            }
+*/
+   //         
+		}
+		break;
+	
+	default:
+        break;
+	}
+}
+
+unsigned int InventoryView::GetFromContainerId(unsigned int charId, unsigned short fromType, unsigned short fromSlotId)
+{
+	if (fromType == 0x006b) //backpack
+		return ServicesSingleton::Instance()->GetInvSlotIndex(charId, fromSlotId);
+
+	else if (fromType == 0x0068//inv
+			|| fromType == 0x0065  //utils, hud, ncu, weap pane
+			|| fromType == 0x0073  //social pande
+			|| fromType == 0x0067  //implants
+			|| fromType == 0x0066) //wear neck,sleeve
+//fromType = 6c => remove item from trade window
+		return 2; 
+	else if (fromType == 0x0069)//bank
+		return 1;
+	else
+	{
+		std::tstringstream tmp;
+		tmp << _T("TODO: UNKNOWN FROM TYPE ") << std::hex << fromType;
+
+		OutputDebugString(tmp.str().c_str());
+		return 2; //we assume inventory o.O
+	}
+}
 
 void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 {
     switch(msg.messageId())
     {
+		//TODO: Trades
+		//TODO: Sell to shops?
+
+		//TODO: add/remove from shop
+		//TODO: overflow?
+		//TODO: item move to inventory when stackable exists joins to lowest slot id stack
+
+	case AO::MSG_ITEM_BOUGHT: //0x052e2f0c: 
+		{
+			Native::AOBoughtItemFromShop item((AO::BoughtItemFromShop*)msg.start());
+
+			OutputDebugString(item.print().c_str());
+
+			g_DBManager.Lock();
+            g_DBManager.Begin();
+
+			unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(item.charid(), 2);
+
+			g_DBManager.InsertItem(
+                    item.itemid().Low(),
+                    item.itemid().High(),
+                    item.ql(),
+                    item.stack(),
+                    2,                           // 2 = inventory
+                    nextFreeInvSlot,
+                    0,
+                    item.charid());
+
+			g_DBManager.Commit();
+            g_DBManager.UnLock();
+		}
+		break;
+		case AO::MSG_ITEM_MOVE: //0x47537A24:// what about 0x52526858:
+		{
+	//	The ItemMoved is identical to the client send version except the header is server type.
+			Native::AOItemMoved moveOp((AO::ItemMoved*)msg.start());
+			
+			OutputDebugString(moveOp.print().c_str());
+
+			unsigned int newParent;
+			
+			unsigned int toType = moveOp.toContainer().Low();
+			if (toType == 0xc749) //to backpack
+				newParent = moveOp.toContainer().High();
+			else if (toType == 0xdead)
+				newParent = 1; //to bank
+			else if (toType == 0xc350)
+				newParent = 2; //to inventory
+			else
+			{
+				std::tstringstream tmp;
+				tmp << _T("TODO: UNKNOWN TO TYPE ") << std::hex << toType;
+				OutputDebugString(tmp.str().c_str());
+				return;
+			}
+
+			unsigned int fromContainerId = GetFromContainerId(moveOp.charid(), moveOp.fromType(), moveOp.fromContainerTempId());
+		
+
+			if (fromContainerId == 0)
+			{
+				OutputDebugString(_T("FromContainerId not found in cache "));
+
+			 	return; //we dont have the value cached, either a bug or ia was started after the bp was opened.
+			}
+
+			unsigned short newSlot = moveOp.targetSlotId();
+
+			g_DBManager.Lock();
+            g_DBManager.Begin();
+
+			if (newSlot >= 0x6f || newSlot == 0x00)
+				newSlot = g_DBManager.FindNextAvailableContainerSlot(moveOp.charid(), newParent);
+			
+            std::tstringstream sql;
+			//with slot in DB:
+ //           sql << _T("UPDATE OR IGNORE tItems, tItems tContFrom SET tItems.parent = ") << newParent
+				//<< _T(" AND tItems.slot = ") << newSlot
+				//<< _T(" WHERE tItems.parent = tContFrom.children And tContFrom.parent = 2 And tContFrom.slot = ") << fromSlotId
+				//<< _T(" AND tContFrom.owner = ") << moveOp.charid() << _T(" AND tItems.owner = ") << moveOp.charid()
+				//<< _T(" AND tItems.slot = ") << moveOp.fromItemSlotId();
+
+			sql << _T("UPDATE tItems SET parent = ") << newParent
+				<< _T(", slot = ") << newSlot
+			    << _T(" WHERE parent = ") << fromContainerId
+				<< _T(" AND slot = ") << moveOp.fromItemSlotId()
+				<< _T(" AND owner = ") << moveOp.charid();
+
+			OutputDebugString(sql.str().c_str());
+
+            g_DBManager.Exec(sql.str());
+
+			g_DBManager.Commit();
+            g_DBManager.UnLock();
+        
+		}
+		break;
+	
     case AO::MSG_BANK:
         {
             Native::AOBank bank((AO::Bank*)msg.start());
@@ -660,6 +1039,10 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
     case AO::MSG_CONTAINER:
         {
             Native::AOContainer bp((AO::Header*)msg.start());
+
+			//OutputDebugString(_T("MSG_CONTAINER"));
+			//OutputDebugString(bp.print().c_str());
+
             g_DBManager.Lock();
             g_DBManager.Begin();
             {
@@ -682,6 +1065,10 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                     0,
                     msg.characterId());
             }
+			
+			ServicesSingleton::Instance()->UpdateInvSlotIndex(bp.charid(), bp.tempContainerId(), bp.containerid().High());
+			
+
             g_DBManager.Commit();
             g_DBManager.UnLock();
             //AddToTreeView(msg.charid(), bp.containerid().High());
@@ -699,10 +1086,18 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                 sql << _T("DELETE FROM tItems WHERE parent = 2 AND owner = ") << equip.charid();
                 g_DBManager.Exec(sql.str());
             }
+			
+			OutputDebugString(_T("zoneing"));
+			ServicesSingleton::Instance()->ClearInvSlotCache(equip.charid());
+
+#ifdef DEBUG
+			OutputDebugString(_T("FullSync"));
+#endif
             // Register items
             for (unsigned int i = 0; i < equip.numitems(); i++)
             {
                 Native::AOItem item = equip.item(i);
+
                 g_DBManager.InsertItem(
                     item.itemid().Low(),
                     item.itemid().High(),
@@ -744,6 +1139,11 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
             }
         }
         break;
+
+	/*case AO::MSG_ITEM_MOVE:
+		{
+			g_DBManager.MoveItem({8 c1} 00 {4 fromtype}{2 fromId} {2 fromItemId} {8 toContainer})
+		}*/
 
     case AO::MSG_SHOP_ITEMS:
         {

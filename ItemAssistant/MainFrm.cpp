@@ -205,7 +205,7 @@ LRESULT CMainFrame::OnAOMessage(HWND wnd, PCOPYDATASTRUCT pData)
         m_tabbedChildWindow.OnAOServerMessage(msg);
     }
     else if (pData->dwData == 2) {
-        AOMessageBase msg(datablock, datasize);
+        AOClientMessageBase msg(datablock, datasize);
         m_tabbedChildWindow.OnAOClientMessage(msg);
     }
 

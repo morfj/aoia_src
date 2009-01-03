@@ -38,9 +38,14 @@ public:
     /// Opens the specified URL in a new browser window.
     static void OpenURL(std::tstring const& url);
 
+	void ClearInvSlotCache(unsigned int charId);
+	void UpdateInvSlotIndex(unsigned int charId, unsigned int fromId, unsigned int slotId);
+	unsigned int GetInvSlotIndex(unsigned int charId, unsigned int fromId);
+
 protected:
     std::vector<std::tstring> GetAccountNames() const;
     std::tstring MakeContainerName(unsigned int charid, unsigned int containerid) const;
+
 
 private:
     std::vector<std::tstring> m_accounts;
@@ -48,4 +53,8 @@ private:
 
     mutable std::map< __int64, std::pair<std::tstring, FILETIME> > m_containerFileCache;
     mutable std::map< __int64, std::tstring > m_containerDBCache;
+
+	mutable std::map< __int32, std::map<__int32, unsigned int> > m_InvSlotIndexCache; //char id and container Id are keys.
+	//mutable std::map< __int64, unsigned int > m_InvSlotIndexCache;
+
 };

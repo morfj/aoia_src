@@ -38,6 +38,9 @@ public:
     void SetToonName(unsigned int charid, std::tstring const& newName);
 
     void UpdateToonShopId(unsigned int charid, unsigned int shopid);
+
+	unsigned int FindNextAvailableContainerSlot(unsigned int charId, unsigned int containerId);
+
     unsigned int GetShopOwner(unsigned int shopid);
 
     OwnedItemInfoPtr GetOwnedItemInfo(unsigned int itemID);

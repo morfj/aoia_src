@@ -62,10 +62,10 @@ public:
     LRESULT OnSize(UINT wParam, CSize newSize);
 
     virtual void OnAOServerMessage(AOMessageBase &msg);
-    virtual void OnAOClientMessage(AOMessageBase &msg);
+    virtual void OnAOClientMessage(AOClientMessageBase &msg);
 
 protected:
-    void DumpMessageToStream(std::ostream &out, AOMessageBase &msg);
+    void DumpMessageToStream(std::ostream &out, Parser &msg);
     bool SearchMessageForBinarySequence(AOMessageBase &msg, unsigned char* pArray, unsigned int arraySize);
 
 private:

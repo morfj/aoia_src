@@ -200,7 +200,7 @@ void AoMsgView::OnAOServerMessage(AOMessageBase &msg)
 }
 
 
-void AoMsgView::OnAOClientMessage(AOMessageBase &msg)
+void AoMsgView::OnAOClientMessage(AOClientMessageBase &msg)
 {
     std::ofstream ofs;
     ofs.open("c:\\temp\\client_messages.bin", std::ios_base::out | std::ios_base::binary | std::ios_base::app);
@@ -210,7 +210,7 @@ void AoMsgView::OnAOClientMessage(AOMessageBase &msg)
 
 
 /// Dump a message to stream
-void AoMsgView::DumpMessageToStream(std::ostream &out, AOMessageBase &msg)
+void AoMsgView::DumpMessageToStream(std::ostream &out, Parser &msg)
 {
     char* p = msg.start();
 

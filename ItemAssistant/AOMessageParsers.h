@@ -28,6 +28,29 @@ namespace Native {
         unsigned int	m_high;
     };
 
+	class AOClientMessageHeader
+	{
+		public:
+        AOClientMessageHeader(AO::ClientHeader *pHeader) : m_pHeader(pHeader) { }
+		unsigned int msgid()    const { return _byteswap_ulong(m_pHeader->msgid); }
+       // unsigned int serverid() const { return _byteswap_ulong(m_pHeader->serverid); }
+        unsigned int charid()   const { return _byteswap_ulong(m_pHeader->charId.high); }
+     //   unsigned short size()   const { return _byteswap_ushort(m_pHeader->msgsize); }
+      //  ObjectId target()       const { return ObjectId(m_pHeader->charId); }
+
+        std::tstring print() const {
+            std::tstringstream out;
+            out << "MessageHeader:" << "\r\n"
+                << "MsgId\t" << msgid() << "\r\n"
+                //<< "ServerId\t" << serverid() << "\r\n"
+                //<< "CharId\t" << charid() << "\r\n"
+                //<< "Size\t" << size() << "\r\n"
+                << "CharId\t" << charid() << "\r\n";
+            return out.str();
+        }
+    protected:
+        AO::ClientHeader *m_pHeader;
+	};
 
     class AOMessageHeader
     {
@@ -60,11 +83,26 @@ namespace Native {
     public:
         AOItem(AO::ContItem* pItem) : m_pItem(pItem) { }
 
+		unsigned short flags() const { return _byteswap_ushort(m_pItem->flags); }
+		unsigned int nullval() const { return _byteswap_ulong(m_pItem->nullval); }
+
         unsigned int index() const { return _byteswap_ulong(m_pItem->index); }
         unsigned int ql() const { return _byteswap_ulong(m_pItem->ql); }
         unsigned short stack() const { return _byteswap_ushort(m_pItem->stack); }
         ObjectId containerid() const { return ObjectId(m_pItem->containerid); }
         ObjectId itemid() const { return ObjectId(m_pItem->itemid); }
+
+		std::tstring print() const {
+            std::tstringstream out;
+            out << "MessageHeader:" << "\r\n"
+                << "flags\t" << flags() << "\r\n"
+                << "nullval\t" << nullval() << "\r\n"
+                << "index\t" << index() << "\r\n"
+                << "containerid\t" << containerid().print().c_str() << "\r\n"
+                << "itemid\t" << itemid().print().c_str() << "\r\n";
+		
+            return out.str();
+		}
 
     protected:
         AO::ContItem* m_pItem;
@@ -76,6 +114,9 @@ namespace Native {
     public:
         AOContainer(AO::Header *pHeader) : AOMessageHeader(pHeader) { }
 
+		unsigned char unknown1() const { return ((AO::Container*)m_pHeader)->unknown1; }
+		unsigned char unknown2() const { return ((AO::Container*)m_pHeader)->unknown2; }
+
         unsigned char numslots() const { return ((AO::Container*)m_pHeader)->numslots; }
         unsigned int numitems() const { /*return (_byteswap_ulong(((AO::Container*)m_pHeader)->unknown2)-1009)/1009;*/ 
             AO::Container* p = ((AO::Container*)m_pHeader);
@@ -83,12 +124,165 @@ namespace Native {
             unsigned int result = (mass - 1009) / 1009;
             return result;
         }
-        unsigned int counter() const { return _byteswap_ulong(((AO::ContEnd*)(((char*)m_pHeader)+sizeof(AO::ContItem)*numitems()))->counter); }
+
+        unsigned int tempContainerId() const { return _byteswap_ulong(((AO::ContEnd*)(((char*)m_pHeader)+sizeof(AO::Container)+sizeof(AO::ContItem)*numitems()))->tempContainerId); }
         ObjectId containerid() const { return ((AO::ContEnd*)(((char*)m_pHeader)+sizeof(AO::Container)+sizeof(AO::ContItem)*numitems()))->containerId; }
 
         AOItem item(int index) const { return AOItem( (AO::ContItem*)(((char*)m_pHeader)+sizeof(AO::Container)+sizeof(AO::ContItem)*index) ); }
+
+		std::tstring print() const {
+            std::tstringstream out;
+            out << "AOContainer:" << "\r\n"
+                << "numslots\t" << numslots() << "\r\n"
+                << "numitems\t" << numitems() << "\r\n"
+                << "tempContainerId\t" << tempContainerId() << "\r\n"
+				<< "unknown1\t" << unknown1() << "\r\n"
+                << "unknown2\t" << unknown2() << "\r\n"
+                << "containerid\t" << containerid().print().c_str() << "\r\n";
+		
+            return out.str();
+		}
+
+
     };
 
+
+	class AOOpenBackpackOperation : public AOClientMessageHeader
+	{
+		public:
+        AOOpenBackpackOperation(AO::OpenBackpackOperation* pOpenBpOp) : AOClientMessageHeader(&(pOpenBpOp->header)), m_pOpenBpOp(pOpenBpOp) { }
+
+		unsigned int openedbeforeCount() const { return _byteswap_ulong(m_pOpenBpOp->openedbeforeCount); }
+		unsigned int counter() const { return _byteswap_ulong(m_pOpenBpOp->counter); }
+		unsigned short containerType() const { return _byteswap_ushort(m_pOpenBpOp->backPack.type); }
+		ObjectId owner() const { return m_pOpenBpOp->owner;}
+		unsigned short containerTempId() const { return _byteswap_ushort(m_pOpenBpOp->backPack.itemSlotId); }
+
+
+
+		std::tstring print() const {
+            std::tstringstream out;
+            out << "AOOpenBackpackOperation:" << "\r\n"
+                << "openedbeforeCount\t" << openedbeforeCount() << "\r\n"
+                << "counter\t" << counter() << "\r\n"
+                << "fromType\t 0x" << std::hex <<containerType() << "\r\n"
+                << "fromSlot\t" << containerTempId() << "\r\n";
+		
+            return out.str();
+		}
+
+    protected:
+        AO::OpenBackpackOperation* m_pOpenBpOp;
+	};
+
+	class AOItemOperation : public AOClientMessageHeader
+	{
+		public:
+        AOItemOperation(AO::ItemOperation* pDelOp) : AOClientMessageHeader(&(pDelOp->header)), m_pDelOp(pDelOp) { }
+
+		unsigned int operationId() const { return _byteswap_ulong(m_pDelOp->operationId); }
+		unsigned int unknown3() const { return _byteswap_ulong(m_pDelOp->unknown3); }
+
+		unsigned short fromType() const { return _byteswap_ushort(m_pDelOp->itemToDelete.type); }
+		unsigned short fromContainerTempId() const { return _byteswap_ushort(m_pDelOp->itemToDelete.containerTempId); }
+		unsigned short fromItemSlotId() const { return _byteswap_ushort(m_pDelOp->itemToDelete.itemSlotId); }
+		ObjectId itemId() const { return m_pDelOp->itemId;}
+		//unsigned short targetSlotId() const { return _byteswap_ushort(m_pMoveOp->moveData.targetSlot); }
+
+		std::tstring print() const {
+            std::tstringstream out;
+            out << "AODeleteItemOperation:" << "\r\n"
+				<< "operationId\t 0x" << std::hex << operationId() << "\r\n"
+				<< "unknown3\t 0x"<< std::hex << unknown3() << "\r\n"
+                << "fromType\t 0x"<< std::hex << fromType() << "\r\n"
+                << "fromContainerTempId\t" << fromContainerTempId() << "\r\n"
+                << "fromItemSlotId\t" << fromItemSlotId() << "\r\n"
+                << "itemId\t" << itemId().print().c_str() << "\r\n";
+		
+            return out.str();
+		}
+
+    protected:
+        AO::ItemOperation* m_pDelOp;
+	};
+
+	class AOMoveOperation : public AOClientMessageHeader
+	{
+		public:
+        AOMoveOperation(AO::MoveOperation* pMoveOp) : AOClientMessageHeader(&(pMoveOp->header)), m_pMoveOp(pMoveOp) { }
+
+		unsigned short fromType() const { return _byteswap_ushort(m_pMoveOp->moveData.fromItem.type); }
+		unsigned short fromContainerTempId() const { return _byteswap_ushort(m_pMoveOp->moveData.fromItem.containerTempId); }
+		unsigned short fromItemSlotId() const { return _byteswap_ushort(m_pMoveOp->moveData.fromItem.itemSlotId); }
+		ObjectId toContainer() const { return m_pMoveOp->moveData.toContainer;}
+		unsigned short targetSlotId() const { return _byteswap_ushort(m_pMoveOp->moveData.targetSlot); }
+
+		std::tstring print() const {
+            std::tstringstream out;
+            out << "AOMoveOperation:" << "\r\n"
+                << "fromType\t0x" << std::hex << fromType() << "\r\n"
+                << "fromContainerTempId\t" << fromContainerTempId() << "\r\n"
+                << "fromItemSlotId\t" << fromItemSlotId() << "\r\n"
+                << "toContainer\t" << toContainer().print().c_str() << "\r\n"
+                << "targetSlotId\t" << targetSlotId() << "\r\n";
+		
+            return out.str();
+		}
+
+    protected:
+        AO::MoveOperation* m_pMoveOp;
+	};
+
+	class AOBoughtItemFromShop : public AOMessageHeader
+	{
+		public:
+        AOBoughtItemFromShop(AO::BoughtItemFromShop* pBoughItem) : AOMessageHeader(&(pBoughItem->header)), m_pBoughItem(pBoughItem) { }
+
+		unsigned int ql() const { return _byteswap_ulong(m_pBoughItem->ql); }
+        unsigned int stack() const { return _byteswap_ulong(m_pBoughItem->stack); }
+        ObjectId itemid() const { return ObjectId(m_pBoughItem->itemid); }
+
+
+		std::tstring print() const {
+            std::tstringstream out;
+            out << "AOBoughtItemFromShop:" << "\r\n"
+                << "ql\t" << ql() << "\r\n"
+                << "stack\t" << stack() << "\r\n"
+                << "itemid\t" << itemid().print().c_str() << "\r\n";
+		
+            return out.str();
+		}
+
+	protected:
+        AO::BoughtItemFromShop* m_pBoughItem;
+	};
+
+	class AOItemMoved : public AOMessageHeader
+	{
+		public:
+        AOItemMoved(AO::ItemMoved* pMoveOp) : AOMessageHeader(&(pMoveOp->header)), m_pMoveOp(pMoveOp) { }
+
+		unsigned short fromType() const { return _byteswap_ushort(m_pMoveOp->moveData.fromItem.type); }
+		unsigned short fromContainerTempId() const { return _byteswap_ushort(m_pMoveOp->moveData.fromItem.containerTempId); }
+		unsigned short fromItemSlotId() const { return _byteswap_ushort(m_pMoveOp->moveData.fromItem.itemSlotId); }
+		ObjectId toContainer() const { return m_pMoveOp->moveData.toContainer;}
+		unsigned short targetSlotId() const { return _byteswap_ushort(m_pMoveOp->moveData.targetSlot); }
+
+		std::tstring print() const {
+            std::tstringstream out;
+            out << "AOItemMoved:" << "\r\n"
+                << "fromType\t 0x" << std::hex << fromType() << "\r\n"
+                << "fromContainerTempId\t" << fromContainerTempId() << "\r\n"
+                << "fromItemSlotId\t" << fromItemSlotId() << "\r\n"
+                << "toContainer\t" << toContainer().print().c_str() << "\r\n"
+                << "targetSlotId\t" << targetSlotId() << "\r\n";
+		
+            return out.str();
+		}
+
+    protected:
+        AO::ItemMoved* m_pMoveOp;
+	};
 
     class AOBank : public AOMessageHeader
     {
@@ -120,6 +314,79 @@ namespace Native {
 
 namespace Parsers {
 
+	class AOClientMessageBase
+        : public Parser
+    {
+    public:
+        enum HeaderType {
+            UNKNOWN_MESSAGE,
+            MSG_TYPE_1 = 0x00000001,
+            MSG_TYPE_A = 0x0000000A,
+            MSG_TYPE_B = 0x0000000B,
+            MSG_TYPE_D = 0x0000000D,
+            MSG_TYPE_E = 0x0000000E,
+        };
+	
+
+        AOClientMessageBase(char *pRaw, unsigned int size)
+            : Parser(pRaw, size) 
+            , m_type(UNKNOWN_MESSAGE)
+            , m_characterid(0)
+            , m_messageid(0)
+        {
+
+			//Client Send Header parsing:
+
+			//H3 = I4 msgType  I4 Zero     I4  someId  I4   02     I4 msgId I4+I4 charId
+            // Parse and validate header
+            unsigned int t = popInteger();
+            if (t == 0x0000000A) {
+                m_type = MSG_TYPE_A;
+            }
+            //else if (t == 0x0000000D) {
+            //    m_type = MSG_TYPE_D;
+            //   // char c = popChar();
+            //   // assert(c == 0x0A);
+            //}
+            else if (t == 0x0000000B) {
+                m_type = MSG_TYPE_B;
+            }
+            //else if (t == 0x0000000E) {
+            //    m_type = MSG_TYPE_E;
+            //}
+            else if (t == 0x00000001) {
+                m_type = MSG_TYPE_1;
+            }
+            else {
+                Logger::instance().log(STREAM2STR(_T("Error unknown client message header: ") << t));
+                return;
+            }
+
+            skip(4);    // 0x00 00 00 00
+          
+            skip(4);    // Receiver: Instance ID? Dimension? Subsystem?
+            
+			skip(4); //??ex 00 00 00 02 or 00 00 0b ed  on logoff
+
+			m_messageid = popInteger();
+
+			skip(4);    // Target Entity: Instance ID? Dimension? Subsystem? 50000
+			//m_entityid = popInteger();
+
+			m_characterid = popInteger();
+
+        }
+
+        HeaderType headerType() const { return m_type; }
+        unsigned int characterId() const { return m_characterid; }
+        unsigned int messageId() const { return m_messageid; }
+
+    private:
+        HeaderType m_type;
+        unsigned int m_characterid;
+        unsigned int m_messageid;
+    };
+
     class AOMessageBase
         : public Parser
     {
@@ -132,6 +399,7 @@ namespace Parsers {
             MSG_TYPE_D = 0xDFDF000D,
             MSG_TYPE_E = 0xDFDF000E,
         };
+	
 
         AOMessageBase(char *pRaw, unsigned int size)
             : Parser(pRaw, size) 
@@ -172,6 +440,50 @@ namespace Parsers {
             m_messageid = popInteger();
             skip(4);    // Target Entity: Instance ID? Dimension? Subsystem?
             m_entityid = popInteger();
+
+			/*
+
+			Client Send Header parsing:
+
+			//H3 = I4 msgType  I4 Zero     I4  someId  I4   02     I4 msgId I4+I4 charId
+            // Parse and validate header
+            unsigned int t = popInteger();
+            if (t == 0x0000000A) {
+                m_type = MSG_TYPE_A;
+            }
+            //else if (t == 0x0000000D) {
+            //    m_type = MSG_TYPE_D;
+            //   // char c = popChar();
+            //   // assert(c == 0x0A);
+            //}
+            else if (t == 0x0000000B) {
+                m_type = MSG_TYPE_B;
+            }
+            //else if (t == 0x0000000E) {
+            //    m_type = MSG_TYPE_E;
+            //}
+            else if (t == 0x00000001) {
+                m_type = MSG_TYPE_1;
+            }
+            else {
+                Logger::instance().log(STREAM2STR(_T("Error unknown client message header: ") << t));
+                return;
+            }
+
+            skip(4);    // 0x00 00 00 00
+          
+            skip(4);    // Receiver: Instance ID? Dimension? Subsystem?
+            
+			skip(4); //??ex 00 00 00 02 or 00 00 0b ed  on logoff
+
+			m_messageid = popInteger();
+
+			skip(4);    // Target Entity: Instance ID? Dimension? Subsystem? 50000
+			//m_entityid = popInteger();
+
+			m_characterid = popInteger();
+
+			*/
         }
 
         HeaderType headerType() const { return m_type; }
