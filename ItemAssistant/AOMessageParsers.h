@@ -233,6 +233,42 @@ namespace Native {
         AO::MoveOperation* m_pMoveOp;
 	};
 
+	
+
+	class AOPartnerTradeItem : public AOMessageHeader
+	{
+		public:
+        AOPartnerTradeItem(AO::PartnerTradeItem* pTrans) : AOMessageHeader(&(pTrans->header)), m_pTrans(pTrans) { }
+
+		unsigned int operationId() const { return _byteswap_ulong(m_pTrans->operationId); }
+		ObjectId itemid() const { return ObjectId(m_pTrans->itemid); }
+        unsigned int ql() const { return _byteswap_ulong(m_pTrans->ql); }
+		unsigned short flags() const { return _byteswap_ushort(m_pTrans->flags); }
+        unsigned short stack() const { return _byteswap_ushort(m_pTrans->stack); }
+
+		unsigned short	partnerFromType() const { return _byteswap_ushort(m_pTrans->partnerInvItem.type); }
+		unsigned short	partnerFromContainerTempId() const { return _byteswap_ushort(m_pTrans->partnerInvItem.containerTempId); }
+		unsigned short	partnerFromItemSlotId() const { return _byteswap_ushort(m_pTrans->partnerInvItem.itemSlotId); }
+
+		std::tstring print() const {
+            std::tstringstream out;
+            out << "AOPartnerTradeItem:" << "\r\n"
+				<< "operationId\t" << std::hex << operationId() << "\r\n"
+				<< "itemid\t" << itemid().print().c_str() << "\r\n"
+				<< "ql\t" << ql() << " stack\t" << stack() <<"\r\n";
+	
+               // << "partnerFromType\t" << std::hex << partnerFromType() << "\r\n"
+				//<< "partnerFromContainerTempId\t" << partnerFromContainerTempId() << "\r\n"
+			//	<< "partnerFromItemSlotId\t" << partnerFromItemSlotId() << "\r\n"
+              
+		
+            return out.str();
+		}
+
+	protected:
+        AO::PartnerTradeItem* m_pTrans;
+	};
+
 	class AOTradeTransaction : public AOMessageHeader
 	{
 		public:
@@ -272,7 +308,7 @@ namespace Native {
         AOBoughtItemFromShop(AO::BoughtItemFromShop* pBoughItem) : AOMessageHeader(&(pBoughItem->header)), m_pBoughItem(pBoughItem) { }
 
 		unsigned int ql() const { return _byteswap_ulong(m_pBoughItem->ql); }
-        unsigned int stack() const { return _byteswap_ulong(m_pBoughItem->stack); }
+        unsigned short stack() const { return _byteswap_ushort(m_pBoughItem->stack); }
         ObjectId itemid() const { return ObjectId(m_pBoughItem->itemid); }
 
 

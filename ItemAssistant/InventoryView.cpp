@@ -916,7 +916,7 @@ unsigned int InventoryView::GetFromContainerId(unsigned int charId, unsigned sho
 		OutputDebugString(_T("Move from shop inventory ignored"));
 		return 0;
 	}
-	else if (fromType == 0x006c)//shop/trade window
+	else if (fromType == 0x006c)//shop/trade window.. could be remote or local :O
 	{
 		OutputDebugString(_T("Move from shop"));
 		return 4;
@@ -943,6 +943,57 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 		//TODO: item move to inventory when stackable exists joins to lowest slot id stack
 		//TODO: item rewards (check how you receive key/item on rk mish)
 		//TODO: item depletion (ammo, use stims etc (last stim important))
+	case AO::MSG_PARTNER_TRADE://0x35505644
+		{
+			//when trade partner adds/removes items to trade window
+			Native::AOPartnerTradeItem item((AO::PartnerTradeItem*)msg.start());
+			OutputDebugString(item.print().c_str());
+			
+			unsigned int otherTradeContainer = 5;//trade partner
+
+			unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(item.charid(), otherTradeContainer);
+
+
+			if (item.operationId() == 0x55) //trade partner adds an item
+			{
+				g_DBManager.Lock();
+				g_DBManager.Begin();
+
+				g_DBManager.InsertItem(
+                    item.itemid().Low(),
+                    item.itemid().High(),
+                    item.ql(),
+                    item.stack(),
+                    otherTradeContainer,  // 2 = inventory
+                    nextFreeInvSlot,
+                    0,
+                    item.charid());
+
+				g_DBManager.Commit();
+				g_DBManager.UnLock();
+			}
+			else if (item.operationId() == 0x56) //trade partner removes an item
+			{
+				if (item.partnerFromType() == 0x6c)//remove from trade window
+				{
+					g_DBManager.Lock();
+					g_DBManager.Begin();
+
+					std::tstringstream sql;
+
+					sql << _T("DELETE FROM tItems")
+						<< _T(" WHERE parent = ") << otherTradeContainer
+						<< _T(" AND slot = ") << item.partnerFromItemSlotId()
+						<< _T(" AND owner = ") << item.charid();
+					g_DBManager.Exec(sql.str());
+					OutputDebugString(sql.str().c_str());
+
+					g_DBManager.Commit();
+					g_DBManager.UnLock();
+				}
+			}
+		}
+		break;
 	case AO::MSG_SHOP_TRANSACTION: //0x36284f6e 
 		{
 			Native::AOTradeTransaction item((AO::TradeTransaction*)msg.start());
@@ -951,9 +1002,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 			std::tstringstream sql;
 
 			unsigned int shopContainer = 4;
-
-			unsigned int fromContainerId = GetFromContainerId(item.charid(), item.fromType(), item.fromContainerTempId());
-
+			unsigned int otherTradeContainer = 5;//trade partner
 
 			//we move stuff to parent=4 when in a trade
 			switch (item.operationId())
@@ -965,7 +1014,8 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 		            g_DBManager.Begin();
 
 					//start trade?
-					sql << _T("DELETE FROM tItems WHERE parent = ") << shopContainer
+					sql << _T("DELETE FROM tItems WHERE (parent = ") << shopContainer
+						<< _T(" OR parent = ") << otherTradeContainer << _T(")")
 						<< _T(" AND owner = ") << item.charid();
 
 					g_DBManager.Exec(sql.str());
@@ -1002,6 +1052,15 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 						OutputDebugString(sql.str().c_str());
 					}
 
+					//delete trade partner added items:
+					sql.flush();
+					sql.str(_T(""));
+					sql << _T("DELETE FROM tItems WHERE parent = ") << otherTradeContainer
+						<< _T(" AND owner = ") << item.charid();
+
+					g_DBManager.Exec(sql.str());
+					OutputDebugString(sql.str().c_str());
+
 					g_DBManager.Commit();
 					g_DBManager.UnLock();
 				}
@@ -1022,6 +1081,27 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
 					OutputDebugString(sql.str().c_str());
 
+
+					//grab the new stuff!
+					unsigned int shopCapacity = 35;
+
+					for (unsigned int i=0;i<=shopCapacity;i++) //or is it the other direction?
+					{
+						unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(item.charid(), 2);
+						
+						sql.flush();
+						sql.str(_T(""));
+
+						sql << _T("UPDATE tItems SET parent = 2")
+						<< _T(", slot = ") << nextFreeInvSlot
+						<< _T(" WHERE parent = ") << otherTradeContainer
+						<< _T(" AND slot = ") << i
+						<< _T(" AND owner = ") << item.charid();
+						g_DBManager.Exec(sql.str());
+						OutputDebugString(sql.str().c_str());
+					}
+
+
 					g_DBManager.Commit();
 					g_DBManager.UnLock();
 				}
@@ -1030,7 +1110,15 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 				{
 					//add item to trade window
 
-					//check fromId?
+					//fromId contains the owner
+					
+					if (item.fromId().High() != item.charid())
+					{
+						OutputDebugString(_T("Added by the other part"));
+						return;
+					}
+
+					unsigned int fromContainerId = GetFromContainerId(item.charid(), item.fromType(), item.fromContainerTempId());
 
 					g_DBManager.Lock();
 		            g_DBManager.Begin();
@@ -1041,7 +1129,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 						<< _T(", slot = ") << nextFreeInvSlot
 						<< _T(" WHERE parent = ") << fromContainerId
 						<< _T(" AND slot = ") << item.fromItemSlotId()
-						<< _T(" AND owner = ") << item.charid(); //TODO: remove from other monitored char with fromId?
+						<< _T(" AND owner = ") << item.fromId().High(); //TODO: remove from other monitored char with fromId?
 
 					g_DBManager.Exec(sql.str());
 
@@ -1054,6 +1142,12 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 				case 0x06:
 				{
 					//remove item from trade window
+
+					if (item.fromId().High() != item.charid())
+					{
+						OutputDebugString(_T("Removed by the other part"));
+						return;
+					}
 
 					g_DBManager.Lock();
 		            g_DBManager.Begin();
@@ -1075,13 +1169,23 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 					g_DBManager.UnLock();
 				}
 				break;
+				case 0x08:
+				{
+					//partner added a backpack to the trade window
+					OutputDebugString(_T("Trade partner added a backpack to trade window, not supported yet."));
+					return;
+				}
+				break;
 				default:
 				{
+					std::tstringstream warning;
+					warning << _T("Unknown trade operation: ") << std::hex << item.operationId();
+					OutputDebugString(warning.str().c_str());
+					return;
 				}
 				break;
 
 			}
-
 
 		}
 		break;

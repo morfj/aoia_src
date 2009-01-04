@@ -155,6 +155,22 @@ namespace AO {
 		InvItemId		itemToTrade;
 	};
 
+	struct PartnerTradeItem
+	{
+		//MSG_PARTNER_TRADE
+		Header header;
+		//00 00 01 d1 35 00 01 d1 35 00 00 00 01 00 00 00 01|00 00 00 55|00 00 00 68 00 00 00 4f |00 00 00 00 00 00 00 00 
+		unsigned char	unknown1;//01
+		AoObjectId		itemid;
+		unsigned int	ql;
+		unsigned short	flags;
+		unsigned short	stack;
+		unsigned int	operationId;//55=Add, 56=remove
+		InvItemId		partnerInvItem;
+		InvItemId		myInvItemNotUsed; //
+
+	};
+
 	struct BoughtItemFromShop
 	{
 		Header			header;
@@ -162,7 +178,8 @@ namespace AO {
 		unsigned char	unknown1;//00
 		AoObjectId		itemid;
 		unsigned int	ql;
-		unsigned int	stack;
+		unsigned short	flags;
+		unsigned short	stack;
 	};
 
     struct Container
@@ -252,6 +269,7 @@ namespace AO {
 		MSG_OPENBACKPACK=	0x52526858,//1196653092: from client when opening backpack
 		MSG_ITEM_OPERATION= 0x5e477770,  //from client when deleting an item, splitting or joingin +++
 		MSG_SHOP_TRANSACTION=0x36284f6e,  //from server and client when adding/removing/accepting shop stuff
+		MSG_PARTNER_TRADE = 0x35505644, //from server when trade partner adds/removes items.
     };
 
     enum ToonAtribIds
