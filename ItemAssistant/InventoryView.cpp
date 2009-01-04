@@ -700,16 +700,23 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 			}
 			else if (opId == 0x35)
 			{
-				//OutputDebugString(itemOp.print().c_str());
+			//	OutputDebugString(itemOp.print().c_str());
 
 				//user joined two stacks!
-				//itemHigh is the slot id of the other item (gets deleted)
+				//itemHigh is the container id and slot id of the other item (gets deleted)
 				//itemLow is the fromType of the other item
+				
+				unsigned short removedItemContType	 = itemOp.itemId().Low() & 0xff;
+				unsigned short removedItemContTempId = itemOp.itemId().High() >> 16;
+				unsigned short removedItemSlotId	 = itemOp.itemId().High() & 0xff;
+	
+				unsigned int removedItemContainerId	 = GetFromContainerId(msg.characterId(), removedItemContType, removedItemContTempId);
+
+				unsigned int fromContainerId = GetFromContainerId(msg.characterId(), itemOp.fromType(), itemOp.fromContainerTempId());
 
 				g_DBManager.Lock();
 				g_DBManager.Begin();
-				unsigned int fromContainerId = GetFromContainerId(msg.characterId(), itemOp.fromType(), itemOp.fromContainerTempId());
-
+				
 				if (fromContainerId == 0)
 				{
 					OutputDebugString(_T("From container not found!"));
@@ -718,21 +725,22 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 
 				std::tstringstream sqlUpd;
 				sqlUpd << _T("UPDATE tItems SET stack = ")
-				 << _T(" (tItems.stack + (SELECT tItems2.stack FROM tItems tItems2 WHERE")
+				 << _T(" (stack + (SELECT tItems2.stack FROM tItems tItems2 WHERE")
 				 << _T(" tItems2.owner = ") << msg.characterId() 
-				 << _T(" AND tItems2.parent = ") << fromContainerId
-				 << _T(" AND tItems2.slot = ") << itemOp.itemId().High() << _T("))") 
+				 << _T(" AND tItems2.parent = ") << removedItemContainerId
+				 << _T(" AND tItems2.slot = ") << removedItemSlotId << _T("))") 
 				<< _T(" WHERE owner = ") << msg.characterId() 
 				<< _T(" AND parent = ") << fromContainerId
 				<< _T(" AND slot = ") << itemOp.fromItemSlotId();
 
-				//OutputDebugString(sqlUpd.str().c_str());
+				OutputDebugString(sqlUpd.str().c_str());
 				g_DBManager.Exec(sqlUpd.str());
 
 				sql << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
-				<< _T(" AND parent = ") << fromContainerId
-				<< _T(" AND slot = ") << itemOp.itemId().High();//itemId().High();
+				<< _T(" AND parent = ") << removedItemContainerId
+				<< _T(" AND slot = ") << removedItemSlotId;//itemId().High();
 
+				OutputDebugString(sql.str().c_str());
 				g_DBManager.Exec(sql.str());
 				g_DBManager.Commit();
 				g_DBManager.UnLock();
@@ -896,6 +904,23 @@ unsigned int InventoryView::GetFromContainerId(unsigned int charId, unsigned sho
 		return 2; 
 	else if (fromType == 0x0069)//bank
 		return 1;
+	//else if (fromType == 0x006e) //to overflow
+	//	return 5;//ServicesSingleton::Instance()->GetInvSlotIndex(charId, fromSlotId);
+	else if (fromType == 0x006f)//shop/trade window
+	{
+		OutputDebugString(_T("Move from shop remote party ignored"));
+		return 0;
+	}
+	else if (fromType == 0xc767)//shop inventory
+	{
+		OutputDebugString(_T("Move from shop inventory ignored"));
+		return 0;
+	}
+	else if (fromType == 0x006c)//shop/trade window
+	{
+		OutputDebugString(_T("Move from shop"));
+		return 4;
+	}
 	else
 	{
 		std::tstringstream tmp;
@@ -911,12 +936,155 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
     switch(msg.messageId())
     {
 		//TODO: Trades
-		//TODO: Sell to shops?
-
-		//TODO: add/remove from shop
-		//TODO: overflow?
+		//TODO: Sell to shops
+		//TODO: Tradeskills
+		//TODO: add/remove from playershop
+		//TODO: overflow? is a container?, to/from id 0x6e
 		//TODO: item move to inventory when stackable exists joins to lowest slot id stack
+		//TODO: item rewards (check how you receive key/item on rk mish)
+		//TODO: item depletion (ammo, use stims etc (last stim important))
+	case AO::MSG_SHOP_TRANSACTION: //0x36284f6e 
+		{
+			Native::AOTradeTransaction item((AO::TradeTransaction*)msg.start());
+			OutputDebugString(item.print().c_str());
 
+			std::tstringstream sql;
+
+			unsigned int shopContainer = 4;
+
+			unsigned int fromContainerId = GetFromContainerId(item.charid(), item.fromType(), item.fromContainerTempId());
+
+
+			//we move stuff to parent=4 when in a trade
+			switch (item.operationId())
+			{
+				//00=start trade? 01=client accept, 02=decline,03=tempAccept, 04=commit,05=add item,06=remove item
+				case 0x00:
+				{
+					g_DBManager.Lock();
+		            g_DBManager.Begin();
+
+					//start trade?
+					sql << _T("DELETE FROM tItems WHERE parent = ") << shopContainer
+						<< _T(" AND owner = ") << item.charid();
+
+					g_DBManager.Exec(sql.str());
+
+					g_DBManager.Commit();
+					g_DBManager.UnLock();
+				}
+				case 0x01:
+				{
+					//01=client accept //do nothing
+				}
+				break;
+				case 0x02:
+				{
+					//02=decline //move stuff back
+					g_DBManager.Lock();
+		            g_DBManager.Begin();
+
+					unsigned int shopCapacity = 35;
+
+					for (unsigned int i=0;i<=shopCapacity;i++) //or is it the other direction?
+					{
+						unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(item.charid(), 2);
+						
+						sql.flush();
+						sql.str(_T(""));
+
+						sql << _T("UPDATE tItems SET parent = 2")
+						<< _T(", slot = ") << nextFreeInvSlot
+						<< _T(" WHERE parent = ") << shopContainer
+						<< _T(" AND slot = ") << i
+						<< _T(" AND owner = ") << item.charid();
+						g_DBManager.Exec(sql.str());
+						OutputDebugString(sql.str().c_str());
+					}
+
+					g_DBManager.Commit();
+					g_DBManager.UnLock();
+				}
+				break;
+				case 0x03:
+				{
+					//03=tempAccept //do nothing
+				}
+				break;
+				case 0x04:
+				{
+					g_DBManager.Lock();
+		            g_DBManager.Begin();
+					//commit/server accept: (bye-bye stuff!)
+					sql << _T("DELETE FROM tItems WHERE parent = ") << shopContainer
+						<< _T(" AND owner = ") << item.charid();
+					g_DBManager.Exec(sql.str());
+
+					OutputDebugString(sql.str().c_str());
+
+					g_DBManager.Commit();
+					g_DBManager.UnLock();
+				}
+				break;
+				case 0x05:
+				{
+					//add item to trade window
+
+					//check fromId?
+
+					g_DBManager.Lock();
+		            g_DBManager.Begin();
+
+					unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(item.charid(), shopContainer);
+					
+					sql << _T("UPDATE tItems SET parent = ") << shopContainer
+						<< _T(", slot = ") << nextFreeInvSlot
+						<< _T(" WHERE parent = ") << fromContainerId
+						<< _T(" AND slot = ") << item.fromItemSlotId()
+						<< _T(" AND owner = ") << item.charid(); //TODO: remove from other monitored char with fromId?
+
+					g_DBManager.Exec(sql.str());
+
+					OutputDebugString(sql.str().c_str());
+
+					g_DBManager.Commit();
+					g_DBManager.UnLock();
+				}
+				break;
+				case 0x06:
+				{
+					//remove item from trade window
+
+					g_DBManager.Lock();
+		            g_DBManager.Begin();
+
+					//if (item.fromId) //who added this item??
+
+					unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(item.charid(), 2);
+
+					//TODO: move to overflow?
+
+					sql << _T("UPDATE tItems SET parent = 2, slot = ") << nextFreeInvSlot
+						<< _T(" WHERE parent = ") << shopContainer
+						<< _T(" AND slot = ") << item.fromItemSlotId()
+						<< _T(" AND owner = ") << item.charid();
+					g_DBManager.Exec(sql.str());
+					OutputDebugString(sql.str().c_str());
+
+					g_DBManager.Commit();
+					g_DBManager.UnLock();
+				}
+				break;
+				default:
+				{
+				}
+				break;
+
+			}
+
+
+		}
+		break;
 	case AO::MSG_ITEM_BOUGHT: //0x052e2f0c: 
 		{
 			Native::AOBoughtItemFromShop item((AO::BoughtItemFromShop*)msg.start());
@@ -958,6 +1126,8 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 				newParent = 1; //to bank
 			else if (toType == 0xc350)
 				newParent = 2; //to inventory
+			else if (toType == 0x006e) //to overflow
+				newParent = 5;
 			else
 			{
 				std::tstringstream tmp;

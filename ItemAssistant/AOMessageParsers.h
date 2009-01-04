@@ -233,6 +233,39 @@ namespace Native {
         AO::MoveOperation* m_pMoveOp;
 	};
 
+	class AOTradeTransaction : public AOMessageHeader
+	{
+		public:
+        AOTradeTransaction(AO::TradeTransaction* pTrans) : AOMessageHeader(&(pTrans->header)), m_pTrans(pTrans) { }
+
+		unsigned int	unknown2() const { return _byteswap_ulong(m_pTrans->unknown2); }
+		
+		unsigned short	fromType() const { return _byteswap_ushort(m_pTrans->itemToTrade.type); }
+		unsigned short	fromContainerTempId() const { return _byteswap_ushort(m_pTrans->itemToTrade.containerTempId); }
+		unsigned short	fromItemSlotId() const { return _byteswap_ushort(m_pTrans->itemToTrade.itemSlotId); }
+
+		unsigned char	operationId() const { return m_pTrans->operationId; }
+		//01=accept, 02=decline,03=?start?, 04=commit,05=add item,06=remove item
+
+		ObjectId		fromId() const { return ObjectId(m_pTrans->fromId);}
+
+		std::tstring print() const {
+            std::tstringstream out;
+            out << "AOTradeTransaction:" << "\r\n"
+				<< "unknown2\t" << std::hex << unknown2() << "\r\n"
+				<< "operationId\t" << std::hex << operationId() << "\r\n"
+                << "fromType\t" << std::hex << fromType() << "\r\n"
+				<< "fromContainerTempId\t" << fromContainerTempId() << "\r\n"
+				<< "fromItemSlotId\t" << fromItemSlotId() << "\r\n"
+                << "fromId\t" << fromId().print().c_str() << "\r\n";
+		
+            return out.str();
+		}
+
+	protected:
+        AO::TradeTransaction* m_pTrans;
+	};
+
 	class AOBoughtItemFromShop : public AOMessageHeader
 	{
 		public:
