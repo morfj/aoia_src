@@ -4,6 +4,7 @@
 #include <PluginSDK/ItemAssistView.h>
 #include "DataGridControl.h"
 #include "IdentifyListDataModel.h"
+#include <atlsplit.h>
 
 
 class IdentifyView
@@ -29,13 +30,15 @@ public:
 
     enum ChildIDs
     {
-        IDC_IDENTLIST = 1,
-        IDC_DATAGRID = 2,
+        IDW_SPLITTER = 1,
+        IDW_IDENTLIST,
+        IDW_DATAGRID,
     };
 
-    BEGIN_DLGRESIZE_MAP(TagViewer)
-        DLGRESIZE_CONTROL(IDC_IDENTLIST, DLSZ_SIZE_Y)
-        DLGRESIZE_CONTROL(IDC_DATAGRID, DLSZ_SIZE_X | DLSZ_SIZE_Y)
+    BEGIN_DLGRESIZE_MAP(IdentifyView)
+        DLGRESIZE_CONTROL(IDW_SPLITTER, DLSZ_SIZE_X | DLSZ_SIZE_Y)
+        //DLGRESIZE_CONTROL(IDC_IDENTLIST, DLSZ_SIZE_Y)
+        //DLGRESIZE_CONTROL(IDC_DATAGRID, DLSZ_SIZE_X | DLSZ_SIZE_Y)
     END_DLGRESIZE_MAP()
 
 protected:
@@ -51,6 +54,7 @@ protected:
     };
 
 private:
+    WTL::CSplitterWindow m_splitter;
     aoia::IdentifyListDataModelPtr m_identifyListModel;
     aoia::DataGridControlPtr m_identifyList;
     aoia::DataGridControlPtr m_datagrid;

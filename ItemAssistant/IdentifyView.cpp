@@ -24,19 +24,32 @@ IdentifyView::~IdentifyView()
 
 LRESULT IdentifyView::onCreate(LPCREATESTRUCT createStruct)
 {
-    RECT identRect = { 0, 0, 250, createStruct->cy };
-    RECT gridRect = { 250, 0, createStruct->cx, createStruct->cy };
+    RECT myRect = { 0, 0, createStruct->cx, createStruct->cy };
+    //RECT identRect = { 0, 0, 250, createStruct->cy };
+    //RECT gridRect = { 250, 0, createStruct->cx, createStruct->cy };
+
+    DWORD splitterStyle = WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 
     // Create child windows
-    DWORD style = WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS;
-    m_identifyList->Create(m_hWnd, identRect, NULL, style, WS_EX_CLIENTEDGE);
-    m_identifyList->SetDlgCtrlID(IDC_IDENTLIST);
+    m_splitter.Create(m_hWnd, myRect, NULL, splitterStyle);
+    m_splitter.SetSplitterExtendedStyle(0);
+    m_splitter.SetDlgCtrlID(IDW_SPLITTER);
 
+    DWORD gridStyle = WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS;
+    m_identifyList->Create(m_splitter.m_hWnd, rcDefault, NULL, gridStyle, WS_EX_CLIENTEDGE);
+    m_identifyList->SetDlgCtrlID(IDW_IDENTLIST);
+
+    m_datagrid->Create(m_splitter.m_hWnd, rcDefault, NULL, gridStyle, WS_EX_CLIENTEDGE);
+    m_datagrid->SetDlgCtrlID(IDW_DATAGRID);
+
+    m_splitter.SetSplitterPanes(m_identifyList->m_hWnd, m_datagrid->m_hWnd);
+    m_splitter.SetActivePane(SPLIT_PANE_LEFT);
+    m_splitter.SetSplitterPos(250);
+
+    // Assign a datamodel to the list of identifyables.
     m_identifyListModel.reset(new IdentifyListDataModel());
     m_identifyList->setModel(m_identifyListModel);
-
-    m_datagrid->Create(m_hWnd, gridRect, NULL, style, WS_EX_CLIENTEDGE);
-    m_datagrid->SetDlgCtrlID(IDC_DATAGRID);
+    m_identifyList->autosizeColumnsUseData();
 
     DlgResize_Init(false);
 

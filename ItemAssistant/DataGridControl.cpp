@@ -39,7 +39,7 @@ namespace aoia {
         }
 
         updateColumns();
-        autosizeColumns();
+        autosizeColumnsUseHeader();
         for (unsigned int i = 0; i < m_model->getItemCount(); ++i) {
             m_listView.InsertItem(i, LPSTR_TEXTCALLBACK);
         }
@@ -77,7 +77,7 @@ namespace aoia {
             updateColumns();
         }
         m_listView.InsertItem(index, LPSTR_TEXTCALLBACK);
-        autosizeColumns();
+        autosizeColumnsUseHeader();
     }
 
 
@@ -108,7 +108,7 @@ namespace aoia {
     }
 
 
-    void DataGridControl::autosizeColumns()
+    void DataGridControl::autosizeColumnsUseHeader()
     {
         // MSDN: LVSCW_AUTOSIZE does not work as expected for column 0 for versions prior to comctl32.dll 5.80
         // Tested with later versions, still a problem in v 5.82
@@ -138,6 +138,16 @@ namespace aoia {
         //    }
         //    m_listView.SetColumnWidth(i, max(maxWidth + 15, (unsigned int)m_listView.GetColumnWidth(i)));       
         //}        
+    }
+
+
+    void DataGridControl::autosizeColumnsUseData(bool onlyVisible)
+    {
+        int numCol = m_listView.GetHeader().GetItemCount();
+        for (int i = 0; i < numCol; ++i)
+        {
+            m_listView.SetColumnWidth(i, LVSCW_AUTOSIZE);
+        }
     }
 
 }   // namespace

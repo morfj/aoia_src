@@ -34,6 +34,9 @@ namespace aoia {
         void setModel(DataGridModelPtr model);
         DataGridModelPtr getModel() const { return m_model; }
 
+        void autosizeColumnsUseHeader();
+        void autosizeColumnsUseData(bool onlyVisible = true);
+
     protected:
         LRESULT onCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled);
         LRESULT onGetDispInfo(int wParam, LPNMHDR lParam, BOOL &bHandled);
@@ -45,7 +48,6 @@ namespace aoia {
         void onAllItemsRemoved();
 
         void updateColumns();
-        void autosizeColumns();
 
     private:
         DataGridModelPtr m_model;
