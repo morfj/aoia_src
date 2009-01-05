@@ -152,6 +152,14 @@ void AoMsgView::OnAOServerMessage(AOMessageBase &msg)
         }
         break;
 
+		case AO::MSG_BACKPACK:
+        {
+            std::basic_ofstream<TCHAR> ofs;
+			ofs.open("c:\\temp\\msg_backpack.txt", std::ios_base::out | std::ios_base::app);
+            DumpMessageToTextStream(ofs, msg);
+        }
+        break;
+
     //case AO::MSG_SHOP_ITEMS:
     //    {
     //        std::ofstream ofs;
@@ -218,6 +226,26 @@ void AoMsgView::DumpMessageToStream(std::ostream &out, Parser &msg)
         out << *p;
         ++p;
     }
+}
+
+void AoMsgView::DumpMessageToTextStream(std::basic_ofstream<TCHAR> &out, Parser &msg)
+{
+    char* p = msg.start();
+
+	//out.width(2);
+	//out.fill('0');
+    while (p < msg.end()) {
+
+		//short pp = _byteswap_ushort((*p << 8) + *(p+1));
+		short pp = _byteswap_ushort((*p << 8));
+		//<< std::showbase gives 0x first
+		out.width(2);
+		out.fill('0');
+		out << std::hex << pp << _T(" ");
+        ++p; 
+    }
+
+	out << std::endl;
 }
 
 

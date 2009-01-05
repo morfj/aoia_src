@@ -65,6 +65,7 @@ public:
     virtual void OnAOClientMessage(AOClientMessageBase &msg);
 
 protected:
+	void DumpMessageToTextStream(std::basic_ofstream<TCHAR> &out, Parser &msg);
     void DumpMessageToStream(std::ostream &out, Parser &msg);
     bool SearchMessageForBinarySequence(AOMessageBase &msg, unsigned char* pArray, unsigned int arraySize);
 

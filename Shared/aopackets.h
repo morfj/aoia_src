@@ -182,6 +182,47 @@ namespace AO {
 		unsigned short	stack;
 	};
 
+	struct Backpack
+	{
+		//TODO: This is probably a key/value container with the bp props.
+		//Being lazy and using the order I have seen on ~100 messages.
+		//If someone buys a backpack and gets the wrong backpack name before zoneing, there is a bug here!
+
+		Header          header;
+		//*00 00 00 00 0b 00 00 c3 50 44 bb 17 ae 
+		unsigned char	unknown1; //0x00
+		unsigned int	unknown2; //0x00 00 00 0b  always (rk1 and 2)
+		AoObjectId		ownerId;
+		unsigned int	zone; //id of the zone you're in
+		unsigned int	unCons_f424f;
+		unsigned int	unZeroes1;
+		unsigned char	operationId; //65=bought bp, 01=opened bp, 0e=?, what is got bp in trade?
+		unsigned char	invSlot; //or 6f "find a spot" if you buy one
+		unsigned int	unknMass;//1b 97 gives short msg (1009*7) , 1f 88 (1009*8) gives long. probably number of key/val pairs following.
+		
+		unsigned int		unZeroes2;
+		unsigned int	flags; //seems to be a bitwise bp flag (probably unique, nodrop etc)
+
+		unsigned int		unknownKey17;//always 0x17!
+		unsigned int	itemKey1;
+
+		unsigned int		unknownKey2bd;//always 0x2bd!
+		unsigned int	ql;
+
+		unsigned int		unknownKey2be;//always 0x2be!
+		unsigned int	itemKeyLow;//I guess
+
+		unsigned int		unknownKey2bf;//always 0x2bf!
+		unsigned int	itemKeyHigh;//I guess
+
+		unsigned int		unknownKey19c;//always 0x19c!
+		unsigned int		unknown01;//always 0x01!
+
+		//after this we got two different sizes.. based on unknMass I think
+
+
+	};
+
     struct Container
     {
         Header          header;

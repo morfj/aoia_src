@@ -191,7 +191,7 @@ namespace Native {
 
 		std::tstring print() const {
             std::tstringstream out;
-            out << "AODeleteItemOperation:" << "\r\n"
+            out << "AOItemOperation:" << "\r\n"
 				<< "operationId\t 0x" << std::hex << operationId() << "\r\n"
 				<< "unknown3\t 0x"<< std::hex << unknown3() << "\r\n"
                 << "fromType\t 0x"<< std::hex << fromType() << "\r\n"
@@ -324,6 +324,39 @@ namespace Native {
 
 	protected:
         AO::BoughtItemFromShop* m_pBoughItem;
+	};
+
+	
+
+	class AOBackpack : public AOMessageHeader
+	{
+		public:
+        AOBackpack(AO::Backpack* pItem) : AOMessageHeader(&(pItem->header)), m_pItem(pItem) { }
+
+		unsigned char	operationId() const { return m_pItem->operationId; }
+		unsigned char	invSlot() const { return m_pItem->invSlot; }
+		ObjectId		owner()  const { return ObjectId(m_pItem->ownerId); }
+
+		unsigned int ql() const { return _byteswap_ulong(m_pItem->ql); }
+		unsigned int keyLow() const { return _byteswap_ulong(m_pItem->itemKeyLow); }
+		unsigned int keyHigh() const { return _byteswap_ulong(m_pItem->itemKeyHigh); }
+		unsigned int flags() const { return _byteswap_ulong(m_pItem->flags); }
+	
+	
+		std::tstring print() const {
+            std::tstringstream out;
+            out << "AOBackpack:" << "\r\n"
+                << "operationId\t 0x" << std::hex << operationId() << "\r\n"
+                << "invSlot\t" << invSlot() << "\r\n"
+                << "ql\t" << ql() << "\r\n"
+                << "keyLow\t" << keyLow() << "keyHigh\t" << keyHigh() << "\r\n"
+                << "flags\t" << flags() << "\r\n";
+		
+            return out.str();
+		}
+
+    protected:
+        AO::Backpack* m_pItem;
 	};
 
 	class AOItemMoved : public AOMessageHeader
