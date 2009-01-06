@@ -815,7 +815,7 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 unsigned int InventoryView::GetFromContainerId(unsigned int charId, unsigned short fromType, unsigned short fromSlotId)
 {
 	if (fromType == 0x006b) //backpack
-		return ServicesSingleton::Instance()->GetInvSlotIndex(charId, fromSlotId);
+		return ServicesSingleton::Instance()->GetContainerId(charId, fromSlotId);
 
 	else if (fromType == 0x0068//inv
 			|| fromType == 0x0065  //utils, hud, ncu, weap pane
@@ -1343,8 +1343,7 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
                     msg.characterId());
             }
 			
-			ServicesSingleton::Instance()->UpdateInvSlotIndex(bp.charid(), bp.tempContainerId(), bp.containerid().High());
-			
+			ServicesSingleton::Instance()->UpdateTempContainerId(bp.charid(), bp.tempContainerId(), bp.containerid().High());
 
             g_DBManager.Commit();
             g_DBManager.UnLock();
@@ -1364,8 +1363,7 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
                 g_DBManager.Exec(sql.str());
             }
 			
-			OutputDebugString(_T("zoneing"));
-			ServicesSingleton::Instance()->ClearInvSlotCache(equip.charid());
+			ServicesSingleton::Instance()->ClearTempContainerIdCache(equip.charid());
 
 #ifdef DEBUG
 			OutputDebugString(_T("FullSync"));
@@ -1417,10 +1415,6 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
         }
         break;
 
-	/*case AO::MSG_ITEM_MOVE:
-		{
-			g_DBManager.MoveItem({8 c1} 00 {4 fromtype}{2 fromId} {2 fromItemId} {8 toContainer})
-		}*/
 
     case AO::MSG_SHOP_ITEMS:
         {

@@ -38,9 +38,9 @@ public:
     /// Opens the specified URL in a new browser window.
     static void OpenURL(std::tstring const& url);
 
-	void ClearInvSlotCache(unsigned int charId);
-	void UpdateInvSlotIndex(unsigned int charId, unsigned int fromId, unsigned int slotId);
-	unsigned int GetInvSlotIndex(unsigned int charId, unsigned int fromId);
+	void ClearTempContainerIdCache(unsigned int charId);
+	void UpdateTempContainerId(unsigned int charId, unsigned int tempId, unsigned int containerId);
+	unsigned int GetContainerId(unsigned int charId, unsigned int tempId);
 
 protected:
     std::vector<std::tstring> GetAccountNames() const;
