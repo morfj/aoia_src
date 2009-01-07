@@ -538,6 +538,8 @@ void DBManager::updateDBVersion(unsigned int fromVersion) const
             Exec(_T("INSERT INTO tItems (itemidx, keylow, keyhigh, ql, stack, parent, slot, children, owner) SELECT itemidx, keylow, keyhigh, ql, stack, parent, slot, children, owner FROM tItems2"));
             Exec(_T("DROP TABLE tItems2"));
             Exec(_T("CREATE TABLE tDimensions (dimensionid INTEGER NOT NULL PRIMARY KEY UNIQUE, dimensionname VARCHAR)"));
+            Exec(_T("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (11, 'Rubi-Ka 1')"));
+            Exec(_T("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (12, 'Rubi-Ka 2')"));
             Exec(_T("CREATE TABLE tToons2 (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0', dimensionid INTEGER DEFAULT '0')"));
             Exec(_T("INSERT INTO tToons2 (charid, charname, shopid) SELECT charid, charname, shopid FROM tToons"));
             Exec(_T("DROP TABLE tToons"));

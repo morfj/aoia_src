@@ -28,16 +28,20 @@ have contributed either directly or indirectly include:
 
 Change Log:
 ===========
-Version 0.9.2                                       Release Date: ??/12/2008
+Version 0.9.2                                       Release Date: ??/1/2009
     * Enhanced the player-shop monitor to refresh the view when something 
       changes on disc. Cleaned up file system monitoring.
     * Added more logging to make it easier to submit bug reports.
-    * Added experimental hooking of messages sent from the client. Up until 
-      now only messages from the server have been intercepted.
+    * Added hooking of messages sent from the client. Up until now only 
+      messages from the server have been intercepted.
+    * Inventory viewer now tracks changes to the players inventory and 
+      backpacks as they are being changed by the user. This should reduce the 
+      number of full reparsings you would need to do.
     * Added "Identify" view that lets you quickly find any bio clumps or 
       compounds from Alappa based on what they will turn into once 
       tradeskilled.
-
+    * Experiemental: Added support for recording a toons dimension ID.
+    
 Version 0.9.1                                       Release Date: 25/10/2008
     * Added experimental tracking of player-shop contents.
     * Updated the help menu a bit.
