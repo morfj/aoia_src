@@ -30,7 +30,7 @@ bool Application::init(std::tstring const& cmdLine)
         dbfile = cmdLine.substr(argPos+4, cmdLine.find_first_of(_T(" "), argPos+4)-argPos-4);
     }
 
-    if (!g_DBManager.Init(dbfile)) {
+    if (!g_DBManager.init(dbfile)) {
         Logger::instance().log(_T("Failed to insitialize DB Manager. Aborting!"));
         return false;
     }
@@ -43,9 +43,9 @@ bool Application::init(std::tstring const& cmdLine)
 
 void Application::destroy()
 {
-    g_DBManager.Lock();
-    g_DBManager.Term();
-    g_DBManager.UnLock();
+    g_DBManager.lock();
+    g_DBManager.destroy();
+    g_DBManager.unLock();
 
     Logger::instance().destroy();
 }

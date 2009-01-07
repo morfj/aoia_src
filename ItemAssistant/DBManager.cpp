@@ -11,7 +11,7 @@
 
 namespace bfs = boost::filesystem;
 
-#define CURRENT_DB_VERSION 3
+#define CURRENT_DB_VERSION 4
 
 /*********************************************************/
 /* DB Manager Implementation                             */
@@ -28,7 +28,7 @@ DBManager::~DBManager(void)
 }
 
 
-bool DBManager::Init(std::tstring dbfile)
+bool DBManager::init(std::tstring dbfile)
 {
     std::tstring aofolder = AOManager::instance().getAOFolder();
     if (aofolder.empty()) {
@@ -46,17 +46,17 @@ bool DBManager::Init(std::tstring dbfile)
     }
 
     if (!dbfileExists) {
-        CreateDBScheme();
+        createDBScheme();
     }
 
-    unsigned int dbVersion = GetDBVersion();
+    unsigned int dbVersion = getDBVersion();
     if (dbVersion < CURRENT_DB_VERSION) {
         if (IDOK != MessageBox( NULL, _T("AO Item Assistant needs to update its database file to a newer version."), 
             _T("Question - AO Item Assistant"), MB_OKCANCEL | MB_ICONQUESTION))
         {
             return false;
         }
-        UpdateDBVersion(dbVersion);
+        updateDBVersion(dbVersion);
     }
     else if (dbVersion > CURRENT_DB_VERSION)
     {
@@ -65,7 +65,7 @@ bool DBManager::Init(std::tstring dbfile)
         return false;
     }
 
-    if (!SyncLocalItemsDB(_T("aoitems.db"), aofolder)) {
+    if (!syncLocalItemsDB(_T("aoitems.db"), aofolder)) {
         MessageBox( NULL, _T("AO Item Assistant can not start without a valid item database."),
             _T("Error - AO Item Assistant"), MB_OK | MB_ICONERROR);
         return false;
@@ -77,7 +77,7 @@ bool DBManager::Init(std::tstring dbfile)
 }
 
 
-void DBManager::Term()
+void DBManager::destroy()
 {
     SQLite::Db::Term();
 }
@@ -89,7 +89,7 @@ void DBManager::Term()
  * If local database is missing or obsolete then recreate it.
  * Return true if application has a local items database to run with, false otherwise.
 */
-bool DBManager::SyncLocalItemsDB(std::tstring const& localfile, std::tstring const& aofolder)
+bool DBManager::syncLocalItemsDB(std::tstring const& localfile, std::tstring const& aofolder)
 {
     bool hasLocalDB = false;
     std::time_t lastUpdateTime;
@@ -108,7 +108,7 @@ bool DBManager::SyncLocalItemsDB(std::tstring const& localfile, std::tstring con
         return hasLocalDB;
     }
 
-    if (hasLocalDB && GetAODBSchemeVersion(localfile) == 2) {
+    if (hasLocalDB && getAODBSchemeVersion(localfile) == 2) {
         std::time_t lastOriginalUpdateTime = bfs::last_write_time(original);
         if (lastOriginalUpdateTime <= lastUpdateTime) {
                 return true;
@@ -247,9 +247,10 @@ bool DBManager::SyncLocalItemsDB(std::tstring const& localfile, std::tstring con
 }
 
 
-void DBManager::InsertItem(unsigned int keylow,
+void DBManager::insertItem(unsigned int keylow,
                            unsigned int keyhigh,
                            unsigned short ql,
+                           unsigned short flags,
                            unsigned short stack,
                            unsigned int parent,
                            unsigned short slot,
@@ -257,10 +258,11 @@ void DBManager::InsertItem(unsigned int keylow,
                            unsigned int owner)
 {
     std::tstringstream sql;
-    sql << _T("INSERT INTO tItems (keylow, keyhigh, ql, stack, parent, slot, children, owner) VALUES (")
+    sql << _T("INSERT INTO tItems (keylow, keyhigh, ql, flags, stack, parent, slot, children, owner) VALUES (")
         << (unsigned int) keylow      << _T(", ")
         << (unsigned int) keyhigh     << _T(", ")
         << (unsigned int) ql          << _T(", ")
+        << (unsigned int) flags       << _T(", ")
         << (unsigned int) stack       << _T(", ")
         << (unsigned int) parent      << _T(", ")
         << (unsigned int) slot        << _T(", ")
@@ -270,7 +272,7 @@ void DBManager::InsertItem(unsigned int keylow,
 }
 
 
-std::tstring DBManager::GetToonName(unsigned int charid) const
+std::tstring DBManager::getToonName(unsigned int charid) const
 {
     std::tstring result;
 
@@ -288,7 +290,7 @@ std::tstring DBManager::GetToonName(unsigned int charid) const
 }
 
 
-void DBManager::SetToonName(unsigned int charid, std::tstring const& newName)
+void DBManager::setToonName(unsigned int charid, std::tstring const& newName)
 {
     g_DBManager.Begin();
 
@@ -303,7 +305,7 @@ void DBManager::SetToonName(unsigned int charid, std::tstring const& newName)
 }
 
 
-void DBManager::UpdateToonShopId(unsigned int charid, unsigned int shopid)
+void DBManager::setToonShopId(unsigned int charid, unsigned int shopid)
 {
     assert(charid != 0);
     assert(shopid != 0);
@@ -313,7 +315,41 @@ void DBManager::UpdateToonShopId(unsigned int charid, unsigned int shopid)
 }
 
 
-unsigned int DBManager::FindNextAvailableContainerSlot(unsigned int charId, unsigned int containerId)
+void DBManager::setToonDimension(unsigned int charid, unsigned char dimensionid)
+{
+    assert(charid != 0);
+    assert(dimensionid != 0);
+    g_DBManager.Begin();
+    g_DBManager.Exec(STREAM2STR("UPDATE OR IGNORE tToons SET dimensionid = " << dimensionid << " WHERE charid = " << charid));
+    g_DBManager.Commit();
+}
+
+
+unsigned char DBManager::getToonDimension(unsigned int charid)
+{
+    assert(charid != 0);
+
+    unsigned char result = 0;
+
+    SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR("SELECT dimensionid FROM tToons WHERE charid = " << charid));
+    if (pT != NULL && pT->Rows())
+    {
+        try
+        {
+            result = boost::lexical_cast<unsigned char>(pT->Data(0,0));
+        }
+        catch (boost::bad_lexical_cast &e)
+        {
+            // Wierd.. lets debug!
+            assert(false);
+        }
+    }
+
+    return result;
+}
+
+
+unsigned int DBManager::findNextAvailableContainerSlot(unsigned int charId, unsigned int containerId)
 {
 	unsigned short posSlot = 0;
 
@@ -350,7 +386,7 @@ unsigned int DBManager::FindNextAvailableContainerSlot(unsigned int charId, unsi
 }
 
 
-unsigned int DBManager::GetShopOwner(unsigned int shopid)
+unsigned int DBManager::getShopOwner(unsigned int shopid)
 {
     assert(shopid != 0);
 
@@ -372,14 +408,14 @@ unsigned int DBManager::GetShopOwner(unsigned int shopid)
 }
 
 
-OwnedItemInfoPtr DBManager::GetOwnedItemInfo(unsigned int itemID)
+OwnedItemInfoPtr DBManager::getOwnedItemInfo(unsigned int itemID)
 {
     OwnedItemInfoPtr pRetVal(new OwnedItemInfo());
 
     std::tstringstream sql;
     sql << _T("SELECT tItems.keylow AS itemloid, tItems.keyhigh AS itemhiid, tItems.ql AS itemql, name AS itemname, ")
         << _T("(SELECT tToons.charname FROM tToons WHERE tToons.charid = owner) AS ownername, owner AS ownerid, ")
-        << _T("parent AS containerid ")
+        << _T("parent AS containerid, tItems.flags ")
         << _T("FROM tItems JOIN tblAO ON keylow = aoid WHERE itemidx = ") << (int)itemID;
 
     SQLite::TablePtr pT = ExecTable(sql.str());
@@ -391,6 +427,7 @@ OwnedItemInfoPtr DBManager::GetOwnedItemInfo(unsigned int itemID)
     pRetVal->ownername = from_ascii_copy(pT->Data(0, 4));
     pRetVal->ownerid = from_ascii_copy(pT->Data(0, 5));
     pRetVal->containerid = from_ascii_copy(pT->Data(0, 6));
+    pRetVal->flags = boost::lexical_cast<unsigned short>(pT->Data(0, 7));
     unsigned int containerid = boost::lexical_cast<unsigned int>(pRetVal->containerid);
     unsigned int ownerid = boost::lexical_cast<unsigned int>(pRetVal->ownerid);
     pRetVal->containername = ServicesSingleton::Instance()->GetContainerName(ownerid, containerid);
@@ -399,7 +436,7 @@ OwnedItemInfoPtr DBManager::GetOwnedItemInfo(unsigned int itemID)
 }
 
 
-unsigned int DBManager::GetAODBSchemeVersion(std::tstring const& filename) const
+unsigned int DBManager::getAODBSchemeVersion(std::tstring const& filename) const
 {
     unsigned int retval = 0;
     SQLite::Db db;
@@ -421,7 +458,7 @@ unsigned int DBManager::GetAODBSchemeVersion(std::tstring const& filename) const
 }
 
 
-unsigned int DBManager::GetDBVersion() const
+unsigned int DBManager::getDBVersion() const
 {
     unsigned int retval = 0;
 
@@ -440,7 +477,7 @@ unsigned int DBManager::GetDBVersion() const
 }
 
 
-void DBManager::UpdateDBVersion(unsigned int fromVersion) const
+void DBManager::updateDBVersion(unsigned int fromVersion) const
 {
     switch (fromVersion)
     {
@@ -491,16 +528,39 @@ void DBManager::UpdateDBVersion(unsigned int fromVersion) const
         }
         // Dropthrough
 
+    case 3: // Update from v3 is the added flags column in tItems as well as the new dimension table and a new dimensionid column in tToons.
+        {
+            Begin();
+            Exec(_T("CREATE TABLE tItems2 (itemidx INTEGER NOT NULL PRIMARY KEY ON CONFLICT REPLACE AUTOINCREMENT UNIQUE DEFAULT '1', keylow INTEGER, keyhigh INTEGER, ql INTEGER, flags INTEGER DEFAULT '0', stack INTEGER DEFAULT '1', parent INTEGER NOT NULL DEFAULT '2', slot INTEGER, children INTEGER, owner INTEGER NOT NULL)"));
+            Exec(_T("INSERT INTO tItems2 (itemidx, keylow, keyhigh, ql, stack, parent, slot, children, owner) SELECT itemidx, keylow, keyhigh, ql, stack, parent, slot, children, owner FROM tItems"));
+            Exec(_T("DROP TABLE tItems"));
+            Exec(_T("CREATE TABLE tItems (itemidx INTEGER NOT NULL PRIMARY KEY ON CONFLICT REPLACE AUTOINCREMENT UNIQUE DEFAULT '1', keylow INTEGER, keyhigh INTEGER, ql INTEGER, flags INTEGER DEFAULT '0', stack INTEGER DEFAULT '1', parent INTEGER NOT NULL DEFAULT '2', slot INTEGER, children INTEGER, owner INTEGER NOT NULL)"));
+            Exec(_T("INSERT INTO tItems (itemidx, keylow, keyhigh, ql, stack, parent, slot, children, owner) SELECT itemidx, keylow, keyhigh, ql, stack, parent, slot, children, owner FROM tItems2"));
+            Exec(_T("DROP TABLE tItems2"));
+            Exec(_T("CREATE TABLE tDimensions (dimensionid INTEGER NOT NULL PRIMARY KEY UNIQUE, dimensionname VARCHAR)"));
+            Exec(_T("CREATE TABLE tToons2 (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0', dimensionid INTEGER DEFAULT '0')"));
+            Exec(_T("INSERT INTO tToons2 (charid, charname, shopid) SELECT charid, charname, shopid FROM tToons"));
+            Exec(_T("DROP TABLE tToons"));
+            Exec(_T("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0', dimensionid INTEGER DEFAULT '0')"));
+            Exec(_T("INSERT INTO tToons (charid, charname, shopid) SELECT charid, charname, shopid FROM tToons2"));
+            Exec(_T("DROP TABLE tToons2"));
+            Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));
+            Exec(_T("DROP VIEW vSchemeVersion"));
+            Exec(_T("CREATE VIEW vSchemeVersion AS SELECT '4' AS Version"));
+            Commit();
+        }
+        // Dropthrough
+
     default:
         break;
     }
 }
 
 
-void DBManager::CreateDBScheme() const
+void DBManager::createDBScheme() const
 {
     Begin();
-    Exec(_T("CREATE TABLE tItems (itemidx INTEGER NOT NULL PRIMARY KEY ON CONFLICT REPLACE AUTOINCREMENT UNIQUE DEFAULT '1', keylow INTEGER, keyhigh INTEGER, ql INTEGER, stack INTEGER DEFAULT '1', parent INTEGER NOT NULL DEFAULT '2', slot INTEGER, children INTEGER, owner INTEGER NOT NULL)"));
+    Exec(_T("CREATE TABLE tItems (itemidx INTEGER NOT NULL PRIMARY KEY ON CONFLICT REPLACE AUTOINCREMENT UNIQUE DEFAULT '1', keylow INTEGER, keyhigh INTEGER, ql INTEGER, flags INTEGER DEFAULT '0', stack INTEGER DEFAULT '1', parent INTEGER NOT NULL DEFAULT '2', slot INTEGER, children INTEGER, owner INTEGER NOT NULL)"));
     Exec(_T("CREATE VIEW vBankItems AS SELECT * FROM tItems WHERE parent=1"));
     Exec(_T("CREATE VIEW vContainers AS SELECT * FROM tItems WHERE children > 0"));
     Exec(_T("CREATE VIEW vInvItems AS SELECT * FROM tItems WHERE parent=2"));
@@ -508,6 +568,7 @@ void DBManager::CreateDBScheme() const
     Exec(_T("CREATE INDEX iParent ON tItems (parent)"));
     Exec(_T("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0')"));
     Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));
+    Exec(_T("CREATE TABLE tDimensions (dimensionid INTEGER NOT NULL PRIMARY KEY UNIQUE, dimensionname VARCHAR)"));
     Exec(STREAM2STR(_T("CREATE VIEW vSchemeVersion AS SELECT '") << CURRENT_DB_VERSION << _T("' AS Version")));
     Commit();
 }

@@ -83,6 +83,7 @@ LRESULT IdentifyView::onListItemChanging(LPNMHDR lParam)
 
             boost::shared_ptr<QueryDataGridModel> data(new QueryDataGridModel(sql.str()));
             m_datagrid->setModel(data);
+            m_datagrid->autosizeColumnsUseData();
         }
     }
 

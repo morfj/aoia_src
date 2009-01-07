@@ -310,12 +310,13 @@ namespace Native {
 		unsigned int ql() const { return _byteswap_ulong(m_pBoughItem->ql); }
         unsigned short stack() const { return _byteswap_ushort(m_pBoughItem->stack); }
         ObjectId itemid() const { return ObjectId(m_pBoughItem->itemid); }
-
+        unsigned short flags() const { return _byteswap_ushort(m_pBoughItem->flags); }
 
 		std::tstring print() const {
             std::tstringstream out;
             out << "AOBoughtItemFromShop:" << "\r\n"
                 << "ql\t" << ql() << "\r\n"
+                << "flags\t" << flags() << "\r\n"
                 << "stack\t" << stack() << "\r\n"
                 << "itemid\t" << itemid().print().c_str() << "\r\n";
 		
@@ -633,7 +634,7 @@ namespace Parsers {
         AOContainerItem(Parser &p)
         {
             m_index = p.popInteger();
-            p.skip(2);  // 0x0021 ??
+            m_flags = p.popShort();
             m_stack = p.popShort();
             m_containerid = AOObjectId(p);
             m_itemid = AOObjectId(p);
@@ -646,10 +647,12 @@ namespace Parsers {
         AOObjectId containerId() const { return m_containerid; }
         AOObjectId itemId() const { return m_itemid; }
         unsigned int ql() const { return m_ql; }
+        unsigned short flags() const { return m_flags; }
 
     private:
         unsigned int m_index;
         unsigned short m_stack;
+        unsigned short m_flags;
         AOObjectId m_containerid;
         AOObjectId m_itemid;
         unsigned int m_ql;

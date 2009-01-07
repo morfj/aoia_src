@@ -187,9 +187,9 @@ LRESULT InventoryView::OnSellItemAoMarket(WORD FromAccelerator, WORD CommandId, 
 
     std::tstring url = _T("http://www.aomarket.com/bots/additem?id=%lowid%&ql=%ql%");
 
-    g_DBManager.Lock();
-    OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo((int)data);
-    g_DBManager.UnLock();
+    g_DBManager.lock();
+    OwnedItemInfoPtr pItemInfo = g_DBManager.getOwnedItemInfo((int)data);
+    g_DBManager.unLock();
 
     boost::replace_all(url, _T("%lowid%"), pItemInfo->itemloid);
     boost::replace_all(url, _T("%ql%"), pItemInfo->itemql);
@@ -276,7 +276,7 @@ LRESULT InventoryView::OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND 
 
     boost::replace_all(itemTemplate, _T("%url%"), urlTemplate);
 
-    g_DBManager.Lock();
+    g_DBManager.lock();
     std::tstring output = prefix;
     for (std::set<int>::iterator it = selectedIndexes.begin(); it != selectedIndexes.end(); ++it)
     {
@@ -285,7 +285,7 @@ LRESULT InventoryView::OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND 
         }
 
         DWORD_PTR data = m_listview.GetItemData(*it);
-        OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo((unsigned int)data);
+        OwnedItemInfoPtr pItemInfo = g_DBManager.getOwnedItemInfo((unsigned int)data);
 
         std::tstring itemlocation = pItemInfo->ownername;
         itemlocation += _T(" -> ");
@@ -301,7 +301,7 @@ LRESULT InventoryView::OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND 
         output += itemStr;
     }
     output += postfix;
-    g_DBManager.UnLock();
+    g_DBManager.unLock();
 
     if (!output.empty() && OpenClipboard() && EmptyClipboard()) {
         HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT, (output.length() * 2 + 2)); 
@@ -367,9 +367,9 @@ LRESULT InventoryView::OnShowItemRef(WORD FromAccelerator, WORD CommandId, HWND 
     int activeItemIdx = m_listview.GetSelectionMark();
     DWORD_PTR data = m_listview.GetItemData(activeItemIdx);
 
-    g_DBManager.Lock();
-    OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo((int)data);
-    g_DBManager.UnLock();
+    g_DBManager.lock();
+    OwnedItemInfoPtr pItemInfo = g_DBManager.getOwnedItemInfo((int)data);
+    g_DBManager.unLock();
 
     std::tstring itemlocation = pItemInfo->ownername;
     itemlocation += _T(" -> ");
@@ -444,7 +444,7 @@ LRESULT InventoryView::OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND 
         return 0;
     }
 
-    g_DBManager.Lock();
+    g_DBManager.lock();
     ofs << prefix;
     for (std::set<int>::iterator it = selectedIndexes.begin(); it != selectedIndexes.end(); ++it)
     {
@@ -453,7 +453,7 @@ LRESULT InventoryView::OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND 
         }
 
         DWORD_PTR data = m_listview.GetItemData(*it);
-        OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo((unsigned int)data);
+        OwnedItemInfoPtr pItemInfo = g_DBManager.getOwnedItemInfo((unsigned int)data);
 
         std::tstring itemlocation = pItemInfo->ownername;
         itemlocation += _T(" -> ");
@@ -468,7 +468,7 @@ LRESULT InventoryView::OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND 
 
         ofs << itemStr;
     }
-    g_DBManager.UnLock();
+    g_DBManager.unLock();
 
     return 0;
 }
@@ -662,7 +662,7 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 				//the new item gets the count of the existing.
 				//the one with 
 
-				g_DBManager.Lock();
+				g_DBManager.lock();
 				g_DBManager.Begin();
 				unsigned int fromContainerId = GetFromContainerId(msg.characterId(), itemOp.fromType(), itemOp.fromContainerTempId());
 
@@ -672,7 +672,7 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 			 		return; //we dont have the value cached, either a bug or ia was started after the bp was opened. Or unknown from type
 				}
 
-				unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(msg.characterId(), fromContainerId);
+				unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(msg.characterId(), fromContainerId);
 
 				std::tstringstream sqlInsert;
 
@@ -695,7 +695,7 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 
 				g_DBManager.Exec(sql.str());
 				g_DBManager.Commit();
-				g_DBManager.UnLock();
+				g_DBManager.unLock();
 
 			}
 			else if (opId == 0x35)
@@ -714,7 +714,7 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 
 				unsigned int fromContainerId = GetFromContainerId(msg.characterId(), itemOp.fromType(), itemOp.fromContainerTempId());
 
-				g_DBManager.Lock();
+				g_DBManager.lock();
 				g_DBManager.Begin();
 				
 				if (fromContainerId == 0)
@@ -743,11 +743,11 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 				OutputDebugString(sql.str().c_str());
 				g_DBManager.Exec(sql.str());
 				g_DBManager.Commit();
-				g_DBManager.UnLock();
+				g_DBManager.unLock();
 			}
 			else if (opId == 0x70)
 			{
-				g_DBManager.Lock();
+				g_DBManager.lock();
 				g_DBManager.Begin();
 				unsigned int fromContainerId = GetFromContainerId(msg.characterId(), itemOp.fromType(), itemOp.fromContainerTempId());
 
@@ -767,7 +767,7 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 				g_DBManager.Exec(sql.str());
 				OutputDebugString(itemOp.print().c_str());
 				g_DBManager.Commit();
-				g_DBManager.UnLock();
+				g_DBManager.unLock();
 
 			}
 			else if (opId == 0x13) //0x69  from = 0c350+ a char Id
@@ -887,18 +887,19 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
 			
 			unsigned int otherTradeContainer = 5;//trade partner
 
-			unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(item.charid(), otherTradeContainer);
+			unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), otherTradeContainer);
 
 			unsigned int opId = item.operationId();
 			if (opId == 0x55) //trade partner adds an item
 			{
-				g_DBManager.Lock();
+				g_DBManager.lock();
 				g_DBManager.Begin();
 
-				g_DBManager.InsertItem(
+				g_DBManager.insertItem(
                     item.itemid().Low(),
                     item.itemid().High(),
                     item.ql(),
+                    item.flags(),
                     item.stack(),
                     otherTradeContainer,  // 2 = inventory
                     nextFreeInvSlot,
@@ -906,13 +907,13 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
                     item.charid());
 
 				g_DBManager.Commit();
-				g_DBManager.UnLock();
+				g_DBManager.unLock();
 			}
 			else if (opId == 0x56) //trade partner removes an item
 			{
 				if (item.partnerFromType() == 0x6c)//remove from trade window
 				{
-					g_DBManager.Lock();
+					g_DBManager.lock();
 					g_DBManager.Begin();
 
 					std::tstringstream sql;
@@ -925,7 +926,7 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
 					OutputDebugString(sql.str().c_str());
 
 					g_DBManager.Commit();
-					g_DBManager.UnLock();
+					g_DBManager.unLock();
 				}
 			}
 
@@ -962,7 +963,7 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
 				//00=start trade? 01=client accept, 02=decline,03=tempAccept, 04=commit,05=add item,06=remove item
 				case 0x00:
 				{
-					g_DBManager.Lock();
+					g_DBManager.lock();
 		            g_DBManager.Begin();
 
 					std::tstringstream sql;
@@ -975,7 +976,7 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
 					g_DBManager.Exec(sql.str());
 
 					g_DBManager.Commit();
-					g_DBManager.UnLock();
+					g_DBManager.unLock();
 				}
 				case 0x01:
 				{
@@ -985,14 +986,14 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
 				case 0x02:
 				{
 					//02=decline //move stuff back
-					g_DBManager.Lock();
+					g_DBManager.lock();
 		            g_DBManager.Begin();
 
 					unsigned int shopCapacity = 35;
 
 					for (unsigned int i=0;i<=shopCapacity;i++) //or is it the other direction?
 					{
-						unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(item.charid(), 2);
+						unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), 2);
 						
 						std::tstringstream sqlMoveBack;
 						//move stuff back
@@ -1014,7 +1015,7 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
 					//OutputDebugString(sql.str().c_str());
 
 					g_DBManager.Commit();
-					g_DBManager.UnLock();
+					g_DBManager.unLock();
 				}
 				break;
 				case 0x03:
@@ -1024,7 +1025,7 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
 				break;
 				case 0x04:
 				{
-					g_DBManager.Lock();
+					g_DBManager.lock();
 		            g_DBManager.Begin();
 					//commit/server accept: (bye-bye stuff!)
 					std::tstringstream sql;
@@ -1040,7 +1041,7 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
 
 					for (unsigned int i=0;i<=shopCapacity;i++) //or is it the other direction?
 					{
-						unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(item.charid(), 2);
+						unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), 2);
 						
 						std::tstringstream sqlGrabStuff;
 
@@ -1055,7 +1056,7 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
 
 
 					g_DBManager.Commit();
-					g_DBManager.UnLock();
+					g_DBManager.unLock();
 				}
 				break;
 				case 0x05:
@@ -1072,10 +1073,10 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
 
 					unsigned int fromContainerId = GetFromContainerId(item.charid(), item.fromType(), item.fromContainerTempId());
 
-					g_DBManager.Lock();
+					g_DBManager.lock();
 		            g_DBManager.Begin();
 
-					unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(item.charid(), shopContainer);
+					unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), shopContainer);
 					
 					{
 						std::tstringstream sql;
@@ -1092,7 +1093,7 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
 					}
 
 					g_DBManager.Commit();
-					g_DBManager.UnLock();
+					g_DBManager.unLock();
 				}
 				break;
 				case 0x06:
@@ -1105,12 +1106,12 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
 						return;
 					}
 
-					g_DBManager.Lock();
+					g_DBManager.lock();
 		            g_DBManager.Begin();
 
 					//if (item.fromId) //who added this item??
 
-					unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(item.charid(), 2);
+					unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), 2);
 
 					std::tstringstream sql;
 					sql << _T("UPDATE tItems SET parent = 2, slot = ") << nextFreeInvSlot
@@ -1121,7 +1122,7 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
 					//OutputDebugString(sql.str().c_str());
 
 					g_DBManager.Commit();
-					g_DBManager.UnLock();
+					g_DBManager.unLock();
 				}
 				break;
 				case 0x08:
@@ -1150,15 +1151,16 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
 
 			OutputDebugString(item.print().c_str());
 
-			g_DBManager.Lock();
+			g_DBManager.lock();
             g_DBManager.Begin();
 
-			unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(item.charid(), 2);
+			unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), 2);
 
-			g_DBManager.InsertItem(
+			g_DBManager.insertItem(
                     item.itemid().Low(),
                     item.itemid().High(),
                     item.ql(),
+                    item.flags(),
                     item.stack(),
                     2,                           // 2 = inventory
                     nextFreeInvSlot,
@@ -1166,7 +1168,7 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
                     item.charid());
 
 			g_DBManager.Commit();
-            g_DBManager.UnLock();
+            g_DBManager.unLock();
 		}
 		break;
 		case AO::MSG_ITEM_MOVE: //0x47537A24:// what about 0x52526858:
@@ -1207,11 +1209,11 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
 
 			unsigned short newSlot = moveOp.targetSlotId();
 
-			g_DBManager.Lock();
+			g_DBManager.lock();
             g_DBManager.Begin();
 
 			if (newSlot >= 0x6f || newSlot == 0x00)
-				newSlot = g_DBManager.FindNextAvailableContainerSlot(moveOp.charid(), newParent);
+				newSlot = g_DBManager.findNextAvailableContainerSlot(moveOp.charid(), newParent);
 			
             std::tstringstream sql;
 			//with slot in DB:
@@ -1232,7 +1234,7 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
             g_DBManager.Exec(sql.str());
 
 			g_DBManager.Commit();
-            g_DBManager.UnLock();
+            g_DBManager.unLock();
         
 		}
 		break;
@@ -1240,7 +1242,7 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
     case AO::MSG_BANK:
         {
             Native::AOBank bank((AO::Bank*)msg.start());
-            g_DBManager.Lock();
+            g_DBManager.lock();
             g_DBManager.Begin();
             {  // Remove old stuff from the bank. Every update is a complete update.
                 std::tstringstream sql;
@@ -1250,10 +1252,11 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
             for (unsigned int i = 0; i < bank.numitems(); i++)
             {
                 Native::AOItem item = bank.item(i);
-                g_DBManager.InsertItem(
+                g_DBManager.insertItem(
                     item.itemid().Low(),
                     item.itemid().High(),
                     item.ql(),
+                    item.flags(),
                     item.stack(),
                     1,                           // 1 = bank container
                     item.index(),
@@ -1261,7 +1264,7 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
                     msg.characterId());
             }
             g_DBManager.Commit();
-            g_DBManager.UnLock();
+            g_DBManager.unLock();
         }
         break;
 
@@ -1282,9 +1285,9 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
 				//find a free spot:
 				unsigned int slotId = bp.invSlot();
 				if (slotId >= 0x6f)
-					slotId = g_DBManager.FindNextAvailableContainerSlot(msg.characterId(), newParent);
+					slotId = g_DBManager.findNextAvailableContainerSlot(msg.characterId(), newParent);
 
-				g_DBManager.Lock();
+				g_DBManager.lock();
 				g_DBManager.Begin();
 				{
 					// Remove old ref to backpack:
@@ -1294,10 +1297,11 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
 				}
 
 				// Add backpack:
-				g_DBManager.InsertItem(
+				g_DBManager.insertItem(
                     bp.keyLow(),
                     bp.keyHigh(),
                     bp.ql(),
+                    bp.flags(),
                     1,//stack
                     newParent,
                     slotId ,//bp.invSlot(),
@@ -1306,7 +1310,7 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
 				
 				
 				g_DBManager.Commit();
-				g_DBManager.UnLock();
+				g_DBManager.unLock();
 			}	
 		}
 		break;
@@ -1320,7 +1324,7 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
 			OutputDebugString(bp.print().c_str());
 #endif
 
-            g_DBManager.Lock();
+            g_DBManager.lock();
             g_DBManager.Begin();
             {
                 // Remove old contents from BP
@@ -1332,10 +1336,11 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
             for (unsigned int i = 0; i < bp.numitems(); i++)
             {
                 Native::AOItem item = bp.item(i);
-                g_DBManager.InsertItem(
+                g_DBManager.insertItem(
                     item.itemid().Low(),
                     item.itemid().High(),
                     item.ql(),
+                    item.flags(),
                     item.stack(),
                     bp.containerid().High(),
                     item.index(),
@@ -1346,7 +1351,7 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
 			ServicesSingleton::Instance()->UpdateTempContainerId(bp.charid(), bp.tempContainerId(), bp.containerid().High());
 
             g_DBManager.Commit();
-            g_DBManager.UnLock();
+            g_DBManager.unLock();
             //AddToTreeView(msg.charid(), bp.containerid().High());
         }
         break;
@@ -1354,7 +1359,7 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
     case AO::MSG_FULLSYNC:
         {
             Native::AOEquip equip((AO::Equip*)msg.start());
-            g_DBManager.Lock();
+            g_DBManager.lock();
             g_DBManager.Begin();
             {
                 // Remove old contents from DB (inventory, trade, remote trade and overflow win.
@@ -1373,10 +1378,11 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
             {
                 Native::AOItem item = equip.item(i);
 
-                g_DBManager.InsertItem(
+                g_DBManager.insertItem(
                     item.itemid().Low(),
                     item.itemid().High(),
                     item.ql(),
+                    item.flags(),
                     item.stack(),
                     2,             // parent 2 = equip
                     item.index(),
@@ -1384,7 +1390,7 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
                     msg.characterId());
             }
             g_DBManager.Commit();
-            g_DBManager.UnLock();
+            g_DBManager.unLock();
 
             CleanupDB(equip.charid());
         }
@@ -1398,9 +1404,13 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
                 AO::MobInfo* pMobInfo = (AO::MobInfo*)msg.start();
                 std::string name(&(pMobInfo->characterName.str), pMobInfo->characterName.strLen - 1);
 
-                g_DBManager.Lock();
-                g_DBManager.SetToonName(msg.characterId(), from_ascii_copy(name));
-                g_DBManager.UnLock();
+                // Assuming server ID contains dimension ID in highbyte.
+                unsigned short serverid = _byteswap_ulong(pMobInfo->header.serverid) & 0xFFFF;
+                unsigned char dimensionid = (serverid & 0xFF00) >> 8;
+
+                g_DBManager.lock();
+                g_DBManager.setToonName(msg.characterId(), from_ascii_copy(name));
+                g_DBManager.unLock();
             }
         }
         break;
@@ -1410,7 +1420,7 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
             AOPlayerShopInfo shop(msg.start(), msg.size());
             if (shop.shopId() != 0 && shop.ownerId() != 0)
             {
-                g_DBManager.UpdateToonShopId(shop.ownerId(), shop.shopId());
+                g_DBManager.setToonShopId(shop.ownerId(), shop.shopId());
             }
         }
         break;
@@ -1424,11 +1434,11 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
             // ID of who-ever that shop is registered to. This will allow you to update all your toons shops without 
             // logging them in. (You only need to visit the shop with one of them.)
 
-            unsigned int owner = g_DBManager.GetShopOwner(shop.shopid());
+            unsigned int owner = g_DBManager.getShopOwner(shop.shopid());
 
             if (owner != 0)
             {
-                g_DBManager.Lock();
+                g_DBManager.lock();
                 g_DBManager.Begin();
                 {
                     // Remove old contents from container
@@ -1442,10 +1452,11 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
                     AOContainerItem item = shop.item(i);
                     unsigned int price = shop.price(item.index());
 
-                    g_DBManager.InsertItem(
+                    g_DBManager.insertItem(
                         item.itemId().low(),
                         item.itemId().high(),
                         item.ql(),
+                        item.flags(),
                         item.stack(),
                         3,
                         item.index(),
@@ -1453,7 +1464,7 @@ E600405D	BE000F42	4F000000	00656F00	001B9700
                         owner);
                 }
                 g_DBManager.Commit();
-                g_DBManager.UnLock();
+                g_DBManager.unLock();
             }
         }
         break;
@@ -1470,9 +1481,9 @@ void InventoryView::CleanupDB(unsigned int charid)
     std::tstringstream sql;
     sql << _T("DELETE FROM tItems WHERE owner = ") << charid << _T(" AND parent > 3 AND parent NOT IN (SELECT DISTINCT children FROM tItems)");
 
-    g_DBManager.Lock();
+    g_DBManager.lock();
     g_DBManager.Exec(sql.str());
-    g_DBManager.UnLock();
+    g_DBManager.unLock();
 }
 
 
@@ -1520,9 +1531,9 @@ void InventoryView::UpdateListView(std::tstring const& where)
         sql << _T(" WHERE ") << where;
     }
 
-    g_DBManager.Lock();
+    g_DBManager.lock();
     SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());
-    g_DBManager.UnLock();
+    g_DBManager.unLock();
 
     if (pT)
     {
@@ -1736,9 +1747,9 @@ LRESULT InfoView::OnButtonClicked(WORD commandID, WORD buttonID, HWND hButton, B
     }
     std::tstring url = InventoryView::GetServerItemURLTemplate(server);
 
-    g_DBManager.Lock();
-    OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo(m_currentItem);
-    g_DBManager.UnLock();
+    g_DBManager.lock();
+    OwnedItemInfoPtr pItemInfo = g_DBManager.getOwnedItemInfo(m_currentItem);
+    g_DBManager.unLock();
 
     boost::replace_all(url, _T("%lowid%"), pItemInfo->itemloid);
     boost::replace_all(url, _T("%hiid%"), pItemInfo->itemhiid);
@@ -1761,9 +1772,9 @@ void InfoView::SetCurrentItem(unsigned int item)
     std::tstringstream sql;
     sql << _T("SELECT * FROM tItems WHERE itemidx = ") << item;
 
-    g_DBManager.Lock();
+    g_DBManager.lock();
     SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());
-    g_DBManager.UnLock();
+    g_DBManager.unLock();
 
     if (pT)
     {
@@ -1853,9 +1864,9 @@ LRESULT FindView::OnCbnBuildCharcombo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
     int item = cb.AddString(_T("-"));
     cb.SetItemData(item, 0);
 
-    g_DBManager.Lock();
+    g_DBManager.lock();
     SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT DISTINCT owner FROM tItems"));
-    g_DBManager.UnLock();
+    g_DBManager.unLock();
 
     if (pT != NULL)
     {
@@ -1863,9 +1874,9 @@ LRESULT FindView::OnCbnBuildCharcombo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
         {
             unsigned int id = boost::lexical_cast<unsigned int>(pT->Data(i,0));
 
-            g_DBManager.Lock();
-            std::tstring name = g_DBManager.GetToonName(id);
-            g_DBManager.UnLock();
+            g_DBManager.lock();
+            std::tstring name = g_DBManager.getToonName(id);
+            g_DBManager.unLock();
 
             if (name.empty())
             {
