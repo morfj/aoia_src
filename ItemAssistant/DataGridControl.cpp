@@ -39,7 +39,6 @@ namespace aoia {
         }
 
         updateColumns();
-        autosizeColumnsUseHeader();
         for (unsigned int i = 0; i < m_model->getItemCount(); ++i) {
             m_listView.InsertItem(i, LPSTR_TEXTCALLBACK);
         }
@@ -104,49 +103,50 @@ namespace aoia {
         }
         for (unsigned int i = 0; i < m_model->getColumnCount(); ++i) {
             m_listView.InsertColumn(i, m_model->getColumnName(i).c_str());
+            m_listView.SetColumnWidth(i, 100);  // Default 100px width for all columns.
         }
     }
 
 
     void DataGridControl::autosizeColumnsUseHeader()
     {
-        // MSDN: LVSCW_AUTOSIZE does not work as expected for column 0 for versions prior to comctl32.dll 5.80
-        // Tested with later versions, still a problem in v 5.82
-        /*int numCol = m_listView.GetHeader().GetItemCount();
-        for (int i = 0; i < numCol; ++i) {
-            m_listView.SetColumnWidth(i, LVSCW_AUTOSIZE);            
-        }*/
-
-
         int numCol = m_listView.GetHeader().GetItemCount();
         for (int i = 0; i < numCol; ++i)
         {
             m_listView.SetColumnWidth(i, LVSCW_AUTOSIZE_USEHEADER);            
         }
-
-        // Manually update (this is not suited for virtual list views, as it loops all items anyway)
-        //unsigned int numRows = m_listView.GetItemCount();        
-        //TCHAR buffer[200];
-        //int numCol = m_listView.GetHeader().GetItemCount();
-        //for (int i = 0; i < numCol; ++i) 
-        //{            
-        //    unsigned int maxWidth = m_listView.GetStringWidth(m_model->getColumnName(i).c_str());
-        //    for(unsigned int rowIndex = 0; rowIndex < numRows; rowIndex++)
-        //    {
-        //        m_listView.GetItemText(rowIndex, i, buffer, 200);
-        //        maxWidth = max(maxWidth, (unsigned int)m_listView.GetStringWidth(buffer));
-        //    }
-        //    m_listView.SetColumnWidth(i, max(maxWidth + 15, (unsigned int)m_listView.GetColumnWidth(i)));       
-        //}        
     }
 
 
     void DataGridControl::autosizeColumnsUseData(bool onlyVisible)
     {
-        int numCol = m_listView.GetHeader().GetItemCount();
-        for (int i = 0; i < numCol; ++i)
+        if (!onlyVisible)
         {
-            m_listView.SetColumnWidth(i, LVSCW_AUTOSIZE);
+            int numCol = m_listView.GetHeader().GetItemCount();
+            for (int i = 0; i < numCol; ++i)
+            {
+                m_listView.SetColumnWidth(i, LVSCW_AUTOSIZE);
+            }
+        }
+        else 
+        {
+            // Loop the visible rows and calculate width on those only.
+            int numCol = m_listView.GetHeader().GetItemCount();
+            unsigned int numRows = m_listView.GetCountPerPage();
+            unsigned int firstRow = m_listView.GetTopIndex();
+            unsigned int maxRow = m_listView.GetItemCount();
+            TCHAR buffer[MAX_PATH];
+
+            for (int i = 0; i < m_model->getColumnCount(); ++i) 
+            {            
+                unsigned int maxWidth = m_listView.GetStringWidth(m_model->getColumnName(i).c_str());
+                for (unsigned int rowIndex = firstRow; (numRows-- > 0) && (rowIndex < maxRow); rowIndex++)
+                {
+                    m_listView.GetItemText(rowIndex, i, buffer, 200);
+                    maxWidth = max(maxWidth, (unsigned int)m_listView.GetStringWidth(buffer));
+                }
+                m_listView.SetColumnWidth(i, max(maxWidth + 15, (unsigned int)m_listView.GetColumnWidth(i)));
+            }
         }
     }
 
