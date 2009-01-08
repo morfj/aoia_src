@@ -253,13 +253,12 @@ namespace Native {
 		std::tstring print() const {
             std::tstringstream out;
             out << "AOPartnerTradeItem:" << "\r\n"
-				<< "operationId\t" << std::hex << operationId() << "\r\n"
+				<< "operationId\t0x" << std::hex << operationId() << "\r\n"
 				<< "itemid\t" << itemid().print().c_str() << "\r\n"
-				<< "ql\t" << ql() << " stack\t" << stack() <<"\r\n";
-	
-               // << "partnerFromType\t" << std::hex << partnerFromType() << "\r\n"
-				//<< "partnerFromContainerTempId\t" << partnerFromContainerTempId() << "\r\n"
-			//	<< "partnerFromItemSlotId\t" << partnerFromItemSlotId() << "\r\n"
+				<< "ql\t" << ql() << " stack\t" << stack() <<"\r\n"
+                << "partnerFromType\t0x" << std::hex << partnerFromType() << "\r\n"
+				<< "partnerFromContainerTempId\t" << partnerFromContainerTempId() << "\r\n"
+				<< "partnerFromItemSlotId\t" << partnerFromItemSlotId();
               
 		
             return out.str();
