@@ -33,9 +33,9 @@ PatternReport::PatternReport(unsigned int pbid, unsigned int toonid)
 
    if (m_toonid > 0)
    {
-      g_DBManager.Lock();
-      m_toonname = g_DBManager.GetToonName(toonid);
-      g_DBManager.UnLock();
+      g_DBManager.lock();
+      m_toonname = g_DBManager.getToonName(toonid);
+      g_DBManager.unLock();
       if (m_toonname.empty())
       {
          m_toonname = STREAM2STR(_T("John Doe (") << m_toonid << _T(")"));
@@ -51,9 +51,9 @@ PatternReport::PatternReport(unsigned int pbid, unsigned int toonid)
 
 
    {  // Determine PB name
-      g_DBManager.Lock();
+      g_DBManager.lock();
       SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR(_T("SELECT name FROM tblPocketBoss WHERE pbid = ") << pbid));
-      g_DBManager.UnLock();
+      g_DBManager.unLock();
 
       if (pT != NULL && pT->Rows() > 0)
       {
@@ -65,9 +65,9 @@ PatternReport::PatternReport(unsigned int pbid, unsigned int toonid)
    std::map<unsigned int, std::map<unsigned int, std::map<std::tstring, int> > > pieces;
 
    {  // Find all patternpieces
-      g_DBManager.Lock();
+      g_DBManager.lock();
       SQLite::TablePtr pIDs = g_DBManager.ExecTable(STREAM2STR(_T("SELECT aoid, pattern FROM tblPatterns WHERE name = (SELECT name FROM tblPocketBoss WHERE pbid = ") << pbid << ")"));
-      g_DBManager.UnLock();
+      g_DBManager.unLock();
 
       // Copy patternpiece IDs to map
 
@@ -89,9 +89,9 @@ PatternReport::PatternReport(unsigned int pbid, unsigned int toonid)
          {
             sql += STREAM2STR(_T(" AND owner = ") << toonid);
          }
-         g_DBManager.Lock();
+         g_DBManager.lock();
          SQLite::TablePtr pItems = g_DBManager.ExecTable(sql);
-         g_DBManager.UnLock();
+         g_DBManager.unLock();
 
          for (unsigned int itemIdx = 0; itemIdx < pItems->Rows(); ++itemIdx) {
             unsigned int containerid = boost::lexical_cast<unsigned int>(pItems->Data(itemIdx, 0));
@@ -130,9 +130,9 @@ PatternReport::PatternReport(unsigned int pbid, unsigned int toonid)
          for (it3 = it2->second.begin(); it3 != it2->second.end(); ++it3) {
             out << "<tr>";
             if (it2 == it->second.begin() && it3 == it2->second.begin()) {
-               g_DBManager.Lock();
-               std::tstring toon_name = g_DBManager.GetToonName(it->first);
-               g_DBManager.UnLock();
+               g_DBManager.lock();
+               std::tstring toon_name = g_DBManager.getToonName(it->first);
+               g_DBManager.unLock();
                out << _T("<td rowspan=") << rowsPerToon[it->first] << _T(">") << toon_name << _T("</td>");
             }
             if (it3 == it2->second.begin()) {

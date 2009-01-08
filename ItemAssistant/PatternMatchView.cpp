@@ -41,9 +41,9 @@ LRESULT PatternMatchView::OnCreate(LPCREATESTRUCT createStruct)
     m_accelerators.LoadAccelerators(IDR_PB_ACCEL);
 
     // Build table of all PBs
-    g_DBManager.Lock();
+    g_DBManager.lock();
     SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT pbid, name FROM tblPocketBoss ORDER BY name"));
-    g_DBManager.UnLock();
+    g_DBManager.unLock();
 
     if (pT != NULL)
     {
@@ -460,7 +460,7 @@ float PatternMatchView::CalcPbAvailability(unsigned int pbid, unsigned int tooni
 
     // Get a list of all pattern pieces for the specified pocket boss (optionally exclude ABCD assemblies)
     SQLite::TablePtr pIDs;
-    g_DBManager.Lock();
+    g_DBManager.lock();
     {
         std::tstringstream sql;
         sql << _T("SELECT aoid, pattern FROM tblPatterns WHERE name = (SELECT name FROM tblPocketBoss WHERE pbid = ") << pbid << _T(")");
@@ -469,7 +469,7 @@ float PatternMatchView::CalcPbAvailability(unsigned int pbid, unsigned int tooni
         }
         pIDs = g_DBManager.ExecTable(sql.str());
     }
-    g_DBManager.UnLock();
+    g_DBManager.unLock();
 
     if (pIDs == NULL) {
         return 0.0f;
@@ -486,9 +486,9 @@ float PatternMatchView::CalcPbAvailability(unsigned int pbid, unsigned int tooni
             sql += STREAM2STR(" AND tItems.owner = " << toonid);
         }
 
-        g_DBManager.Lock();
+        g_DBManager.lock();
         SQLite::TablePtr pItemCount = g_DBManager.ExecTable(sql);
-        g_DBManager.UnLock();
+        g_DBManager.unLock();
 
         if (pItemCount && pItemCount->Rows() > 0) {
             vals[pattern] += boost::lexical_cast<unsigned int>(pItemCount->Data(0, 0));
@@ -582,7 +582,7 @@ void FilterView::UpdateToonList()
     cb.SetCurSel(0);
     cb.SetMinVisible(9);
 
-    g_DBManager.Lock();
+    g_DBManager.lock();
     SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT DISTINCT owner FROM tItems"));
 
     if (pT != NULL)
@@ -591,7 +591,7 @@ void FilterView::UpdateToonList()
         {
             unsigned int id = boost::lexical_cast<unsigned int>(pT->Data(i,0));
 
-            std::tstring name = g_DBManager.GetToonName(id);
+            std::tstring name = g_DBManager.getToonName(id);
             if (name.empty())
             {
                 name = from_ascii_copy(pT->Data()[pT->Columns()*i]);
@@ -603,7 +603,7 @@ void FilterView::UpdateToonList()
             }
         }
     }
-    g_DBManager.UnLock();
+    g_DBManager.unLock();
 
     if (oldselection >= 0) {
         cb.SetCurSel(oldselection);

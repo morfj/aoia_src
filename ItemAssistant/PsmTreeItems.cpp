@@ -164,7 +164,7 @@ CharacterTreeViewItem1::CharacterTreeViewItem1(PlayershopView* pOwner, unsigned 
  , PsmTreeViewItemBase(pOwner)
 {
    m_pParent = pParent;
-   std::tstring str = g_DBManager.GetToonName(m_charid);
+   std::tstring str = g_DBManager.getToonName(m_charid);
    if(str.empty()){
       std::tstringstream ss;
       ss << charID;
@@ -225,7 +225,7 @@ std::vector<std::tstring> CharacterTreeViewItem1::GetAllSoldItems()
          v.push_back(from_ascii_copy(text.substr(start+startTag.length(),end-start-startTag.length())));
 
          // adding data for column 2
-         std::tstring str = g_DBManager.GetToonName(m_charid);
+         std::tstring str = g_DBManager.getToonName(m_charid);
          if(str.empty()){
             std::tstringstream ss;
             ss << m_charid;

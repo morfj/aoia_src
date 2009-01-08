@@ -127,9 +127,9 @@ bool ContainerTreeViewItem::HasChildren() const
          sql << _T(" AND ") << m_constraints;
       }
 
-      g_DBManager.Lock();
+      g_DBManager.lock();
       SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());
-      g_DBManager.UnLock();
+      g_DBManager.unLock();
 
       if (pT != NULL)
       {
@@ -155,9 +155,9 @@ std::vector<MFTreeViewItem*> ContainerTreeViewItem::GetChildren() const
          sql << _T(" AND ") << m_constraints;
       }
 
-      g_DBManager.Lock();
+      g_DBManager.lock();
       SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());
-      g_DBManager.UnLock();
+      g_DBManager.unLock();
 
       if (pT != NULL)
       {
@@ -192,7 +192,7 @@ bool ContainerTreeViewItem::HandleMenuCmd(unsigned int commandID, WTL::CTreeItem
       {
       case SqlTreeViewItemBase::CMD_DELETE:
          {
-            g_DBManager.Lock();
+            g_DBManager.lock();
             g_DBManager.Begin();
             std::tstringstream sql;
             sql << _T("DELETE FROM tItems WHERE parent = ") << m_containerid << _T("; DELETE FROM tItems WHERE children = ") << m_containerid;
@@ -204,7 +204,7 @@ bool ContainerTreeViewItem::HandleMenuCmd(unsigned int commandID, WTL::CTreeItem
             {
                g_DBManager.Rollback();
             }
-            g_DBManager.UnLock();
+            g_DBManager.unLock();
          }
          break;
       default:
@@ -224,9 +224,9 @@ CharacterTreeViewItem::CharacterTreeViewItem(InventoryView* pOwner, unsigned int
  : m_charid(charid)
  , SqlTreeViewItemBase(pOwner)
 {
-   g_DBManager.Lock();
-   m_label = g_DBManager.GetToonName(charid);
-   g_DBManager.UnLock();
+   g_DBManager.lock();
+   m_label = g_DBManager.getToonName(charid);
+   g_DBManager.unLock();
 
    if (m_label.empty())
    {
@@ -258,9 +258,9 @@ bool CharacterTreeViewItem::CanEdit() const
 
 std::tstring CharacterTreeViewItem::GetLabel() const
 {
-   g_DBManager.Lock();
-   std::tstring result = g_DBManager.GetToonName(m_charid);
-   g_DBManager.UnLock();
+   g_DBManager.lock();
+   std::tstring result = g_DBManager.getToonName(m_charid);
+   g_DBManager.unLock();
 
    if (result.empty())
    {
@@ -275,9 +275,9 @@ std::tstring CharacterTreeViewItem::GetLabel() const
 
 void CharacterTreeViewItem::SetLabel(std::tstring const& newLabel)
 {
-   g_DBManager.Lock();
-   g_DBManager.SetToonName(m_charid, newLabel);
-   g_DBManager.UnLock();
+   g_DBManager.lock();
+   g_DBManager.setToonName(m_charid, newLabel);
+   g_DBManager.unLock();
 }
 
 
@@ -320,7 +320,7 @@ bool CharacterTreeViewItem::HandleMenuCmd(unsigned int commandID, WTL::CTreeItem
       {
       case SqlTreeViewItemBase::CMD_DELETE:
          {
-            g_DBManager.Lock();
+            g_DBManager.lock();
             g_DBManager.Begin();
             std::tstringstream sql;
             sql << _T("DELETE FROM tItems WHERE owner = ") << m_charid;
@@ -332,7 +332,7 @@ bool CharacterTreeViewItem::HandleMenuCmd(unsigned int commandID, WTL::CTreeItem
             {
                g_DBManager.Rollback();
             }
-            g_DBManager.UnLock();
+            g_DBManager.unLock();
          }
          break;
       default:
@@ -387,9 +387,9 @@ std::vector<MFTreeViewItem*> InventoryTreeRoot::GetChildren() const
    std::vector<MFTreeViewItem*> result;
 
    // Init contents from DB
-   g_DBManager.Lock();
+   g_DBManager.lock();
    SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT DISTINCT owner FROM tItems ORDER BY owner ASC"));
-   g_DBManager.UnLock();
+   g_DBManager.unLock();
 
    if (pT != NULL) {
       for (size_t i = 0; i < pT->Rows(); ++i) {
