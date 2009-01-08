@@ -134,6 +134,7 @@ namespace AO {
 
 	struct ItemOperation
 	{
+		//MSG_ITEM_OPERATION
 		ClientHeader header;
 		//00 00 00 00 70 00 00 00 00 00 00 00 68 00 00 00 4e 00 01 3f 5d 00 01 3f 5c 00 00
 		unsigned char	unknown1;//01
@@ -284,6 +285,15 @@ namespace AO {
 
 #pragma pack(pop)
 
+	enum InventoryIds
+    {
+		INV_BANK		= 1,
+		INV_TOONINV		= 2,
+		INV_PLAYERSHOP	= 3,
+		INV_TRADE		= 4,
+		INV_TRADEPARTNER= 5,
+		INV_OVERFLOW	= 6,
+	};
 
     enum MsgIds
     {
@@ -311,6 +321,7 @@ namespace AO {
 		MSG_ITEM_OPERATION= 0x5e477770,  //from client when deleting an item, splitting or joingin +++
 		MSG_SHOP_TRANSACTION=0x36284f6e,  //from server and client when adding/removing/accepting shop stuff
 		MSG_PARTNER_TRADE = 0x35505644, //from server when trade partner adds/removes items.
+		MSG_SHOW_TEXT	 =	0x206b4b73, //from server when showing yellow text (like "You succesfully combined.../XXX is already fully loaded")
     };
 
     enum ToonAtribIds
