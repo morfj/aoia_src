@@ -647,7 +647,8 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 	case AO::MSG_OPENBACKPACK:// 0x52526858://1196653092:
 		{
 
-			return;
+			return;//handled on server msg. 
+			//Since the server msg is only sent once, we might want to update tempId here, but it shouldnt be needeed.
 			Native::AOOpenBackpackOperation moveOp((AO::OpenBackpackOperation*)msg.start());
 
 			OutputDebugString(moveOp.print().c_str());
@@ -795,7 +796,7 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 			{
 				//tradeskill. keylow = target from container type (0x68), keyhigh=from slot id.
 
-				//I think we should delete both. Check with monster parts and bio-communitor.
+				//No msg tells us if any of the items should be deleted!
 				//WE need to know if target/source is consumed! is there a tradeskill db in the client?
 
 				return;
@@ -971,11 +972,14 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 				unsigned int fromContainerId = GetFromContainerId(item.charid(),
 				item.partnerFromType(), item.partnerFromContainerTempId());
 
+				OutputDebugString(item.print().c_str());
 				//TODO: check if it is a depleteable item!! Hopefully in flags...
 
 				//OR:make a list of multi-useable items:
 				//grafts, flurry, rings etc..
 				//
+
+				
 
 				g_DBManager.lock();
 				g_DBManager.Begin();
@@ -986,20 +990,40 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 					<< _T(" AND slot = ") << item.partnerFromItemSlotId()
 					<< _T(" AND owner = ") << msg.characterId()
 					<< _T(" AND keyhigh = ") << item.itemid().High()
-					<< _T(" AND keylow = ") << item.itemid().Low();
+					<< _T(" AND keylow = ") << item.itemid().Low()
+					<< _T(" AND keylow IN (SELECT aoid FROM tblao WHERE aoid = ") << item.itemid().Low() 
+					<< _T(" AND (flags & 4196368))");//FLAG_USE_EMPTY_DESTRUCT+FLAG_HAS_ENERGY+FLAG_TURN_ON_USE
 
 				g_DBManager.Exec(sqlDeplete.str());
-				//OutputDebugString(sqlDeplete.str().c_str());
-
+#ifdef DEBUG
+				OutputDebugString(sqlDeplete.str().c_str());
+#endif
+				////2048 == ItemFlag::FLAG_USE_EMPTY_DESTRUCT
+				//SELECT * from tblAO WHERE (flags & 2048) order by name
+				//OR FLAG_HAS_ENERGY         = 0x00400000,
+				//OR FLAG_TURN_ON_USE        = 0x00000010,
 				std::tstringstream sqlDelete;
+				/*sqlDelete << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
+				<< _T(" AND stack = 0")
+				<< _T(" AND parent = ") << fromContainerId
+				<< _T(" AND keylow = ") << item.itemid().Low()
+				<< _T(" AND keyhigh = ") << item.itemid().High()
+				<< _T(" AND slot = ") << item.partnerFromItemSlotId();*/
+
 				sqlDelete << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
 				<< _T(" AND stack = 0")
 				<< _T(" AND parent = ") << fromContainerId
 				<< _T(" AND keylow = ") << item.itemid().Low()
 				<< _T(" AND keyhigh = ") << item.itemid().High()
-				<< _T(" AND slot = ") << item.partnerFromItemSlotId();
+				<< _T(" AND slot = ") << item.partnerFromItemSlotId()
+				<< _T(" AND keylow IN (SELECT aoid FROM tblao WHERE aoid = ") << item.itemid().Low() 
+				<< _T(" AND (flags & 4196368))");//FLAG_USE_EMPTY_DESTRUCT+FLAG_HAS_ENERGY+FLAG_TURN_ON_USE
+
+
 				g_DBManager.Exec(sqlDelete.str());
-				//OutputDebugString(sqlDelete.str().c_str());
+#ifdef DEBUG
+				OutputDebugString(sqlDelete.str().c_str());
+#endif
 
 				g_DBManager.Commit();
 				g_DBManager.unLock();
@@ -1389,7 +1413,14 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                     containerId,
                     msg.characterId());
 
-
+#ifdef DEBUG
+				{
+                    // Log
+                    std::tstringstream sql;
+					sql << _T("BP:") << bp.keyLow() << _T("FL:\t") << bp.flags();
+                    OutputDebugString(sql.str().c_str());
+                }
+#endif
                 g_DBManager.Commit();
                 g_DBManager.unLock();
             }	
@@ -1432,6 +1463,14 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                     item.index(),
                     0,
                     msg.characterId());
+#ifdef DEBUG
+				{
+                    // Log
+                    std::tstringstream sql;
+					sql << _T("IT:") << item.itemid().Low() << _T("FL:\t") << item.flags();
+                    OutputDebugString(sql.str().c_str());
+                }
+#endif
             }
 
             ServicesSingleton::Instance()->UpdateTempContainerId(bp.charid(), bp.tempContainerId(), containerId);
@@ -1474,6 +1513,14 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                     item.index(),
                     item.containerid().High(),
                     msg.characterId());
+#ifdef DEBUG
+				{
+                    // Log
+                    std::tstringstream sql;
+					sql << _T("Inv:") << item.itemid().Low() << _T("FL:\t") << item.flags();
+                    OutputDebugString(sql.str().c_str());
+                }
+#endif
             }
             g_DBManager.Commit();
             g_DBManager.unLock();
