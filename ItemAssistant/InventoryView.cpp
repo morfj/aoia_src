@@ -1378,24 +1378,42 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
 //maybe: move from inv to parent=6, keep slotId, join 
 
-				/*
-
+				//TODO: Check which item is kept
+				
+/*
+				{
 					std::tstringstream sqlJoinStacks;
 					sqlJoinStacks << _T("UPDATE tItems tTo, tItems tFrom")
 					<< _T(" SET (tTo.stack=( tTo.stack + tFrom.stack)), (tFrom.stack=0)")
 					<< _T(" WHERE tFrom.parent = ") << fromContainerId
-					<< _T(" AND tFrom.slot = ") << item.partnerFromItemSlotId()
+					<< _T(" AND tFrom.slot = ") << moveOp.fromItemSlotId()
 					<< _T(" AND tFrom.owner = ") << msg.characterId()
 					<< _T(" AND tFrom.keylow = tTo.keylow")
-					<< _T(" AND tTo.itemIdx IN (
-					<< _T("  SELECT TOP(1) tSameType.itemIdx from tItems tSameType WHERE tSameType.parent = 2 AND tSameType.owner =") << msg.characterId()
-					<< _T("  AND tSameType.keylow IN (SELECT aoid FROM tblao WHERE (properties & 512)) ORDER BY slot ) ");//PROP_STACKABLE
+					<< _T(" AND tTo.itemIdx IN (")
+					<< _T("  SELECT tSameType.itemIdx from tItems tSameType WHERE tSameType.parent = 2 AND tSameType.owner =") << msg.characterId()
+					<< _T("  AND tSameType.keylow=tTo.keylow AND tSameType.keylow IN (SELECT aoid FROM tblao WHERE (properties & 512)) ORDER BY slot LIMIT 1) ");//PROP_STACKABLE
+					
+					g_DBManager.lock();
+					g_DBManager.Begin();
 
+					OutputDebugString(sqlJoinStacks.str().c_str());
+
+					std::tstringstream sqlErr;
+					sqlErr << _T("Exec = ") << g_DBManager.Exec(sqlJoinStacks.str());
+					OutputDebugString(sqlErr.str().c_str());
+					
+					g_DBManager.Commit();
+					g_DBManager.unLock();
+					return;
+				}
+				{
 					std::tstringstream sqlDeleteIfJoined;
 					sqlDeleteIfJoined << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
-					<< _T(" AND parent = ") << fromContainerId item.partnerFromItemSlotId()
-					<< _T(" AND slot = ") <<  item.partnerFromItemSlotId();
+					<< _T(" AND parent = ") << fromContainerId
+					<< _T(" AND slot = ") <<  moveOp.fromItemSlotId()
 					<< _T(" And stack < 1");
+					OutputDebugString(sqlDeleteIfJoined.str().c_str());
+				}
 					*/
 				
 			}
@@ -1529,7 +1547,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
 			unsigned int containerId = bp.containerid().High();
 
-			if (bp.tempContainerId() == 0x006e)
+			if (bp.tempContainerId() == 0x006e && bp.containerid().Low() == 0xc350)
 				containerId = AO::INV_OVERFLOW;
 
             g_DBManager.lock();
