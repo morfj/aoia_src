@@ -22,8 +22,8 @@ struct MFTreeViewItem
 };
 
 
-
-class MFTreeView : public CWindowImpl<MFTreeView, WTL::CTreeViewCtrlEx>
+class MFTreeView
+    : public CWindowImpl<MFTreeView, WTL::CTreeViewCtrlEx>
 {
 public:
     MFTreeView();
@@ -39,12 +39,13 @@ public:
         DEFAULT_REFLECTION_HANDLER()
     END_MSG_MAP()
 
+    void addRootItem(MFTreeViewItem* pItem);
+
+protected:
     LRESULT OnItemExpanding(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
     LRESULT OnSelChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
     LRESULT OnGetDispInfo(int, LPNMHDR lParam, BOOL&);
     LRESULT OnRClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
     LRESULT OnLabelEditBegin(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
     LRESULT OnLabelEditEnd(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
-
-    void SetRootItem(MFTreeViewItem* pItem);
 };

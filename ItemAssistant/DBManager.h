@@ -53,10 +53,13 @@ public:
     unsigned int getShopOwner(unsigned int shopid);
 
     /// Assign a dimension ID to a specified character.
-    void setToonDimension(unsigned int charid, unsigned char dimensionid);
+    void setToonDimension(unsigned int charid, unsigned int dimensionid);
 
     /// Retrieves the dimension a character belongs to. 0 means dimension is unknown.
-    unsigned char getToonDimension(unsigned int charid);
+    unsigned int getToonDimension(unsigned int charid) const;
+
+    /// Retrieves all the dimension IDs and their descriptions. Returns false if query failed.
+    bool getDimensions(std::map<unsigned int, std::tstring> &dimensions) const;
 
     /// Determines the first available container slot ID for a specified character and container.
     unsigned int findNextAvailableContainerSlot(unsigned int charId, unsigned int containerId);

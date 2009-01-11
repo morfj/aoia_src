@@ -315,7 +315,7 @@ void DBManager::setToonShopId(unsigned int charid, unsigned int shopid)
 }
 
 
-void DBManager::setToonDimension(unsigned int charid, unsigned char dimensionid)
+void DBManager::setToonDimension(unsigned int charid, unsigned int dimensionid)
 {
     assert(charid != 0);
     assert(dimensionid != 0);
@@ -325,18 +325,18 @@ void DBManager::setToonDimension(unsigned int charid, unsigned char dimensionid)
 }
 
 
-unsigned char DBManager::getToonDimension(unsigned int charid)
+unsigned int DBManager::getToonDimension(unsigned int charid) const
 {
     assert(charid != 0);
 
-    unsigned char result = 0;
+    unsigned int result = 0;
 
     SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR("SELECT dimensionid FROM tToons WHERE charid = " << charid));
     if (pT != NULL && pT->Rows())
     {
         try
         {
-            result = boost::lexical_cast<unsigned char>(pT->Data(0,0));
+            result = boost::lexical_cast<unsigned int>(pT->Data(0,0));
         }
         catch (boost::bad_lexical_cast &e)
         {
@@ -346,6 +346,23 @@ unsigned char DBManager::getToonDimension(unsigned int charid)
     }
 
     return result;
+}
+
+
+bool DBManager::getDimensions(std::map<unsigned int, std::tstring> &dimensions) const
+{
+    SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR("SELECT dimensionid, dimensionname FROM tDimensions"));
+
+    if (pT != NULL && pT->Rows())
+    {
+        for (unsigned int i = 0; i < pT->Rows(); ++i)
+        {
+            std::tstring name = from_ascii_copy(pT->Data(i, 1));
+            dimensions[boost::lexical_cast<unsigned int>(pT->Data(i, 0))] = name;
+        }
+        return true;
+    }
+    return false;
 }
 
 
@@ -382,7 +399,6 @@ unsigned int DBManager::findNextAvailableContainerSlot(unsigned int charId, unsi
 	}
 
 	return posSlot; //we return the next available slot
-
 }
 
 
@@ -538,8 +554,9 @@ void DBManager::updateDBVersion(unsigned int fromVersion) const
             Exec(_T("INSERT INTO tItems (itemidx, keylow, keyhigh, ql, stack, parent, slot, children, owner) SELECT itemidx, keylow, keyhigh, ql, stack, parent, slot, children, owner FROM tItems2"));
             Exec(_T("DROP TABLE tItems2"));
             Exec(_T("CREATE TABLE tDimensions (dimensionid INTEGER NOT NULL PRIMARY KEY UNIQUE, dimensionname VARCHAR)"));
-            Exec(_T("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (11, 'Rubi-Ka 1')"));
-            Exec(_T("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (12, 'Rubi-Ka 2')"));
+            Exec(_T("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (11, 'Atlantean (Rubi-Ka 1)')"));
+            Exec(_T("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (12, 'Rimor (Rubi-Ka 2)')"));
+            Exec(_T("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (13, 'Die Neue Welt (German Server)')"));
             Exec(_T("CREATE TABLE tToons2 (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0', dimensionid INTEGER DEFAULT '0')"));
             Exec(_T("INSERT INTO tToons2 (charid, charname, shopid) SELECT charid, charname, shopid FROM tToons"));
             Exec(_T("DROP TABLE tToons"));
@@ -571,6 +588,9 @@ void DBManager::createDBScheme() const
     Exec(_T("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0')"));
     Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));
     Exec(_T("CREATE TABLE tDimensions (dimensionid INTEGER NOT NULL PRIMARY KEY UNIQUE, dimensionname VARCHAR)"));
+    Exec(_T("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (11, 'Atlantean (Rubi-Ka 1)')"));
+    Exec(_T("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (12, 'Rimor (Rubi-Ka 2)')"));
+    Exec(_T("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (13, 'Die Neue Welt (German Server)')"));
     Exec(STREAM2STR(_T("CREATE VIEW vSchemeVersion AS SELECT '") << CURRENT_DB_VERSION << _T("' AS Version")));
     Commit();
 }

@@ -214,9 +214,7 @@ private:
 
     CAccelerator m_accelerators;
 
-    //std::vector<std::string> m_accounts;
-
-    InventoryTreeRoot m_treeRoot;
+    std::map<std::tstring, boost::shared_ptr<DimensionNode> > m_dimensionNodes;
 
     bool  m_sortDesc;
     int   m_sortColumn;

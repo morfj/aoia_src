@@ -78,17 +78,22 @@ private:
 };
 
 
-class InventoryTreeRoot : public SqlTreeViewItemBase
+class DimensionNode
+    : public SqlTreeViewItemBase
 {
 public:
-   InventoryTreeRoot(InventoryView* pOwner = NULL);
-   virtual ~InventoryTreeRoot();
+    DimensionNode(std::tstring const& label, unsigned int dimensionid, InventoryView* pOwner = NULL);
+    virtual ~DimensionNode();
 
-   virtual void OnSelected();
-   virtual bool CanEdit() const;
-   virtual bool CanDelete() const { return false; }
-   virtual std::tstring GetLabel() const;
-   virtual std::vector<MFTreeViewItem*> GetChildren() const;
-   virtual bool SortChildren() const { return true; }
-   virtual bool HasChildren() const;
+    virtual void OnSelected();
+    virtual bool CanEdit() const { return false; }
+    virtual bool CanDelete() const { return false; }
+    virtual std::tstring GetLabel() const { return m_label; }
+    virtual std::vector<MFTreeViewItem*> GetChildren() const;
+    virtual bool SortChildren() const { return true; }
+    virtual bool HasChildren() const;
+
+private:
+    std::tstring m_label;
+    unsigned int m_dimensionid;
 };

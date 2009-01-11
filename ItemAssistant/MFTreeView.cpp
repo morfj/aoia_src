@@ -189,12 +189,8 @@ LRESULT MFTreeView::OnLabelEditEnd(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
 }
 
 
-void MFTreeView::SetRootItem(MFTreeViewItem* pItem)
+void MFTreeView::addRootItem(MFTreeViewItem* pItem)
 {
-   DeleteAllItems();
-
-   //m_pRoot = pItem;
-
    TVINSERTSTRUCT tvis = { 0 };
    tvis.hParent = TVI_ROOT;
    tvis.hInsertAfter = TVI_ROOT;
