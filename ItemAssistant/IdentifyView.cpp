@@ -4,6 +4,7 @@
 #include "DBManager.h"
 #include "QueryDataGridModel.h"
 #include "IdentifyListDataModel.h"
+#include "ItemListDataModel.h"
 
 
 using namespace SQLite;
@@ -81,7 +82,13 @@ LRESULT IdentifyView::onListItemChanging(LPNMHDR lParam)
                 << _T("FROM tItems I JOIN aodb.tblAO A ON I.keyhigh = A.aoid JOIN tToons T ON I.owner = T.charid ")
                 << _T("WHERE keyhigh = ") << aoid;
 
-            boost::shared_ptr<QueryDataGridModel> data(new QueryDataGridModel(sql.str()));
+            //boost::shared_ptr<QueryDataGridModel> data(new QueryDataGridModel(sql.str()));
+            
+            std::set<unsigned int> aoids;
+            aoids.insert(aoid);
+
+            ItemListDataModelPtr data(new ItemListDataModel(aoids));
+
             m_datagrid->setModel(data);
             m_datagrid->autosizeColumnsUseData();
         }

@@ -1,21 +1,22 @@
-#ifndef IDENTIFYLISTDATAMODEL_H
-#define IDENTIFYLISTDATAMODEL_H
+#ifndef ITEMLISTDATAMODEL_H
+#define ITEMLISTDATAMODEL_H
 
 #include "DataGridModel.h"
 #include <Shared/SQLite.h>
+#include <set>
 
 
 namespace aoia {
 
     /**
-     * Datamodel that loads all identifyable items with a purpose description.
+     * Datamodel that searches for all recorded items that matches a set of AOIDs.
      */
-    class IdentifyListDataModel
+    class ItemListDataModel
         : public DataGridModel
     {
     public:
-        IdentifyListDataModel();
-        virtual ~IdentifyListDataModel();
+        ItemListDataModel(std::set<unsigned int> const& aoids);
+        virtual ~ItemListDataModel();
 
         /// Return number of columns.
         virtual unsigned int getColumnCount() const;
@@ -32,11 +33,24 @@ namespace aoia {
         /// Return the AOID of the specified item.
         unsigned int getItemId(unsigned int index) const;
 
+    protected:
+        // Enumeration of publicly visible columns.
+        enum ColumnID
+        {
+            COL_ITEM_NAME = 0,
+            COL_ITEM_QL,
+            COL_TOON_NAME,
+            COL_BACKPACK_NAME,
+            COL_BACKPACK_LOCATION,
+            COL_COUNT       // This should always be last!
+        };
+
     private:
         SQLite::TablePtr m_result;
     };
 
-    typedef boost::shared_ptr<IdentifyListDataModel> IdentifyListDataModelPtr;
+    typedef boost::shared_ptr<ItemListDataModel> ItemListDataModelPtr;
+
 }
 
-#endif // IDENTIFYLISTDATAMODEL_H
+#endif // ITEMLISTDATAMODEL_H

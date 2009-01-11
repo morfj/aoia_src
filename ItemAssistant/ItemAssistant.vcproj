@@ -246,6 +246,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ItemListDataModel.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\MainFrm.cpp"
 				>
 			</File>
@@ -369,6 +373,10 @@
 			</File>
 			<File
 				RelativePath=".\ItemAssistant.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ItemListDataModel.h"
 				>
 			</File>
 			<File

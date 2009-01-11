@@ -29,8 +29,8 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,8,5,0
- PRODUCTVERSION 0,8,5,0
+ FILEVERSION 0,9,2,0
+ PRODUCTVERSION 0,9,2,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -48,12 +48,12 @@ BEGIN
             VALUE "Comments", "Homepage is located at http://ia.frellu.net"
             VALUE "CompanyName", "http://ia.frellu.net"
             VALUE "FileDescription", "Anarchy Online Item Assistant"
-            VALUE "FileVersion", "0, 8, 5, 0"
+            VALUE "FileVersion", "0, 9, 2, 0"
             VALUE "InternalName", "AOIA"
             VALUE "LegalCopyright", "Copyright (c) 2006 - 2008"
             VALUE "OriginalFilename", "ItemAssistant.exe"
             VALUE "ProductName", "Item Assistant"
-            VALUE "ProductVersion", "0, 8, 5, 0"
+            VALUE "ProductVersion", "0, 9, 2, 0"
         END
     END
     BLOCK "VarFileInfo"
@@ -472,6 +472,7 @@ STRINGTABLE
 BEGIN
     ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
     ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
+    ID_HELP_INDEX           "Go to the on-line documentation\nGo To On-Line Help"
 END
 
 STRINGTABLE 
@@ -480,10 +481,9 @@ BEGIN
     ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     ID_HELP_SUPPORTFORUM    "Go to the on-line support forum\nGo To Support Forum"
-    ID_HELP_INDEX           "Go to the on-line documentation\nGo To On-Line Help"
     ID_HELP_CHECKFORUPDATES "Check for a newer version of this application\nPerform Update Check On-Line"
 END
 
@@ -510,6 +510,10 @@ BEGIN
     ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
     ID_EDIT_UNDO            "Undo the last action\nUndo"
     ID_EDIT_REDO            "Redo the previously undone action\nRedo"
+END
+
+STRINGTABLE 
+BEGIN
     ID_INV_FIND             "Find matching items\nFind Items"
 END
 
