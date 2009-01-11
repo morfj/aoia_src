@@ -824,16 +824,20 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 				g_DBManager.unLock();
 
 			}
-			else if (opId == 0x13) //0x69  from = 0c350+ a char Id
+			else if (opId == 0x13) 
 			{
 				//when you run a nano, this one fires
 				return;
 			}
 			else if (opId == 0xB3) 
 				//0x69  from = 0c350+ a char Id = ?
-				//0xD2  =when you tradeskill? pb
 			{
 				//When you hit a perk, this one fires
+				return;
+			}
+			else if (opId == 0x69) //0x69  from = 0c350+ a char Id
+			{
+				//occationally, this one
 				return;
 			}
 			else if (opId == 0x51)
@@ -1013,64 +1017,68 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 			}
 			else if (opId == 0x03)//item used/deleted if stack=1
 			{
-				unsigned int fromContainerId = GetFromContainerId(item.charid(),
-				item.partnerFromType(), item.partnerFromContainerTempId());
+				if (item.target().High() == msg.characterId()) //else we get other ppl using stims etc.. :)
+				{
+					unsigned int fromContainerId = GetFromContainerId(item.charid(),
+					item.partnerFromType(), item.partnerFromContainerTempId());
 
-				OutputDebugString(item.print().c_str());
-				//TODO: check if it is a depleteable item!! Hopefully in flags...
+					OutputDebugString(item.print().c_str());
 
-				//OR:make a list of multi-useable items:
-				//grafts, flurry, rings etc..
-				//
+					//TODO: check if it is a depleteable item!! Hopefully in flags...
 
+					//OR:make a list of multi-useable items:
+					//grafts, flurry, rings etc..
+					//
+
+					
+
+					g_DBManager.lock();
+					g_DBManager.Begin();
 				
+					std::tstringstream sqlDeplete;
+					sqlDeplete << _T("UPDATE tItems SET stack=(stack-1)")
+						<< _T(" WHERE parent = ") << fromContainerId
+						<< _T(" AND slot = ") << item.partnerFromItemSlotId()
+						<< _T(" AND owner = ") << msg.characterId()
+						<< _T(" AND keyhigh = ") << item.itemid().High()
+						<< _T(" AND keylow = ") << item.itemid().Low()
+						<< _T(" AND keylow IN (SELECT aoid FROM tblao WHERE aoid = ") << item.itemid().Low() 
+						<< _T(" AND (flags & 4196368))");//FLAG_USE_EMPTY_DESTRUCT+FLAG_HAS_ENERGY+FLAG_TURN_ON_USE
 
-				g_DBManager.lock();
-				g_DBManager.Begin();
-			
-				std::tstringstream sqlDeplete;
-				sqlDeplete << _T("UPDATE tItems SET stack=(stack-1)")
-					<< _T(" WHERE parent = ") << fromContainerId
-					<< _T(" AND slot = ") << item.partnerFromItemSlotId()
-					<< _T(" AND owner = ") << msg.characterId()
-					<< _T(" AND keyhigh = ") << item.itemid().High()
+					g_DBManager.Exec(sqlDeplete.str());
+	#ifdef DEBUG
+					OutputDebugString(sqlDeplete.str().c_str());
+	#endif
+					////2048 == ItemFlag::FLAG_USE_EMPTY_DESTRUCT
+					//SELECT * from tblAO WHERE (flags & 2048) order by name
+					//OR FLAG_HAS_ENERGY         = 0x00400000,
+					//OR FLAG_TURN_ON_USE        = 0x00000010,
+					std::tstringstream sqlDelete;
+					/*sqlDelete << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
+					<< _T(" AND stack = 0")
+					<< _T(" AND parent = ") << fromContainerId
 					<< _T(" AND keylow = ") << item.itemid().Low()
+					<< _T(" AND keyhigh = ") << item.itemid().High()
+					<< _T(" AND slot = ") << item.partnerFromItemSlotId();*/
+
+					sqlDelete << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
+					<< _T(" AND stack = 0")
+					<< _T(" AND parent = ") << fromContainerId
+					<< _T(" AND keylow = ") << item.itemid().Low()
+					<< _T(" AND keyhigh = ") << item.itemid().High()
+					<< _T(" AND slot = ") << item.partnerFromItemSlotId()
 					<< _T(" AND keylow IN (SELECT aoid FROM tblao WHERE aoid = ") << item.itemid().Low() 
 					<< _T(" AND (flags & 4196368))");//FLAG_USE_EMPTY_DESTRUCT+FLAG_HAS_ENERGY+FLAG_TURN_ON_USE
 
-				g_DBManager.Exec(sqlDeplete.str());
-#ifdef DEBUG
-				OutputDebugString(sqlDeplete.str().c_str());
-#endif
-				////2048 == ItemFlag::FLAG_USE_EMPTY_DESTRUCT
-				//SELECT * from tblAO WHERE (flags & 2048) order by name
-				//OR FLAG_HAS_ENERGY         = 0x00400000,
-				//OR FLAG_TURN_ON_USE        = 0x00000010,
-				std::tstringstream sqlDelete;
-				/*sqlDelete << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
-				<< _T(" AND stack = 0")
-				<< _T(" AND parent = ") << fromContainerId
-				<< _T(" AND keylow = ") << item.itemid().Low()
-				<< _T(" AND keyhigh = ") << item.itemid().High()
-				<< _T(" AND slot = ") << item.partnerFromItemSlotId();*/
 
-				sqlDelete << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
-				<< _T(" AND stack = 0")
-				<< _T(" AND parent = ") << fromContainerId
-				<< _T(" AND keylow = ") << item.itemid().Low()
-				<< _T(" AND keyhigh = ") << item.itemid().High()
-				<< _T(" AND slot = ") << item.partnerFromItemSlotId()
-				<< _T(" AND keylow IN (SELECT aoid FROM tblao WHERE aoid = ") << item.itemid().Low() 
-				<< _T(" AND (flags & 4196368))");//FLAG_USE_EMPTY_DESTRUCT+FLAG_HAS_ENERGY+FLAG_TURN_ON_USE
+					g_DBManager.Exec(sqlDelete.str());
+	#ifdef DEBUG
+					OutputDebugString(sqlDelete.str().c_str());
+	#endif
 
-
-				g_DBManager.Exec(sqlDelete.str());
-#ifdef DEBUG
-				OutputDebugString(sqlDelete.str().c_str());
-#endif
-
-				g_DBManager.Commit();
-				g_DBManager.unLock();
+					g_DBManager.Commit();
+					g_DBManager.unLock();
+				}
 		
 			}
 
@@ -1342,7 +1350,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 			else
 			{
 				std::tstringstream tmp;
-				tmp << _T("TODO: UNKNOWN TO TYPE ") << std::hex << toType;
+				tmp << _T("TODO: MOVE/UNKNOWN TO TYPE ") << std::hex << toType;
 				OutputDebugString(tmp.str().c_str());
 				return;
 			}
@@ -1357,6 +1365,40 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 			}
 
 			unsigned short newSlot = moveOp.targetSlotId();
+
+			if (newParent == AO::INV_TOONINV &&  (newSlot >= 0x6f || newSlot == 0x00))
+			{
+				//TODO:
+				//Check if item is stackable, we are moving to inventory 
+				//and there is an item with the same itemkey there.
+				//If so join with the one with the lowest slotId (I think).
+
+
+					//check: What are flags on box of ammo (cant split etc)
+
+//maybe: move from inv to parent=6, keep slotId, join 
+
+				/*
+
+					std::tstringstream sqlJoinStacks;
+					sqlJoinStacks << _T("UPDATE tItems tTo, tItems tFrom")
+					<< _T(" SET (tTo.stack=( tTo.stack + tFrom.stack)), (tFrom.stack=0)")
+					<< _T(" WHERE tFrom.parent = ") << fromContainerId
+					<< _T(" AND tFrom.slot = ") << item.partnerFromItemSlotId()
+					<< _T(" AND tFrom.owner = ") << msg.characterId()
+					<< _T(" AND tFrom.keylow = tTo.keylow")
+					<< _T(" AND tTo.itemIdx IN (
+					<< _T("  SELECT TOP(1) tSameType.itemIdx from tItems tSameType WHERE tSameType.parent = 2 AND tSameType.owner =") << msg.characterId()
+					<< _T("  AND tSameType.keylow IN (SELECT aoid FROM tblao WHERE (properties & 512)) ORDER BY slot ) ");//PROP_STACKABLE
+
+					std::tstringstream sqlDeleteIfJoined;
+					sqlDeleteIfJoined << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
+					<< _T(" AND parent = ") << fromContainerId item.partnerFromItemSlotId()
+					<< _T(" AND slot = ") <<  item.partnerFromItemSlotId();
+					<< _T(" And stack < 1");
+					*/
+				
+			}
 
 			g_DBManager.lock();
             g_DBManager.Begin();
@@ -1421,52 +1463,57 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
         {
             Native::AOBackpack bp((AO::Backpack*)msg.start());
 
-#ifdef DEBUG
-            OutputDebugString(bp.print().c_str());
-#endif
 
-            if (bp.operationId() == 0x65 && (bp.owner().High() == msg.characterId())) //I bought a backpack
+
+            if (bp.owner().High() == msg.characterId())
             {
-                unsigned int containerId = bp.target().High();
-
-                unsigned int newParent = AO::INV_TOONINV;
-
-                //find a free spot:
-                unsigned int slotId = bp.invSlot();
-                if (slotId >= 0x6f)
-                    slotId = g_DBManager.findNextAvailableContainerSlot(msg.characterId(), newParent);
-
-                g_DBManager.lock();
-                g_DBManager.Begin();
-                {
-                    // Remove old ref to backpack:
-                    std::tstringstream sql;
-                    sql << _T("DELETE FROM tItems WHERE children = ") << containerId;
-                    g_DBManager.Exec(sql.str());
-                }
-
-                // Add backpack:
-                g_DBManager.insertItem(
-                    bp.keyLow(),
-                    bp.keyHigh(),
-                    bp.ql(),
-                    bp.flags(),
-                    1,//stack
-                    newParent,
-                    slotId ,//bp.invSlot(),
-                    containerId,
-                    msg.characterId());
-
 #ifdef DEBUG
-				{
-                    // Log
-                    std::tstringstream sql;
-					sql << _T("BP:") << bp.keyLow() << _T("FL:\t") << bp.flags();
-                    OutputDebugString(sql.str().c_str());
-                }
+				OutputDebugString(bp.print().c_str());
 #endif
-                g_DBManager.Commit();
-                g_DBManager.unLock();
+
+				if (bp.operationId() == 0x65) //I bought a backpack (I think)
+				{
+					unsigned int containerId = bp.target().High();
+
+					unsigned int newParent = AO::INV_TOONINV;
+
+					//find a free spot:
+					unsigned int slotId = bp.invSlot();
+					if (slotId >= 0x6f)
+						slotId = g_DBManager.findNextAvailableContainerSlot(msg.characterId(), newParent);
+
+					g_DBManager.lock();
+					g_DBManager.Begin();
+					{
+						// Remove old ref to backpack:
+						std::tstringstream sql;
+						sql << _T("DELETE FROM tItems WHERE children = ") << containerId;
+						g_DBManager.Exec(sql.str());
+					}
+
+					// Add backpack:
+					g_DBManager.insertItem(
+						bp.keyLow(),
+						bp.keyHigh(),
+						bp.ql(),
+						bp.flags(),
+						1,//stack
+						newParent,
+						slotId ,//bp.invSlot(),
+						containerId,
+						msg.characterId());
+
+	#ifdef DEBUG
+					{
+						// Log
+						std::tstringstream sql;
+						sql << _T("BP:") << bp.keyLow() << _T("FL:\t") << bp.flags();
+						OutputDebugString(sql.str().c_str());
+					}
+	#endif
+					g_DBManager.Commit();
+					g_DBManager.unLock();
+				}
             }	
         }
         break;

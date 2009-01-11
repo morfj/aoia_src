@@ -36,7 +36,7 @@ namespace Native {
        // unsigned int serverid() const { return _byteswap_ulong(m_pHeader->serverid); }
         unsigned int charid()   const { return _byteswap_ulong(m_pHeader->charId.high); }
      //   unsigned short size()   const { return _byteswap_ushort(m_pHeader->msgsize); }
-      //  ObjectId target()       const { return ObjectId(m_pHeader->charId); }
+        ObjectId target()       const { return ObjectId(m_pHeader->charId); }
 
         std::tstring print() const {
             std::tstringstream out;
@@ -44,7 +44,7 @@ namespace Native {
                 << "MsgId\t" << msgid() << "\r\n"
                 //<< "ServerId\t" << serverid() << "\r\n"
                 //<< "CharId\t" << charid() << "\r\n"
-                //<< "Size\t" << size() << "\r\n"
+                << "target\t" << target().print() << "\r\n"
                 << "CharId\t" << charid() << "\r\n";
             return out.str();
         }
@@ -253,6 +253,7 @@ namespace Native {
 		std::tstring print() const {
             std::tstringstream out;
             out << "AOPartnerTradeItem:" << "\r\n"
+				<< "target\t" << target().print() << "\r\n"
 				<< "operationId\t0x" << std::hex << operationId() << "\r\n"
 				<< "itemid\t" << itemid().print().c_str() << "\r\n"
 				<< "ql\t" << ql() << " stack\t" << stack() <<"\r\n"
