@@ -706,7 +706,7 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 
 			unsigned int opId = itemOp.operationId();
 
-			std::tstringstream sql;
+			
 
 			//TODO: switch statement
 			if (opId == 0x34)
@@ -739,14 +739,17 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 			//	OutputDebugString(sqlInsert.str().c_str());
 				g_DBManager.Exec(sqlInsert.str());
 
-				sql << _T("UPDATE tItems SET stack = stack - ") << itemOp.itemId().High()
-				<< _T(" WHERE owner = ") << msg.characterId() 
-				<< _T(" AND parent = ") << fromContainerId
-				<< _T(" AND slot = ") << itemOp.fromItemSlotId();
+				{
+					std::tstringstream sql;
+					sql << _T("UPDATE tItems SET stack = stack - ") << itemOp.itemId().High()
+					<< _T(" WHERE owner = ") << msg.characterId() 
+					<< _T(" AND parent = ") << fromContainerId
+					<< _T(" AND slot = ") << itemOp.fromItemSlotId();
 
-			//	OutputDebugString(sql.str().c_str());
+				//	OutputDebugString(sql.str().c_str());
 
-				g_DBManager.Exec(sql.str());
+					g_DBManager.Exec(sql.str());
+				}
 				g_DBManager.Commit();
 				g_DBManager.unLock();
 
@@ -789,12 +792,15 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 				OutputDebugString(sqlUpd.str().c_str());
 				g_DBManager.Exec(sqlUpd.str());
 
-				sql << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
-				<< _T(" AND parent = ") << removedItemContainerId
-				<< _T(" AND slot = ") << removedItemSlotId;//itemId().High();
+				{
+					std::tstringstream sql;
+					sql << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
+					<< _T(" AND parent = ") << removedItemContainerId
+					<< _T(" AND slot = ") << removedItemSlotId;//itemId().High();
 
-				OutputDebugString(sql.str().c_str());
-				g_DBManager.Exec(sql.str());
+					OutputDebugString(sql.str().c_str());
+					g_DBManager.Exec(sql.str());
+				}
 				g_DBManager.Commit();
 				g_DBManager.unLock();
 			}
@@ -811,14 +817,18 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 			 		return; //we dont have the value cached, either a bug or ia was started after the bp was opened. Or unknown from type
 				}
 
-				//user deleted an item!
-				sql << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
-				<< _T(" AND parent = ") << fromContainerId
-				<< _T(" AND keylow = ") << itemOp.itemId().Low()
-				<< _T(" AND keyhigh = ") << itemOp.itemId().High()
-				<< _T(" AND slot = ") << itemOp.fromItemSlotId();
 
-				g_DBManager.Exec(sql.str());
+				//user deleted an item!
+				{
+					std::tstringstream sql;
+					sql << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
+					<< _T(" AND parent = ") << fromContainerId
+					<< _T(" AND keylow = ") << itemOp.itemId().Low()
+					<< _T(" AND keyhigh = ") << itemOp.itemId().High()
+					<< _T(" AND slot = ") << itemOp.fromItemSlotId();
+
+					g_DBManager.Exec(sql.str());
+				}
 				OutputDebugString(itemOp.print().c_str());
 				g_DBManager.Commit();
 				g_DBManager.unLock();
@@ -842,12 +852,67 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 			}
 			else if (opId == 0x51)
 			{
-				//tradeskill. keylow = target from container type (0x68), keyhigh=from slot id.
+				//tradeskill. Source = fromType/fromItemSlotId
+				//target: itemId.low = target from container type (0x68), itemId.high=from slot id.
 
 				//No msg tells us if any of the items should be deleted!
 				//WE need to know if target/source is consumed! is there a tradeskill db in the client?
 
-				return;
+// bio-com plus moster parts:
+//[11556] AOItemOperation: 
+//[11556] operationId  0x51 
+//[11556] unknown3  0x0 
+//[11556] fromType  0x68 
+//[11556] fromContainerTempId 0 
+//[11556] fromItemSlotId 5d 
+//[11556] itemId [x68|77 (x4d)]  //77=monster parts
+//[11556] AOPartnerTradeItem: 
+//[11556] target [50000|1738982964] 
+//[11556] operationId 0x57 
+//[11556] itemid [154359|154359] 
+//[11556] ql c8 stack 1 
+
+				//currently, we delete both items unless they are on the whitelist.
+
+				//keylow=154331 bio-communitor (high=154332)
+				//keylow=161699 nano prog. interface
+				//247100 Kyr'Ozch Structural Analyzer
+
+				OutputDebugString(itemOp.print().c_str());
+
+
+				g_DBManager.lock();
+				g_DBManager.Begin();
+
+				{
+					//remove tradeskilled source:
+					std::tstringstream sql;
+					sql << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
+					<< _T(" AND parent = 2")
+					<< _T(" AND slot = ") << itemOp.fromItemSlotId()
+					<< _T(" AND keylow != 154331")
+					<< _T(" AND keylow != 161699")
+					<< _T(" AND keylow != 247100");
+
+					g_DBManager.Exec(sql.str());
+					OutputDebugString(sql.str().c_str());
+				}
+
+				{
+					//remove tradeskilled target:
+					std::tstringstream sql;
+					sql << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
+					<< _T(" AND parent = 2")
+					<< _T(" AND slot = ") << itemOp.itemId().High()
+					<< _T(" AND keylow != 154331 AND keylow != 161699 AND keylow != 247100");
+
+					g_DBManager.Exec(sql.str());
+					OutputDebugString(sql.str().c_str());
+				}
+
+				g_DBManager.Commit();
+				g_DBManager.unLock();
+			
 			}
 			else if (opId == 0xd2||opId == 0x78) 
 			{
@@ -857,6 +922,7 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 			else
 
 			{
+				std::tstringstream sql;
 				sql << _T("Unknown operation Id:") <<std::hex << opId;
 				OutputDebugString(sql.str().c_str());
 				OutputDebugString(itemOp.print().c_str());
