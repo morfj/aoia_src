@@ -174,9 +174,15 @@ typedef struct {
 /// Hook function that is called before a message is sent from the AO client to the server.
 void OnConnectionSend(void * connection, unsigned char * _msgData, unsigned int len)
 {
-#ifdef DEBUG
-    ClientHeader * msg = (ClientHeader*)_msgData;
+	ClientHeader * msg = (ClientHeader*)_msgData;
     unsigned int msgId = _byteswap_ulong(msg->msgid);
+
+	if (msgId == 0x54111123 || msgId == 0x02)//move and keepalive
+	{
+		return;
+	}
+
+#ifdef DEBUG
 
     std::ostringstream s;
     s << "OnConnectionSend( len: " << len << ", msgId: 0x" << std::hex << msgId << std::endl;
