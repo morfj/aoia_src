@@ -368,6 +368,9 @@ bool DBManager::getDimensions(std::map<unsigned int, std::tstring> &dimensions) 
 
 unsigned int DBManager::findNextAvailableContainerSlot(unsigned int charId, unsigned int containerId)
 {
+	assert(charId != 0);
+	assert(containerId != 0);
+
 	unsigned short posSlot = 0;
 
 	if (containerId == 2)
@@ -400,6 +403,73 @@ unsigned int DBManager::findNextAvailableContainerSlot(unsigned int charId, unsi
 
 	return posSlot; //we return the next available slot
 }
+
+//returns the properties value in the AO db for an item in a particular slot in a container.
+unsigned int DBManager::getItemProperties(unsigned int charId, unsigned int containerId, unsigned int slot)
+{
+	assert(charId != 0);
+	assert(containerId != 0);
+	assert(slot >= 0);
+
+    unsigned int result = 0;
+
+	std::tstringstream sql;
+    sql << _T("SELECT properties FROM tItems JOIN tblAO ON keylow = aoid WHERE owner = ") << charId
+	    << _T(" AND parent = ") << containerId << _T(" AND slot = ") << slot;
+
+	OutputDebugString(sql.str().c_str());
+
+    SQLite::TablePtr pT = ExecTable(sql.str());
+
+    try
+    {
+	    if (pT != NULL && pT->Rows()) {
+	        result = boost::lexical_cast<unsigned int>(pT->Data()[0]);
+	    }
+    }
+    catch (boost::bad_lexical_cast &/*e*/)
+    {
+    }
+
+    return result;
+}
+	
+//searches for items in containerIdToSearchIn with the same keylow and ql as the item specified
+unsigned int DBManager::findFirstItemOfSameType(unsigned int charId, unsigned int containerId, unsigned int slot, unsigned int containerIdToSearchIn)
+{
+	assert(charId != 0);
+	assert(containerId != 0);
+	assert(slot >= 0);
+	assert(containerIdToSearchIn != 0);
+
+    unsigned int result = 0;
+
+	std::tstringstream sql;
+    sql << _T("SELECT tTarget.slot FROM tItems tTarget, tItems tSource WHERE tSource.owner = ") << charId
+	    << _T(" AND tSource.parent = ") << containerId 
+		<< _T(" AND tSource.slot = ") << slot
+		<< _T(" AND tTarget.keylow = tSource.keylow AND tTarget.ql = tSource.ql")
+		<< _T(" AND tTarget.owner = ") << charId
+		<< _T(" AND tTarget.parent = ") << containerIdToSearchIn
+		<< _T(" ORDER BY tTarget.slot LIMIT 1");
+
+	OutputDebugString(sql.str().c_str());
+
+    SQLite::TablePtr pT = ExecTable(sql.str());
+
+    try
+    {
+	    if (pT != NULL && pT->Rows()) {
+	        result = boost::lexical_cast<unsigned int>(pT->Data()[0]);
+	    }
+    }
+    catch (boost::bad_lexical_cast &/*e*/)
+    {
+    }
+
+    return result;
+}
+
 
 
 unsigned int DBManager::getShopOwner(unsigned int shopid)

@@ -64,6 +64,13 @@ public:
     /// Determines the first available container slot ID for a specified character and container.
     unsigned int findNextAvailableContainerSlot(unsigned int charId, unsigned int containerId);
 
+	//returns the properties value in the AO db for an item in a particular slot in a container.
+	unsigned int getItemProperties(unsigned int charId, unsigned int containerId, unsigned int slot);
+	
+	//searches for items in containerIdToSearchIn with the same keylow and ql as the item specified
+	unsigned int findFirstItemOfSameType(unsigned int charId, unsigned int containerId, unsigned int slot, unsigned int containerIdToSearchIn);
+	
+
     /// Lock database for access.
     void lock() { m_mutex.MutexOn(); }
 

@@ -1461,6 +1461,61 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 				//If so join with the one with the lowest slotId (I think).
 
 
+
+				if (g_DBManager.getItemProperties(moveOp.charid(), fromContainerId, moveOp.fromItemSlotId()) & PROP_STACKABLE)
+				{
+					OutputDebugString(_T("Its stackable"));
+					unsigned int newSlotId = g_DBManager.findFirstItemOfSameType(moveOp.charid(), fromContainerId, moveOp.fromItemSlotId(), newParent);
+				
+					//std::tstringstream tmp;
+					//tmp << _T("NewSlot: ") << newSlotId;
+					//OutputDebugString(tmp.str().c_str());
+
+					if (newSlotId > 0)
+					{
+						OutputDebugString(_T("Stack join from move operation"));
+
+						g_DBManager.lock();
+						g_DBManager.Begin();
+						//join them and delete the old one.
+						{
+							std::tstringstream sqlUpd;
+							sqlUpd << _T("UPDATE tItems SET stack = ")
+							 << _T(" (stack + (SELECT tItems2.stack FROM tItems tItems2 WHERE")
+							 << _T(" tItems2.owner = ") << msg.characterId() 
+							 << _T(" AND tItems2.parent = ") << fromContainerId
+							 << _T(" AND tItems2.slot = ") << moveOp.fromItemSlotId() << _T("))") 
+							<< _T(" WHERE owner = ") << msg.characterId() 
+							<< _T(" AND parent = ") << newParent
+							<< _T(" AND slot = ") << newSlotId;
+
+							OutputDebugString(sqlUpd.str().c_str());
+							g_DBManager.Exec(sqlUpd.str());
+						}
+
+						{
+							std::tstringstream sql;
+							sql << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
+							<< _T(" AND parent = ") << fromContainerId
+							<< _T(" AND slot = ") << moveOp.fromItemSlotId();//itemId().High();
+
+							OutputDebugString(sql.str().c_str());
+							g_DBManager.Exec(sql.str());
+						}
+
+						g_DBManager.Commit();
+						g_DBManager.unLock();
+						return;
+					}
+				}
+
+					/*sql << _T("UPDATE tItems SET parent = ") << newParent
+				<< _T(", slot = ") << newSlot
+			    << _T(" WHERE parent = ") << fromContainerId
+				<< _T(" AND slot = ") << moveOp.fromItemSlotId()
+				<< _T(" AND owner = ") << moveOp.charid();*/
+
+
 					//check: What are flags on box of ammo (cant split etc)
 
 //maybe: move from inv to parent=6, keep slotId, join 
