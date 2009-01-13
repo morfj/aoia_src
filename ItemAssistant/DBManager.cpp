@@ -417,7 +417,7 @@ unsigned int DBManager::getItemProperties(unsigned int charId, unsigned int cont
     sql << _T("SELECT properties FROM tItems JOIN tblAO ON keylow = aoid WHERE owner = ") << charId
 	    << _T(" AND parent = ") << containerId << _T(" AND slot = ") << slot;
 
-	OutputDebugString(sql.str().c_str());
+	//OutputDebugString(sql.str().c_str());
 
     SQLite::TablePtr pT = ExecTable(sql.str());
 
@@ -453,7 +453,7 @@ unsigned int DBManager::findFirstItemOfSameType(unsigned int charId, unsigned in
 		<< _T(" AND tTarget.parent = ") << containerIdToSearchIn
 		<< _T(" ORDER BY tTarget.slot LIMIT 1");
 
-	OutputDebugString(sql.str().c_str());
+	//OutputDebugString(sql.str().c_str());
 
     SQLite::TablePtr pT = ExecTable(sql.str());
 

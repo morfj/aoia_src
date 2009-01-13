@@ -1415,8 +1415,9 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 		{
 	//	The ItemMoved is identical to the client send version except the header is server type.
 			Native::AOItemMoved moveOp((AO::ItemMoved*)msg.start());
-			
+#ifdef DEBUG
 			OutputDebugString(moveOp.print().c_str());
+#endif
 
 			unsigned int fromContainerId = GetFromContainerId(moveOp.charid(), moveOp.fromType(), moveOp.fromContainerTempId());
 
@@ -1436,9 +1437,11 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 				newParent = AO::INV_OVERFLOW;
 			else
 			{
+#ifdef DEBUG
 				std::tstringstream tmp;
 				tmp << _T("TODO: MOVE/UNKNOWN TO TYPE ") << std::hex << toType;
 				OutputDebugString(tmp.str().c_str());
+#endif
 				return;
 			}
 
@@ -1455,25 +1458,20 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
 			if (newParent == AO::INV_TOONINV &&  (newSlot >= 0x6f || newSlot == 0x00))
 			{
-				//TODO:
 				//Check if item is stackable, we are moving to inventory 
 				//and there is an item with the same itemkey there.
 				//If so join with the one with the lowest slotId (I think).
 
-
-
 				if (g_DBManager.getItemProperties(moveOp.charid(), fromContainerId, moveOp.fromItemSlotId()) & PROP_STACKABLE)
 				{
-					OutputDebugString(_T("Its stackable"));
+				//	OutputDebugString(_T("Its stackable"));
 					unsigned int newSlotId = g_DBManager.findFirstItemOfSameType(moveOp.charid(), fromContainerId, moveOp.fromItemSlotId(), newParent);
-				
-					//std::tstringstream tmp;
-					//tmp << _T("NewSlot: ") << newSlotId;
-					//OutputDebugString(tmp.str().c_str());
 
 					if (newSlotId > 0)
 					{
+#ifdef DEBUG
 						OutputDebugString(_T("Stack join from move operation"));
+#endif
 
 						g_DBManager.lock();
 						g_DBManager.Begin();
@@ -1489,7 +1487,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 							<< _T(" AND parent = ") << newParent
 							<< _T(" AND slot = ") << newSlotId;
 
-							OutputDebugString(sqlUpd.str().c_str());
+							//OutputDebugString(sqlUpd.str().c_str());
 							g_DBManager.Exec(sqlUpd.str());
 						}
 
@@ -1499,7 +1497,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 							<< _T(" AND parent = ") << fromContainerId
 							<< _T(" AND slot = ") << moveOp.fromItemSlotId();//itemId().High();
 
-							OutputDebugString(sql.str().c_str());
+						//	OutputDebugString(sql.str().c_str());
 							g_DBManager.Exec(sql.str());
 						}
 
@@ -1507,57 +1505,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 						g_DBManager.unLock();
 						return;
 					}
-				}
-
-					/*sql << _T("UPDATE tItems SET parent = ") << newParent
-				<< _T(", slot = ") << newSlot
-			    << _T(" WHERE parent = ") << fromContainerId
-				<< _T(" AND slot = ") << moveOp.fromItemSlotId()
-				<< _T(" AND owner = ") << moveOp.charid();*/
-
-
-					//check: What are flags on box of ammo (cant split etc)
-
-//maybe: move from inv to parent=6, keep slotId, join 
-
-				//TODO: Check which item is kept
-				
-/*
-				{
-					std::tstringstream sqlJoinStacks;
-					sqlJoinStacks << _T("UPDATE tItems tTo, tItems tFrom")
-					<< _T(" SET (tTo.stack=( tTo.stack + tFrom.stack)), (tFrom.stack=0)")
-					<< _T(" WHERE tFrom.parent = ") << fromContainerId
-					<< _T(" AND tFrom.slot = ") << moveOp.fromItemSlotId()
-					<< _T(" AND tFrom.owner = ") << msg.characterId()
-					<< _T(" AND tFrom.keylow = tTo.keylow")
-					<< _T(" AND tTo.itemIdx IN (")
-					<< _T("  SELECT tSameType.itemIdx from tItems tSameType WHERE tSameType.parent = 2 AND tSameType.owner =") << msg.characterId()
-					<< _T("  AND tSameType.keylow=tTo.keylow AND tSameType.keylow IN (SELECT aoid FROM tblao WHERE (properties & 512)) ORDER BY slot LIMIT 1) ");//PROP_STACKABLE
-					
-					g_DBManager.lock();
-					g_DBManager.Begin();
-
-					OutputDebugString(sqlJoinStacks.str().c_str());
-
-					std::tstringstream sqlErr;
-					sqlErr << _T("Exec = ") << g_DBManager.Exec(sqlJoinStacks.str());
-					OutputDebugString(sqlErr.str().c_str());
-					
-					g_DBManager.Commit();
-					g_DBManager.unLock();
-					return;
-				}
-				{
-					std::tstringstream sqlDeleteIfJoined;
-					sqlDeleteIfJoined << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
-					<< _T(" AND parent = ") << fromContainerId
-					<< _T(" AND slot = ") <<  moveOp.fromItemSlotId()
-					<< _T(" And stack < 1");
-					OutputDebugString(sqlDeleteIfJoined.str().c_str());
-				}
-					*/
-				
+				}	
 			}
 
 			g_DBManager.lock();
@@ -1567,13 +1515,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 				newSlot = g_DBManager.findNextAvailableContainerSlot(moveOp.charid(), newParent);
 			
             std::tstringstream sql;
-			//with slot in DB:
- //           sql << _T("UPDATE OR IGNORE tItems, tItems tContFrom SET tItems.parent = ") << newParent
-				//<< _T(" AND tItems.slot = ") << newSlot
-				//<< _T(" WHERE tItems.parent = tContFrom.children And tContFrom.parent = 2 And tContFrom.slot = ") << fromSlotId
-				//<< _T(" AND tContFrom.owner = ") << moveOp.charid() << _T(" AND tItems.owner = ") << moveOp.charid()
-				//<< _T(" AND tItems.slot = ") << moveOp.fromItemSlotId();
-
+	
 			sql << _T("UPDATE tItems SET parent = ") << newParent
 				<< _T(", slot = ") << newSlot
 			    << _T(" WHERE parent = ") << fromContainerId
