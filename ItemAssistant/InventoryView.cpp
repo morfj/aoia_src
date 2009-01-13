@@ -857,6 +857,7 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 
 				//No msg tells us if any of the items should be deleted!
 				//WE need to know if target/source is consumed! is there a tradeskill db in the client?
+				//The downside is we also delete failed tradeskills...
 
 // bio-com plus moster parts:
 //[11556] AOItemOperation: 
@@ -914,9 +915,14 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 				g_DBManager.unLock();
 			
 			}
-			else if (opId == 0xd2||opId == 0x78) 
+			else if (opId == 0xd2||opId == 0x78)  //0xdd = add/remove from Tradeskill window
 			{
 				//All zeroes, when you log off
+				return;
+			}
+			else if (opId == 0x57)
+			{
+				//All zeroes, when you stand up
 				return;
 			}
 			else
@@ -1169,8 +1175,10 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 	case AO::MSG_SHOP_TRANSACTION: //0x36284f6e 
 		{
 			Native::AOTradeTransaction item((AO::TradeTransaction*)msg.start());
-			//OutputDebugString(item.print().c_str());
 
+#ifdef DEBUG
+			OutputDebugString(item.print().c_str());
+#endif
 
 			unsigned int shopContainer = AO::INV_TRADEPARTNER;
 			unsigned int otherTradeContainer = AO::INV_TRADEPARTNER;//trade partner
@@ -1203,25 +1211,38 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 				break;
 				case 0x02:
 				{
-					//02=decline //move stuff back
+					//02=decline or cancel//move my stuff back
 					g_DBManager.lock();
 		            g_DBManager.Begin();
 
 					unsigned int shopCapacity = 35;
+					unsigned int newParent = AO::INV_TOONINV;
 
 					for (unsigned int i=0;i<=shopCapacity;i++) //or is it the other direction?
 					{
-						unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), 2);
-						
+						unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), newParent);
+
+						if (nextFreeInvSlot >= 94)
+						{
+							//if full, move to overflow. 
+							//This seems to crash with a MSG_CONTAINER on overflow before this,
+							//even if overflow already open.
+							//if we dont break here, we get duplicate items in IA.
+							break;
+							// We cant do this since it will dupe items in overflow:
+							//newParent = AO::INV_OVERFLOW;
+							//nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), AO::INV_OVERFLOW);
+						}
+
 						std::tstringstream sqlMoveBack;
 						//move stuff back
-						sqlMoveBack << _T("UPDATE tItems SET parent = 2")
+						sqlMoveBack << _T("UPDATE tItems SET parent = ") << newParent
 						<< _T(", slot = ") << nextFreeInvSlot
 						<< _T(" WHERE parent = ") << shopContainer
 						<< _T(" AND slot = ") << i
 						<< _T(" AND owner = ") << item.charid();
 						g_DBManager.Exec(sqlMoveBack.str());
-						//OutputDebugString(sqlMoveBack.str().c_str());
+						OutputDebugString(sqlMoveBack.str().c_str());
 					}
 
 					//delete trade partner added items:
@@ -1547,8 +1568,6 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
         {
             Native::AOBackpack bp((AO::Backpack*)msg.start());
 
-
-
             if (bp.owner().High() == msg.characterId())
             {
 #ifdef DEBUG
@@ -1648,7 +1667,11 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 #endif
             }
 
-            ServicesSingleton::Instance()->UpdateTempContainerId(bp.charid(), bp.tempContainerId(), containerId);
+			//don't store INV_OVERFLOW as contId 110, this id can be used by a backpack!
+			if (containerId != AO::INV_OVERFLOW)
+			{
+				ServicesSingleton::Instance()->UpdateTempContainerId(bp.charid(), bp.tempContainerId(), containerId);
+			}
 
             g_DBManager.Commit();
             g_DBManager.unLock();
@@ -1726,6 +1749,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
     case AO::MSG_SHOP_INFO:
         {
             AOPlayerShopInfo shop(msg.start(), msg.size());
+
             if (shop.shopId() != 0 && shop.ownerId() != 0)
             {
                 g_DBManager.setToonShopId(shop.ownerId(), shop.shopId());
@@ -1775,6 +1799,17 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
             }
         }
         break;
+		/*case AO::MSG_OPENBACKPACK:// 0x52526858://1196653092:
+		{
+
+			return;//handled on server msg. 
+			//Since the server msg is only sent once, we might want to update tempId here, but it shouldnt be needeed.
+			Native::AOOpenBackpackOperation moveOp((AO::OpenBackpackOperation*)msg.start());
+
+			OutputDebugString(moveOp.print().c_str());
+			
+		}
+		break;*/
 
     default:
         break;
