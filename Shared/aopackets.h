@@ -293,6 +293,7 @@ namespace AO {
 		INV_TRADE		= 4,
 		INV_TRADEPARTNER= 5,
 		INV_OVERFLOW	= 6,
+		INV_HOTSWAPTEMP	= 7,//used by IA when hotswapping as temp storage.
 	};
 
     enum MsgIds

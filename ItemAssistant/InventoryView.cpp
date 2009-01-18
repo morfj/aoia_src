@@ -920,7 +920,7 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 				//All zeroes, when you log off
 				return;
 			}
-			else if (opId == 0x57)
+			else if (opId == 0x57 || opId == 0xa3 )//xa3=sneak
 			{
 				//All zeroes, when you stand up
 				return;
@@ -1089,6 +1089,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 			}
 			else if (opId == 0x03)//item used/deleted if stack=1
 			{
+				//TODO: What if ppl delete an item from a loot container we have openened??
 				if (item.target().High() == msg.characterId()) //else we get other ppl using stims etc.. :)
 				{
 					unsigned int fromContainerId = GetFromContainerId(item.charid(),
@@ -1413,6 +1414,9 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
 	case AO::MSG_ITEM_MOVE: //0x47537A24:// what about 0x52526858:
 		{
+
+			//TODO: Hotswap support!
+
 	//	The ItemMoved is identical to the client send version except the header is server type.
 			Native::AOItemMoved moveOp((AO::ItemMoved*)msg.start());
 #ifdef DEBUG
@@ -1456,56 +1460,106 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
 			unsigned short newSlot = moveOp.targetSlotId();
 
-			if (newParent == AO::INV_TOONINV &&  (newSlot >= 0x6f || newSlot == 0x00))
+			if (newParent == AO::INV_TOONINV)
 			{
-				//Check if item is stackable, we are moving to inventory 
-				//and there is an item with the same itemkey there.
-				//If so join with the one with the lowest slotId (I think).
-
-				if (g_DBManager.getItemProperties(moveOp.charid(), fromContainerId, moveOp.fromItemSlotId()) & PROP_STACKABLE)
+				if (newSlot < 64)//64=first inv slot!
 				{
-				//	OutputDebugString(_T("Its stackable"));
-					unsigned int newSlotId = g_DBManager.findFirstItemOfSameType(moveOp.charid(), fromContainerId, moveOp.fromItemSlotId(), newParent);
+					//we are moving to an equip panel!
 
-					if (newSlotId > 0)
+					//if anything there, we must hotswap!
+					//we move anything that was there to a temp hotswap inv, move the new item, then move the other back.
+
+					g_DBManager.lock();
+					g_DBManager.Begin();
 					{
-#ifdef DEBUG
-						OutputDebugString(_T("Stack join from move operation"));
-#endif
+						std::tstringstream sqlMoveToTemp;
+						sqlMoveToTemp << _T("UPDATE tItems SET parent = ") << AO::INV_HOTSWAPTEMP
+						<< _T(", slot = ") << moveOp.fromItemSlotId()
+						<< _T(" WHERE parent = ") << newParent
+						<< _T(" AND slot = ") << newSlot
+						<< _T(" AND owner = ") << moveOp.charid();
 
-						g_DBManager.lock();
-						g_DBManager.Begin();
-						//join them and delete the old one.
-						{
-							std::tstringstream sqlUpd;
-							sqlUpd << _T("UPDATE tItems SET stack = ")
-							 << _T(" (stack + (SELECT tItems2.stack FROM tItems tItems2 WHERE")
-							 << _T(" tItems2.owner = ") << msg.characterId() 
-							 << _T(" AND tItems2.parent = ") << fromContainerId
-							 << _T(" AND tItems2.slot = ") << moveOp.fromItemSlotId() << _T("))") 
-							<< _T(" WHERE owner = ") << msg.characterId() 
-							<< _T(" AND parent = ") << newParent
-							<< _T(" AND slot = ") << newSlotId;
-
-							//OutputDebugString(sqlUpd.str().c_str());
-							g_DBManager.Exec(sqlUpd.str());
-						}
-
-						{
-							std::tstringstream sql;
-							sql << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
-							<< _T(" AND parent = ") << fromContainerId
-							<< _T(" AND slot = ") << moveOp.fromItemSlotId();//itemId().High();
-
-						//	OutputDebugString(sql.str().c_str());
-							g_DBManager.Exec(sql.str());
-						}
-
-						g_DBManager.Commit();
-						g_DBManager.unLock();
-						return;
+						OutputDebugString(sqlMoveToTemp.str().c_str());
+						g_DBManager.Exec(sqlMoveToTemp.str());
 					}
-				}	
+					{
+						std::tstringstream sqlMoveNewItem;
+						sqlMoveNewItem << _T("UPDATE tItems SET parent = ") << newParent
+						<< _T(", slot = ") << newSlot
+						<< _T(" WHERE parent = ") << fromContainerId
+						<< _T(" AND slot = ") << moveOp.fromItemSlotId()
+						<< _T(" AND owner = ") << moveOp.charid();
+
+						OutputDebugString(sqlMoveNewItem.str().c_str());
+						g_DBManager.Exec(sqlMoveNewItem.str());
+					}
+					{
+						std::tstringstream sqlMoveFromTemp;
+						sqlMoveFromTemp << _T("UPDATE tItems SET parent = ") << fromContainerId
+						<< _T(" WHERE parent = ") << AO::INV_HOTSWAPTEMP
+						<< _T(" AND slot = ") << moveOp.fromItemSlotId()
+						<< _T(" AND owner = ") << moveOp.charid();
+
+						OutputDebugString(sqlMoveFromTemp.str().c_str());
+						g_DBManager.Exec(sqlMoveFromTemp.str());
+					}
+
+					g_DBManager.Commit();
+					g_DBManager.unLock();
+					return;
+
+				}
+				else if (newSlot >= 0x6f)
+				{
+					//Check if item is stackable, we are moving to inventory 
+					//and there is an item with the same itemkey there.
+					//If so join with the one with the lowest slotId (I think).
+
+					if (g_DBManager.getItemProperties(moveOp.charid(), fromContainerId, moveOp.fromItemSlotId()) & PROP_STACKABLE)
+					{
+					//	OutputDebugString(_T("Its stackable"));
+						unsigned int newSlotId = g_DBManager.findFirstItemOfSameType(moveOp.charid(), fromContainerId, moveOp.fromItemSlotId(), newParent);
+
+						if (newSlotId > 0)
+						{
+	#ifdef DEBUG
+							OutputDebugString(_T("Stack join from move operation"));
+	#endif
+
+							g_DBManager.lock();
+							g_DBManager.Begin();
+							//join them and delete the old one.
+							{
+								std::tstringstream sqlUpd;
+								sqlUpd << _T("UPDATE tItems SET stack = ")
+								 << _T(" (stack + (SELECT tItems2.stack FROM tItems tItems2 WHERE")
+								 << _T(" tItems2.owner = ") << msg.characterId() 
+								 << _T(" AND tItems2.parent = ") << fromContainerId
+								 << _T(" AND tItems2.slot = ") << moveOp.fromItemSlotId() << _T("))") 
+								<< _T(" WHERE owner = ") << msg.characterId() 
+								<< _T(" AND parent = ") << newParent
+								<< _T(" AND slot = ") << newSlotId;
+
+								//OutputDebugString(sqlUpd.str().c_str());
+								g_DBManager.Exec(sqlUpd.str());
+							}
+
+							{
+								std::tstringstream sql;
+								sql << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
+								<< _T(" AND parent = ") << fromContainerId
+								<< _T(" AND slot = ") << moveOp.fromItemSlotId();//itemId().High();
+
+							//	OutputDebugString(sql.str().c_str());
+								g_DBManager.Exec(sql.str());
+							}
+
+							g_DBManager.Commit();
+							g_DBManager.unLock();
+							return;
+						}
+					}	
+				}
 			}
 
 			g_DBManager.lock();
