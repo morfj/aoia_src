@@ -219,7 +219,7 @@ namespace Native {
 
 		std::tstring print() const {
             std::tstringstream out;
-            out << "AOMoveOperation:" << "\r\n"
+            out << "AOMoveOperation: " << charid() << "\r\n"
                 << "fromType\t0x" << std::hex << fromType() << "\r\n"
                 << "fromContainerTempId\t" << fromContainerTempId() << "\r\n"
                 << "fromItemSlotId\t" << fromItemSlotId() << "\r\n"
@@ -252,11 +252,11 @@ namespace Native {
 
 		std::tstring print() const {
             std::tstringstream out;
-            out << "AOPartnerTradeItem:" << "\r\n"
+            out << "AOPartnerTradeItem: "  << charid() << "\r\n"
 				<< "target\t" << target().print() << "\r\n"
 				<< "operationId\t0x" << std::hex << operationId() << "\r\n"
 				<< "itemid\t" << itemid().print().c_str() << "\r\n"
-				<< "ql\t" << ql() << " stack\t" << stack() <<"\r\n"
+				<< "ql\t" << std::dec << ql() << " stack\t" << stack() <<"\r\n"
                 << "partnerFromType\t0x" << std::hex << partnerFromType() << "\r\n"
 				<< "partnerFromContainerTempId\t" << partnerFromContainerTempId() << "\r\n"
 				<< "partnerFromItemSlotId\t" << partnerFromItemSlotId();
@@ -287,7 +287,7 @@ namespace Native {
 
 		std::tstring print() const {
             std::tstringstream out;
-            out << "AOTradeTransaction:" << "\r\n"
+            out << "AOTradeTransaction:"   << charid() << "\r\n"
 				<< "unknown2\t" << std::hex << unknown2() << "\r\n"
 				<< "operationId\t" << std::hex << operationId() << "\r\n"
                 << "fromType\t" << std::hex << fromType() << "\r\n"
@@ -314,7 +314,7 @@ namespace Native {
 
 		std::tstring print() const {
             std::tstringstream out;
-            out << "AOBoughtItemFromShop:" << "\r\n"
+            out << "AOBoughtItemFromShop:" << charid() << "\r\n"
                 << "ql\t" << ql() << "\r\n"
                 << "flags\t" << flags() << "\r\n"
                 << "stack\t" << stack() << "\r\n"
@@ -346,11 +346,12 @@ namespace Native {
 	
 		std::tstring print() const {
             std::tstringstream out;
-            out << "AOBackpack:" << "\r\n"
-                << "operationId\t 0x" << std::hex << operationId() << "\r\n"
-                << "invSlot\t" << invSlot() << "\r\n"
+            out << "AOBackpack:" << charid() << "\r\n"
+				<< "operationId\t 0x" << std::hex << operationId() << "\r\n"
+                << "invSlot\t" << std::dec << invSlot() << "\r\n"
                 << "ql\t" << ql() << "\r\n"
                 << "keyLow\t" << keyLow() << "keyHigh\t" << keyHigh() << "\r\n"
+				<< "target\t" << target().print() << "keyHigh\t" << keyHigh() << "\r\n"
                 << "flags\t" << flags() << "\r\n";
 		
             return out.str();
