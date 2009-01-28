@@ -1073,6 +1073,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 			unsigned int opId = item.operationId();
 			if (opId == 0x55) //trade partner adds an item
 			{
+
 				unsigned int otherTradeContainer = AO::INV_TRADEPARTNER;
 				g_DBManager.lock();
 				g_DBManager.Begin();
@@ -1148,8 +1149,6 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 				{
 					unsigned int fromContainerId = GetFromContainerId(item.charid(),
 					item.partnerFromType(), item.partnerFromContainerTempId());
-
-					OutputDebugString(item.print().c_str());
 
 					//TODO: check if it is a depleteable item!! Hopefully in flags...
 
@@ -1534,6 +1533,52 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
             g_DBManager.unLock();
 		}
 		break;
+	case AO::MSG_SPAWN_REWARD:
+		{
+			Native::AOBackpack bp((AO::Backpack*)msg.start(), true);
+
+#ifdef DEBUG
+				OutputDebugString(bp.print().c_str());
+#endif
+		//	if (bp.operationId() == 0x65) //I bought a backpack (I think)
+			{
+				unsigned int containerId = bp.targetId();
+
+				unsigned int newParent = AO::INV_OVERFLOW;
+
+				g_DBManager.lock();
+				g_DBManager.Begin();
+
+				//find a free spot:
+				unsigned int slotId = 0x6f;//= bp.invSlot();
+				if (slotId >= 0x6f)
+					slotId = g_DBManager.findNextAvailableContainerSlot(msg.characterId(), newParent);
+
+				// Add item
+				g_DBManager.insertItem(
+					bp.keyLow(),
+					bp.keyHigh(),
+					bp.ql(),
+					bp.flags(),
+					1,//stack
+					newParent,
+					slotId ,//bp.invSlot(),
+					0,
+					msg.characterId());
+
+#ifdef DEBUG
+				{
+					// Log
+					std::tstringstream sql;
+					sql << _T("Reward:") << bp.keyLow() << _T("FL:\t") << bp.flags();
+					OutputDebugString(sql.str().c_str());
+				}
+#endif
+				g_DBManager.Commit();
+				g_DBManager.unLock();
+			}
+		}
+		break;
 
 	case AO::MSG_ITEM_MOVE: //0x47537A24:// what about 0x52526858:
 		{
@@ -1591,31 +1636,6 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
 					//if anything there, we must hotswap!
 					//we move anything that was there to a temp hotswap inv, move the new item, then move the other back.
-
-					
-
-					/*{// Does this work?
-						g_DBManager.lock();
-						g_DBManager.Begin();
-						std::tstringstream sqlMoveToTemp;
-							sqlMoveToTemp << _T("UPDATE tItems tFrom, tItems tTo SET")
-							<< _T(" tTo.parent = ") << fromContainerId
-							<< _T(", tTo.slot = ") << moveOp.fromItemSlotId()
-							<< _T(", tFrom.parent = ") << newParent
-							<< _T(", tFrom.slot = ") << newSlot
-							<< _T(" WHERE tTo.parent = ") << newParent
-							<< _T(" AND tTo.slot = ") << newSlot
-							<< _T(" AND tFrom.parent = ") << fromContainerId
-							<< _T(" AND tFrom.slot = ") << moveOp.fromItemSlotId()
-							<< _T(" AND tFrom.owner = ") << moveOp.charid()
-							<< _T(" AND tTo.owner = ") << moveOp.charid();
-							
-							OutputDebugString(sqlMoveToTemp.str().c_str());
-							g_DBManager.Exec(sqlMoveToTemp.str());
-						g_DBManager.Commit();
-						g_DBManager.unLock();
-						return;
-					}*/
 
 
 					g_DBManager.lock();
@@ -1782,13 +1802,14 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
 					unsigned int newParent = AO::INV_TOONINV;
 
+					g_DBManager.lock();
+					g_DBManager.Begin();
+
 					//find a free spot:
 					unsigned int slotId = bp.invSlot();
 					if (slotId >= 0x6f)
 						slotId = g_DBManager.findNextAvailableContainerSlot(msg.characterId(), newParent);
-
-					g_DBManager.lock();
-					g_DBManager.Begin();
+	
 					{
 						// Remove old ref to backpack:
 						std::tstringstream sql;
