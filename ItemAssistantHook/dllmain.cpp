@@ -174,7 +174,7 @@ typedef struct {
 /// Hook function that is called before a message is sent from the AO client to the server.
 void OnConnectionSend(void * connection, unsigned char * _msgData, unsigned int len)
 {
-	ClientHeader * msg = (ClientHeader*)_msgData;
+	Header * msg = (Header*)_msgData;
     unsigned int msgId = _byteswap_ulong(msg->msgid);
 
 	if (msgId == 0x54111123 || msgId == 0x02)//move and keepalive

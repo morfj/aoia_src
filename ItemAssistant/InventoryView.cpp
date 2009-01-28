@@ -682,34 +682,17 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 {
     switch(msg.messageId())
     {
-	case 0x1b: //zone
-		{
-			
-		}
-		break;
-
-	case AO::MSG_OPENBACKPACK:// 0x52526858://1196653092:
+	case AO::MSG_CHAR_OPERATION: //0x5e477770
 		{
 
-			return;//handled on server msg. 
-			//Since the server msg is only sent once, we might want to update tempId here, but it shouldnt be needeed.
-			Native::AOOpenBackpackOperation moveOp((AO::OpenBackpackOperation*)msg.start());
-
-			OutputDebugString(moveOp.print().c_str());
-			
-		}
-		break;
-	case AO::MSG_ITEM_OPERATION: //0x5e477770
-		{
-
-			Native::AOItemOperation itemOp((AO::ItemOperation*)msg.start());
+			Native::AOCharacterAction itemOp((AO::CharacterAction*)msg.start(), false);
 
 			unsigned int opId = itemOp.operationId();
 
 			
 
 			//TODO: switch statement
-			if (opId == 0x34)
+			if (opId == AO::CHAR_ACTION_SPLITSTACK)
 			{
 				//split! itemHigh is the count of the new item. this gets a new slotId
 				//the new item gets the count of the existing.
@@ -754,7 +737,7 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 				g_DBManager.unLock();
 
 			}
-			else if (opId == 0x35)
+			else if (opId == AO::CHAR_ACTION_JOINSTACKS)
 			{
 			//	OutputDebugString(itemOp.print().c_str());
 
@@ -804,7 +787,7 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 				g_DBManager.Commit();
 				g_DBManager.unLock();
 			}
-			else if (opId == 0x70)
+			else if (opId == AO::CHAR_ACTION_DELETEITEM)
 			{
 				//user deleted an item
 				g_DBManager.lock();
@@ -834,24 +817,26 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 				g_DBManager.unLock();
 
 			}
-			else if (opId == 0x13) 
+			else if (opId == AO::CHAR_ACTION_RUN_NANO) 
 			{
 				//when you run a nano, this one fires
 				return;
 			}
-			else if (opId == 0xB3) 
+			else if (opId == AO::CHAR_ACTION_RUN_PERK) 
 				//0x69  from = 0c350+ a char Id = ?
 			{
 				//When you hit a perk, this one fires
 				return;
 			}
-			else if (opId == 0x69) //0x69  from = 0c350+ a char Id
+			else if (opId == AO::CHAR_ACTION_UNKNOWN1) //0x69  from = 0c350+ a char Id
 			{
 				//occationally, this one
 				return;
 			}
-			else if (opId == 0x51)
+			else if (opId == AO::CHAR_ACTION_TRADESKILL)
 			{
+				//tradeskill. do nothing. we will get delete/trade operations for all.
+
 				//tradeskill. Source = fromType/fromItemSlotId
 				//target: itemId.low = target from container type (0x68), itemId.high=from slot id.
 
@@ -875,7 +860,7 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 
 				//currently, we delete both items unless they are on the whitelist.
 
-				OutputDebugString(itemOp.print().c_str());
+		/*		OutputDebugString(itemOp.print().c_str());
 
 
 				g_DBManager.lock();
@@ -910,34 +895,47 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 				}
 
 				g_DBManager.Commit();
-				g_DBManager.unLock();
+				g_DBManager.unLock();*/
 			
 			}
-			else if (opId == 0xd2||opId == 0x78)  //0xdd = add/remove from Tradeskill window
+			else if (opId == AO::CHAR_ACTION_LOGOFF1 ||opId == AO::CHAR_ACTION_LOGOFF2) 
 			{
 				//All zeroes, when you log off
 				return;
 			}
-			else if (opId == 0x57 || opId == 0xa3 )//xa3=sneak 
-			{
-				//opId == 0x80 => use an elevator
-				//opId == 0x18 => leave team.
-				//opId == 0x41 => cancel running nano.
-				//All zeroes, when you stand up
+			else if (opId == 0x57 || opId == AO::CHAR_ACTION_SNEAK )
+			{ 
 				return;
 			}
 			else
 
 			{
 				std::tstringstream sql;
-				sql << _T("Unknown operation Id:") <<std::hex << opId;
+				sql << _T("Unknown client operation Id:") <<std::hex << opId;
 				OutputDebugString(sql.str().c_str());
 				OutputDebugString(itemOp.print().c_str());
 				return;
 			}
 		}
 		break;
-		
+
+	case 0x1b: //zone
+		{
+			
+		}
+		break;
+
+	case AO::MSG_OPENBACKPACK:// 0x52526858://1196653092:
+		{
+
+			return;//handled on server msg. 
+			//Since the server msg is only sent once, we might want to update tempId here, but it shouldnt be needeed.
+		//	Native::AOOpenBackpackOperation moveOp((AO::OpenBackpackOperation*)msg.start());
+
+		//	OutputDebugString(moveOp.print().c_str());
+			
+		}
+		break;	
 		
 	case AO::MSG_ITEM_MOVE: //0x47537a24://1196653092:
 		{
@@ -969,14 +967,19 @@ unsigned int InventoryView::GetFromContainerId(unsigned int charId, unsigned sho
 	{
 		return AO::INV_BANK;
 	}
-	else if (fromType == 0x006f)//shop/trade window
+	else if (fromType == 0x006f)//trade window
 	{
-		OutputDebugString(_T("Move from shop remote party ignored"));
+		OutputDebugString(_T("Move from trade remote party ignored"));
 		return 0;
 	}
 	else if (fromType == 0xc767)//shop inventory
 	{
 		OutputDebugString(_T("Move from shop inventory ignored"));//Handled in ItemBought message.
+		return 0;
+	}
+	else if (fromType == 0xc790)//51088 player shop inventory
+	{
+		OutputDebugString(_T("Move from player shop inventory ignored"));//Not handled currently!
 		return 0;
 	}
 	else if (fromType == 0x006c)//shop/trade window.. could be remote or local. If needed, add an owner charId to compare with to func.
@@ -1004,6 +1007,52 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 {
     switch(msg.messageId())
     {
+	case AO::MSG_CHAR_OPERATION: //0x5e477770
+		{
+
+			Native::AOCharacterAction charOp((AO::CharacterAction*)msg.start(), true);
+
+/*#ifdef DEBUG
+			OutputDebugString(charOp.print().c_str());
+#endif*/
+			unsigned int opId = charOp.operationId();
+
+			//TODO: switch statement
+			if (opId == 0x70) //delete (user or tradeskill)
+			{
+				//user deleted an item
+				g_DBManager.lock();
+				g_DBManager.Begin();
+				unsigned int fromContainerId = GetFromContainerId(charOp.charid(), charOp.fromType(), charOp.fromContainerTempId());
+
+				if (fromContainerId == 0)
+				{
+					OutputDebugString(_T("From container not found!"));
+			 		return; //we dont have the value cached, either a bug or ia was started after the bp was opened. Or unknown from type
+				}
+
+				//server deleted an item!
+				{
+					std::tstringstream sql;
+					sql << _T("DELETE FROM tItems WHERE owner = ") << charOp.charid() 
+					<< _T(" AND parent = ") << fromContainerId
+				//	<< _T(" AND keylow = ") << itemOp.itemId().Low()
+				//	<< _T(" AND keyhigh = ") << itemOp.itemId().High()
+					<< _T(" AND slot = ") << charOp.fromItemSlotId();
+
+					g_DBManager.Exec(sql.str());
+				}
+				
+				g_DBManager.Commit();
+				g_DBManager.unLock();
+
+			}
+			else
+			{
+				return;
+			}
+		}
+		break;
 		//TODO: Trades with backpacks
 		//TODO: Test MSG_CONTAINER and the new overflow container detection.
 		//TODO: Tradeskills - test with and without overflow - and what happens to items that get deleted?
@@ -1095,7 +1144,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 			else if (opId == 0x03)//item used/deleted if stack=1
 			{
 				//TODO: What if ppl delete an item from a loot container we have openened??
-				if (item.target().High() == msg.characterId()) //else we get other ppl using stims etc.. :)
+				if (item.targetId() == msg.characterId()) //else we get other ppl using stims etc.. :)
 				{
 					unsigned int fromContainerId = GetFromContainerId(item.charid(),
 					item.partnerFromType(), item.partnerFromContainerTempId());
@@ -1180,7 +1229,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 		break;
 	case AO::MSG_SHOP_TRANSACTION: //0x36284f6e 
 		{
-			Native::AOTradeTransaction item((AO::TradeTransaction*)msg.start());
+			Native::AOTradeTransaction item((AO::TradeTransaction*)msg.start(), true);
 
 #ifdef DEBUG
 			OutputDebugString(item.print().c_str());
@@ -1461,7 +1510,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 		break;
 	case AO::MSG_ITEM_BOUGHT: //0x052e2f0c: 
 		{
-			Native::AOBoughtItemFromShop item((AO::BoughtItemFromShop*)msg.start());
+			Native::AOBoughtItemFromShop item((AO::BoughtItemFromShop*)msg.start(), true);
 
 			OutputDebugString(item.print().c_str());
 
@@ -1492,7 +1541,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 			//TODO: Hotswap support!
 
 	//	The ItemMoved is identical to the client send version except the header is server type.
-			Native::AOItemMoved moveOp((AO::ItemMoved*)msg.start());
+			Native::AOItemMoved moveOp((AO::ItemMoved*)msg.start(), true);
 #ifdef DEBUG
 			OutputDebugString(moveOp.print().c_str());
 #endif
@@ -1688,7 +1737,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
     case AO::MSG_BANK:
         {
-            Native::AOBank bank((AO::Bank*)msg.start());
+            Native::AOBank bank((AO::Bank*)msg.start(), true);
             g_DBManager.lock();
             g_DBManager.Begin();
             {  // Remove old stuff from the bank. Every update is a complete update.
@@ -1717,7 +1766,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
     case AO::MSG_BACKPACK:
         {
-            Native::AOBackpack bp((AO::Backpack*)msg.start());
+            Native::AOBackpack bp((AO::Backpack*)msg.start(), true);
 
 #ifdef DEBUG
 				OutputDebugString(bp.print().c_str());
@@ -1729,7 +1778,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
 				if (bp.operationId() == 0x65) //I bought a backpack (I think)
 				{
-					unsigned int containerId = bp.target().High();
+					unsigned int containerId = bp.targetId();
 
 					unsigned int newParent = AO::INV_TOONINV;
 
@@ -1888,7 +1937,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
     case AO::MSG_FULLSYNC:
         {
-            Native::AOEquip equip((AO::Equip*)msg.start());
+            Native::AOEquip equip((AO::Equip*)msg.start(), true);
             g_DBManager.lock();
             g_DBManager.Begin();
             {
@@ -1957,9 +2006,21 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
         {
             AOPlayerShopInfo shop(msg.start(), msg.size());
 
+
+#ifdef DEBUG
+            
+			std::tstringstream tmp;
+            tmp << _T("MSG_SHOP_INFO ") << shop.characterId()  << " owner=" << shop.ownerId() << " ID=" << shop.shopId();
+            OutputDebugString(tmp.str().c_str());
+#endif
+
             if (shop.shopId() != 0 && shop.ownerId() != 0)
             {
-                g_DBManager.setToonShopId(shop.ownerId(), shop.shopId());
+				if (shop.characterId() == shop.ownerId())
+				{
+					OutputDebugString(_T("Storing shop owner."));
+					g_DBManager.setToonShopId(shop.ownerId(), shop.shopId());
+				}
             }
         }
         break;
@@ -1968,13 +2029,26 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
         {
             AOPlayerShopContent shop(msg.start(), msg.size());
 
+#ifdef DEBUG
+            
+			std::tstringstream tmp;
+            tmp << _T("MSG_SHOP_ITEMS ") << shop.characterId() << " ID=" << shop.shopid();
+            OutputDebugString(tmp.str().c_str());
+#endif
             // This message should only update the shops for already registered shop IDs, and then use the character 
             // ID of who-ever that shop is registered to. This will allow you to update all your toons shops without 
             // logging them in. (You only need to visit the shop with one of them.)
 
             unsigned int owner = g_DBManager.getShopOwner(shop.shopid());
 
-            if (owner != 0)
+            if (owner == 0)
+            {
+#ifdef DEBUG
+ 
+            OutputDebugString(_T("Shop owner not found."));
+#endif
+			}
+			else
             {
                 g_DBManager.lock();
                 g_DBManager.Begin();

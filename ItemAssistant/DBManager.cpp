@@ -311,6 +311,7 @@ void DBManager::setToonShopId(unsigned int charid, unsigned int shopid)
     assert(shopid != 0);
     g_DBManager.Begin();
     g_DBManager.Exec(STREAM2STR("UPDATE OR IGNORE tToons SET shopid = " << shopid << " WHERE charid = " << charid));
+	OutputDebugString(STREAM2STR("UPDATE OR IGNORE tToons SET shopid = " << shopid << " WHERE charid = " << charid).c_str());
     g_DBManager.Commit();
 }
 

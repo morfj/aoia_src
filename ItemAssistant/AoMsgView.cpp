@@ -7,7 +7,7 @@
 
 AoMsgView::AoMsgView(void)
 {
-    m_mask.insert(AO::MSG_POS_SYNC);
+   // m_mask.insert(AO::MSG_POS_SYNC);
     m_mask.insert(AO::MSG_UNKNOWN_1);
     m_mask.insert(AO::MSG_UNKNOWN_2);
     m_mask.insert(AO::MSG_UNKNOWN_3);
@@ -307,7 +307,7 @@ LRESULT DlgView::OnNMClickList1(int /*idCtrl*/, LPNMHDR pNMHDR, BOOL& /*bHandled
     if (index >= 0)
     {
         AO::Header *pMsg = (AO::Header*)listview.GetItemData(index);
-        Native::AOMessageHeader msg(pMsg);
+        Native::AOMessageHeader msg(pMsg, true); //TODO: We only show server messages in this view
 
         char* pData = (char*)pMsg;
         unsigned int size = _byteswap_ushort(pMsg->msgsize);

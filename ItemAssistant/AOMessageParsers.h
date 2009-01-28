@@ -28,7 +28,7 @@ namespace Native {
         unsigned int	m_high;
     };
 
-	class AOClientMessageHeader
+	/*class AOClientMessageHeader
 	{
 		public:
         AOClientMessageHeader(AO::ClientHeader *pHeader) : m_pHeader(pHeader) { }
@@ -50,31 +50,41 @@ namespace Native {
         }
     protected:
         AO::ClientHeader *m_pHeader;
-	};
+	};*/
 
     class AOMessageHeader
     {
     public:
-        AOMessageHeader(AO::Header *pHeader) : m_pHeader(pHeader) { }
+        AOMessageHeader(AO::Header *pHeader, bool bIsFromServer) : m_pHeader(pHeader) { m_bIsFromServer = bIsFromServer; }
 
         unsigned int msgid()    const { return _byteswap_ulong(m_pHeader->msgid); }
         unsigned int serverid() const { return _byteswap_ulong(m_pHeader->serverid); }
-        unsigned int charid()   const { return _byteswap_ulong(m_pHeader->charid); }
+        unsigned int charid()   const { if (m_bIsFromServer) return _byteswap_ulong(m_pHeader->charid); else return _byteswap_ulong(m_pHeader->target.high);}
         unsigned short size()   const { return _byteswap_ushort(m_pHeader->msgsize); }
-        ObjectId target()       const { return ObjectId(m_pHeader->target); }
+    //    ObjectId target()       const { if (m_bIsFromServer) return ObjectId(m_pHeader->target); else return return ObjectId(m_pHeader->charId);}
 
-        std::tstring print() const {
+		unsigned int targetId()	const { return _byteswap_ulong(m_pHeader->target.high); }//for client ops, always the current char, else the real target!
+
+        std::tstring printHeader() const {
             std::tstringstream out;
-            out << "MessageHeader:" << "\r\n"
-                << "MsgId\t" << msgid() << "\r\n"
-                << "ServerId\t" << serverid() << "\r\n"
-                << "CharId\t" << charid() << "\r\n"
-                << "Size\t" << size() << "\r\n"
-                << "Target\t" << target().print().c_str() << "\r\n";
+			out << "MsgId\t" << std::hex << msgid() << "\tCharId\t" << std::dec << charid() << "\tTarget\t" << targetId() << "\r\n";
             return out.str();
         }
+
+		 std::tstring print() const {
+            std::tstringstream out;
+            out << "MessageHeader:" << "\r\n"
+                << "MsgId\t" << std::hex << msgid() << "\r\n"
+                //<< "ServerId\t" << serverid() << "\r\n"
+                << "Size\t" << std::dec << size() << "\r\n"
+                << "Target\t" << targetId() << "\r\n"
+                << "CharId\t" << charid() << "\r\n";
+            return out.str();
+        }
+
     protected:
         AO::Header *m_pHeader;
+		bool m_bIsFromServer;
     };
 
 
@@ -94,7 +104,7 @@ namespace Native {
 
 		std::tstring print() const {
             std::tstringstream out;
-            out << "MessageHeader:" << "\r\n"
+            out << "AOItem:\r\n"
                 << "flags\t" << flags() << "\r\n"
                 << "nullval\t" << nullval() << "\r\n"
                 << "index\t" << index() << "\r\n"
@@ -112,7 +122,7 @@ namespace Native {
     class AOContainer : public AOMessageHeader
     {
     public:
-        AOContainer(AO::Header *pHeader) : AOMessageHeader(pHeader) { }
+        AOContainer(AO::Header *pHeader) : AOMessageHeader(pHeader, true) { }
 
 		unsigned char unknown1() const { return ((AO::Container*)m_pHeader)->unknown1; }
 		unsigned char unknown2() const { return ((AO::Container*)m_pHeader)->unknown2; }
@@ -132,7 +142,7 @@ namespace Native {
 
 		std::tstring print() const {
             std::tstringstream out;
-            out << "AOContainer:" << "\r\n"
+            out << "AOContainer:" << printHeader()
                 << "numslots\t" << numslots() << "\r\n"
                 << "numitems\t" << numitems() << "\r\n"
                 << "tempContainerId\t" << tempContainerId() << "\r\n"
@@ -147,7 +157,7 @@ namespace Native {
     };
 
 
-	class AOOpenBackpackOperation : public AOClientMessageHeader
+	/*class AOOpenBackpackOperation : public AOClientMessageHeader
 	{
 		public:
         AOOpenBackpackOperation(AO::OpenBackpackOperation* pOpenBpOp) : AOClientMessageHeader(&(pOpenBpOp->header)), m_pOpenBpOp(pOpenBpOp) { }
@@ -173,12 +183,12 @@ namespace Native {
 
     protected:
         AO::OpenBackpackOperation* m_pOpenBpOp;
-	};
+	};*/
 
-	class AOItemOperation : public AOClientMessageHeader
+	class AOCharacterAction : public AOMessageHeader
 	{
 		public:
-        AOItemOperation(AO::ItemOperation* pDelOp) : AOClientMessageHeader(&(pDelOp->header)), m_pDelOp(pDelOp) { }
+        AOCharacterAction(AO::CharacterAction* pDelOp, bool isFromServer) : AOMessageHeader(&(pDelOp->header), isFromServer), m_pDelOp(pDelOp) { }
 
 		unsigned int operationId() const { return _byteswap_ulong(m_pDelOp->operationId); }
 		unsigned int unknown3() const { return _byteswap_ulong(m_pDelOp->unknown3); }
@@ -191,7 +201,7 @@ namespace Native {
 
 		std::tstring print() const {
             std::tstringstream out;
-            out << "AOItemOperation:" << "\r\n"
+            out << "AOCharacterAction:" << printHeader()
 				<< "operationId\t 0x" << std::hex << operationId() << "\r\n"
 				<< "unknown3\t 0x"<< std::hex << unknown3() << "\r\n"
                 << "fromType\t 0x"<< std::hex << fromType() << "\r\n"
@@ -203,10 +213,10 @@ namespace Native {
 		}
 
     protected:
-        AO::ItemOperation* m_pDelOp;
+        AO::CharacterAction* m_pDelOp;
 	};
 
-	class AOMoveOperation : public AOClientMessageHeader
+	/*class AOMoveOperation : public AOClientMessageHeader
 	{
 		public:
         AOMoveOperation(AO::MoveOperation* pMoveOp) : AOClientMessageHeader(&(pMoveOp->header)), m_pMoveOp(pMoveOp) { }
@@ -231,14 +241,14 @@ namespace Native {
 
     protected:
         AO::MoveOperation* m_pMoveOp;
-	};
+	};*/
 
 	
 
 	class AOPartnerTradeItem : public AOMessageHeader
 	{
 		public:
-        AOPartnerTradeItem(AO::PartnerTradeItem* pTrans) : AOMessageHeader(&(pTrans->header)), m_pTrans(pTrans) { }
+        AOPartnerTradeItem(AO::PartnerTradeItem* pTrans) : AOMessageHeader(&(pTrans->header), true), m_pTrans(pTrans) { }
 
 		unsigned int operationId() const { return _byteswap_ulong(m_pTrans->operationId); }
 		ObjectId itemid() const { return ObjectId(m_pTrans->itemid); }
@@ -252,8 +262,8 @@ namespace Native {
 
 		std::tstring print() const {
             std::tstringstream out;
-            out << "AOPartnerTradeItem: "  << charid() << "\r\n"
-				<< "target\t" << target().print() << "\r\n"
+            out << "AOPartnerTradeItem: "  << printHeader()
+			//	<< "target\t" << target().print() << "\r\n"
 				<< "operationId\t0x" << std::hex << operationId() << "\r\n"
 				<< "itemid\t" << itemid().print().c_str() << "\r\n"
 				<< "ql\t" << std::dec << ql() << " stack\t" << stack() <<"\r\n"
@@ -272,7 +282,7 @@ namespace Native {
 	class AOTradeTransaction : public AOMessageHeader
 	{
 		public:
-        AOTradeTransaction(AO::TradeTransaction* pTrans) : AOMessageHeader(&(pTrans->header)), m_pTrans(pTrans) { }
+        AOTradeTransaction(AO::TradeTransaction* pTrans, bool isFromServer) : AOMessageHeader(&(pTrans->header), isFromServer), m_pTrans(pTrans) { }
 
 		unsigned int	unknown2() const { return _byteswap_ulong(m_pTrans->unknown2); }
 		
@@ -287,7 +297,7 @@ namespace Native {
 
 		std::tstring print() const {
             std::tstringstream out;
-            out << "AOTradeTransaction:"   << charid() << "\r\n"
+            out << "AOTradeTransaction:"   << printHeader()
 				<< "unknown2\t" << std::hex << unknown2() << "\r\n"
 				<< "operationId\t" << std::hex << operationId() << "\r\n"
                 << "fromType\t" << std::hex << fromType() << "\r\n"
@@ -305,7 +315,7 @@ namespace Native {
 	class AOBoughtItemFromShop : public AOMessageHeader
 	{
 		public:
-        AOBoughtItemFromShop(AO::BoughtItemFromShop* pBoughItem) : AOMessageHeader(&(pBoughItem->header)), m_pBoughItem(pBoughItem) { }
+        AOBoughtItemFromShop(AO::BoughtItemFromShop* pBoughItem, bool isFromServer) : AOMessageHeader(&(pBoughItem->header), isFromServer), m_pBoughItem(pBoughItem) { }
 
 		unsigned int ql() const { return _byteswap_ulong(m_pBoughItem->ql); }
         unsigned short stack() const { return _byteswap_ushort(m_pBoughItem->stack); }
@@ -314,7 +324,7 @@ namespace Native {
 
 		std::tstring print() const {
             std::tstringstream out;
-            out << "AOBoughtItemFromShop:" << charid() << "\r\n"
+            out << "AOBoughtItemFromShop:" << printHeader()
                 << "ql\t" << ql() << "\r\n"
                 << "flags\t" << flags() << "\r\n"
                 << "stack\t" << stack() << "\r\n"
@@ -332,7 +342,7 @@ namespace Native {
 	class AOBackpack : public AOMessageHeader
 	{
 		public:
-        AOBackpack(AO::Backpack* pItem) : AOMessageHeader(&(pItem->header)), m_pItem(pItem) { }
+        AOBackpack(AO::Backpack* pItem, bool isFromServer) : AOMessageHeader(&(pItem->header), isFromServer), m_pItem(pItem) { }
 
 		unsigned char	operationId() const { return m_pItem->operationId; }
 		unsigned char	invSlot() const { return m_pItem->invSlot; }
@@ -346,12 +356,12 @@ namespace Native {
 	
 		std::tstring print() const {
             std::tstringstream out;
-            out << "AOBackpack:" << charid() << "\r\n"
+            out << "AOBackpack:" << printHeader()
 				<< "operationId\t 0x" << std::hex << operationId() << "\r\n"
                 << "invSlot\t" << std::dec << invSlot() << "\r\n"
                 << "ql\t" << ql() << "\r\n"
                 << "keyLow\t" << keyLow() << "keyHigh\t" << keyHigh() << "\r\n"
-				<< "target\t" << target().print() << "keyHigh\t" << keyHigh() << "\r\n"
+			//	<< "target\t" << target().print() << "keyHigh\t" << keyHigh() << "\r\n"
                 << "flags\t" << flags() << "\r\n";
 		
             return out.str();
@@ -364,7 +374,7 @@ namespace Native {
 	class AOItemMoved : public AOMessageHeader
 	{
 		public:
-        AOItemMoved(AO::ItemMoved* pMoveOp) : AOMessageHeader(&(pMoveOp->header)), m_pMoveOp(pMoveOp) { }
+        AOItemMoved(AO::ItemMoved* pMoveOp, bool isFromServer) : AOMessageHeader(&(pMoveOp->header), isFromServer), m_pMoveOp(pMoveOp) { }
 
 		unsigned short fromType() const { return _byteswap_ushort(m_pMoveOp->moveData.fromItem.type); }
 		unsigned short fromContainerTempId() const { return _byteswap_ushort(m_pMoveOp->moveData.fromItem.containerTempId); }
@@ -374,7 +384,7 @@ namespace Native {
 
 		std::tstring print() const {
             std::tstringstream out;
-            out << "AOItemMoved:" << "\r\n"
+            out << "AOItemMoved:" << printHeader()
                 << "fromType\t 0x" << std::hex << fromType() << "\r\n"
                 << "fromContainerTempId\t" << fromContainerTempId() << "\r\n"
                 << "fromItemSlotId\t" << fromItemSlotId() << "\r\n"
@@ -391,7 +401,7 @@ namespace Native {
     class AOBank : public AOMessageHeader
     {
     public:
-        AOBank(AO::Bank* pBank) : AOMessageHeader(&(pBank->header)), m_pBank(pBank) { }
+        AOBank(AO::Bank* pBank, bool isFromServer) : AOMessageHeader(&(pBank->header), isFromServer), m_pBank(pBank) { }
 
         unsigned int numitems() const { return (_byteswap_ulong(m_pBank->mass)-1009)/1009; }
         AOItem item(int index) const { return AOItem((AO::ContItem*)(((char*)m_pBank)+sizeof(AO::Bank)+sizeof(AO::ContItem)*index)); }
@@ -404,7 +414,7 @@ namespace Native {
     class AOEquip : public AOMessageHeader
     {
     public:
-        AOEquip(AO::Equip* pRaw) : AOMessageHeader(&(pRaw->header)), m_pRaw(pRaw) { }
+        AOEquip(AO::Equip* pRaw, bool isFromServer) : AOMessageHeader(&(pRaw->header), isFromServer), m_pRaw(pRaw) { }
 
         unsigned int numitems() const { return (_byteswap_ulong(m_pRaw->mass)-1009)/1009; }
         AOItem item(int index) const { return AOItem((AO::ContItem*)(((char*)m_pRaw)+sizeof(AO::Equip)+sizeof(AO::ContItem)*index)); }

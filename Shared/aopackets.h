@@ -67,7 +67,7 @@ namespace AO {
         AoObjectId		target;		// 0x0000C350	dimension? (50000:<charid>)
     };
 
-	struct ClientHeader
+	/*struct ClientHeader
     {
 		unsigned int	headerid;	// 0x0000000A
 		unsigned short	unknown1;	// 0x0000		protocol version?
@@ -76,7 +76,7 @@ namespace AO {
         unsigned int	unknown2;	//??ex 00 00 00 02 or 00 00 0b ed  on logoff
 		unsigned int	msgid;
         AoObjectId		charId;		// 0x0000C350	(50000:<charid>)
-    };
+    };*/
 
 	struct InvItemId
 	{
@@ -101,11 +101,11 @@ namespace AO {
 		unsigned short	targetSlot; //6f (invalid) except when moving to wear window.
 	};
 
-	struct MoveOperation
+	/*struct MoveOperation
 	{
 		ClientHeader	header;
 		MoveData		moveData;
-	};
+	};*/
 
 	struct ItemMoved
 	{
@@ -114,7 +114,7 @@ namespace AO {
 	};
 
 
-	struct OpenBackpackOperation
+	/*struct OpenBackpackOperation
 	{
 		ClientHeader header;
 		unsigned char	unknown1;//01
@@ -130,12 +130,25 @@ namespace AO {
 		//unsigned short	containerTempId;//temp id (temporary)
 
 		//01 00 00 00 00 00 00 00 1b 00 00 00 03 00 00 00 01 00 00 c3 50 67 a6 de 6a 00 00 00 68 00 00 00 43
-	};
+	};*/
 
-	struct ItemOperation
+	struct CharacterAction
 	{
 		//MSG_ITEM_OPERATION
-		ClientHeader header;
+		Header header;
+		//00 00 00 00 70 00 00 00 00 00 00 00 68 00 00 00 4e 00 01 3f 5d 00 01 3f 5c 00 00
+		unsigned char	unknown1;//01
+		unsigned int	operationId;//00 00 00 70 
+		unsigned int	unknown3;//00 00 00 00
+		InvItemId		itemToDelete;
+		AoObjectId		itemId;
+		unsigned short	zeroes2; //00 00
+	};
+
+	struct ServerCharacterAction
+	{
+		//MSG_ITEM_OPERATION
+		Header header;
 		//00 00 00 00 70 00 00 00 00 00 00 00 68 00 00 00 4e 00 01 3f 5d 00 01 3f 5c 00 00
 		unsigned char	unknown1;//01
 		unsigned int	operationId;//00 00 00 70 
@@ -296,6 +309,41 @@ namespace AO {
 		INV_HOTSWAPTEMP	= 7,//used by IA when hotswapping as temp storage.
 	};
 
+	enum CharacterActionIds
+	{
+		CHAR_ACTION_SPLITSTACK	= 0x34,
+		CHAR_ACTION_JOINSTACKS	= 0x35,
+		CHAR_ACTION_DELETEITEM	= 0x70,
+		CHAR_ACTION_PLAYERSHOP	= 0xb4,
+
+		CHAR_ACTION_RUN_NANO	= 0x13,
+		CHAR_ACTION_RUN_PERK	= 0xB3,
+		CHAR_ACTION_UNKNOWN1	= 0x69,
+		CHAR_ACTION_TRADESKILL	= 0x51,
+		CHAR_ACTION_LOGOFF1		= 0xd2,
+		CHAR_ACTION_LOGOFF2		= 0x78,
+		CHAR_ACTION_SNEAK_LEAVE1= 0xaa,
+		CHAR_ACTION_SNEAK_LEAVE2= 0xa1,
+		CHAR_ACTION_SNEAK_ENTER	= 0xa2,
+		CHAR_ACTION_SNEAK		= 0xa3,
+		CHAR_ACTION_SKILL_AVAIL	= 0xa4,
+		CHAR_ACTION_ZONE		= 0xa7,//when starting to zone
+		CHAR_ACTION_ZONE_DATA	= 0xb4,//MANY of these when entering new pf
+		CHAR_ACTION_ZONED		= 0xb5,//after all xb4 messages.
+		CHAR_ACTION_UNABLE_SK_L	= 0x84,
+		CHAR_ACTION_JUMP		= 0x92,
+		CHAR_ACTION_MOVED		= 0x89,
+		CHAR_ACTION_STAND		= 0x57,
+		CHAR_ACTION_OTHERTOON   = 0x62,//unknown, something to do with other players I think
+
+		//0xdd = add/remove from Tradeskill window
+		//opId == 0x80 => use an elevator
+		//opId == 0x18 => leave team.
+		//opId == 0x41 => cancel running nano.
+		//0x57 ??? All zeroes, when you stand up
+
+	};
+
     enum MsgIds
     {
         //MSG_UNKNOWN	=	0x47777000,
@@ -307,7 +355,7 @@ namespace AO {
         MSG_MISSIONS	=	0x5C436609,
         //MSG_BANK		   =	0x7F283C34,
         MSG_BANK		=	0x343c287f,    // size 2285.. dynamic most likely
-        MSG_POS_SYNC	=	0x5E477770,    // size = 55 bytes
+       // MSG_POS_SYNC	=	0x5E477770,    // size = 55 bytes Thats wrong?
         MSG_UNKNOWN_1	=	0x25314D6D,    // size = 53 bytes
         MSG_UNKNOWN_2	=	0x00000001,    // size = 40 bytes
         MSG_UNKNOWN_3	=	0x0000000b,    // size = 548 bytes
@@ -319,7 +367,7 @@ namespace AO {
 		MSG_ITEM_MOVE	=	0x47537a24,    //Client or server msg move item between inv/bank/wear/backpack
 		MSG_ITEM_BOUGHT	=	0x052e2f0c,	//Sent from server when buying stuff, 1 message pr item.
 		MSG_OPENBACKPACK=	0x52526858,//1196653092: from client when opening backpack
-		MSG_ITEM_OPERATION= 0x5e477770,  //from client when deleting an item, splitting or joingin +++
+		MSG_CHAR_OPERATION= 0x5e477770,  //from client when deleting an item, splitting or joining, nano, perk, tradeskill+++
 		MSG_SHOP_TRANSACTION=0x36284f6e,  //from server and client when adding/removing/accepting shop stuff
 		MSG_PARTNER_TRADE = 0x35505644, //from server when trade partner adds/removes items.
 		MSG_SHOW_TEXT	 =	0x206b4b73, //from server when showing yellow text (like "You succesfully combined.../XXX is already fully loaded")
