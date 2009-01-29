@@ -301,7 +301,9 @@ std::vector<MFTreeViewItem*> CharacterTreeViewItem::GetChildren() const
     result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 2, _T("slot >= 32 AND slot < 47"), _T("Implants"))); // Implants tab
     result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 2, _T("slot >= 47 AND slot < 64"), _T("Social"))); // Social tab
     result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 3, _T(""), _T("Shop"))); // Player shop
+#ifdef DEBUG
     result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 0, _T(""), _T("Unknown"))); // Unknown
+#endif
 
     return result;
 }
@@ -310,7 +312,7 @@ std::vector<MFTreeViewItem*> CharacterTreeViewItem::GetChildren() const
 unsigned int CharacterTreeViewItem::AppendMenuCmd(HMENU hMenu, unsigned int firstID, WTL::CTreeItem item) const
 {
     m_commands[firstID] = SqlTreeViewItemBase::CMD_DELETE;
-    AppendMenu(hMenu, MF_STRING, firstID++, _T("Delete Items From DB"));
+    AppendMenu(hMenu, MF_STRING, firstID++, _T("Delete Toon"));
     return firstID;
 }
 
@@ -323,11 +325,21 @@ bool CharacterTreeViewItem::HandleMenuCmd(unsigned int commandID, WTL::CTreeItem
         {
         case SqlTreeViewItemBase::CMD_DELETE:
             {
+                bool ok = true;
                 g_DBManager.lock();
                 g_DBManager.Begin();
-                std::tstringstream sql;
-                sql << _T("DELETE FROM tItems WHERE owner = ") << m_charid;
-                if (g_DBManager.Exec(sql.str()))
+                {
+                    std::tstringstream sql;
+                    sql << _T("DELETE FROM tItems WHERE owner = ") << m_charid;
+                    ok = g_DBManager.Exec(sql.str());
+                }
+                if (ok)
+                {
+                    std::tstringstream sql;
+                    sql << _T("DELETE FROM tToons WHERE charid = ") << m_charid;
+                    ok = g_DBManager.Exec(sql.str());
+                }
+                if (ok)
                 {
                     g_DBManager.Commit();
                 }
