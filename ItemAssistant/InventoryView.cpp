@@ -2,20 +2,15 @@
 #include "DBManager.h"
 #include "InventoryView.h"
 #include "AOMessageParsers.h"
-#include "resource.h"
-#include <map>
-#include <set>
 #include <shared/AODB.h>
 #include <shared/FileUtils.h>
-#include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <ShellAPI.h>
 #include <ItemAssistantCore/AOManager.h>
-
-#define TIXML_USE_STL
-#include <TinyXml/tinyxml.h>
+#include "ItemListDataModel.h"
 
 using namespace WTL;
+using namespace aoia;
 
 
 enum ColumnID
@@ -36,8 +31,9 @@ enum ColumnID
 
 
 InventoryView::InventoryView()
-:  m_sortDesc(false)
-,  m_sortColumn(0)
+    : m_sortDesc(false)
+    , m_sortColumn(0)
+    , m_datagrid(new DataGridControl())
 {
 }
 
@@ -136,7 +132,8 @@ LRESULT InventoryView::OnColumnClick(LPNMHDR lParam)
         m_sortDesc = !m_sortDesc;
     }
 
-    m_listview.SortItemsEx(CompareStr, (LPARAM)this);
+    ItemListDataModelPtr data_model = boost::shared_static_cast<ItemListDataModel>(m_datagrid->getModel());
+    data_model->sortData(m_sortColumn, !m_sortDesc);
 
     return 0;
 }
@@ -159,38 +156,44 @@ LRESULT InventoryView::OnItemContextMenu(LPNMHDR lParam)
     LPNMITEMACTIVATE param = (LPNMITEMACTIVATE)lParam;
 
     int sel = param->iItem;
-    if (sel >= 0) {
+    if (sel >= 0)
+    {
         WTL::CPoint pos;
         GetCursorPos(&pos);
 
         WTL::CMenu menu;
-        if (m_listview.GetSelectedCount() > 1) {
+        if (m_datagrid->getSelectedCount() > 1)
+        {
             menu.LoadMenu(IDR_ITEM_POPUP_MULTISEL);
         }
-        else {
+        else
+        {
             menu.LoadMenu(IDR_ITEM_POPUP);
         }
         WTL::CMenuHandle popup = menu.GetSubMenu(0);
         int cmd = popup.TrackPopupMenu(TPM_LEFTALIGN | TPM_TOPALIGN, pos.x, pos.y, m_hWnd);
     }
+
     return 0;
 }
 
 
 LRESULT InventoryView::OnSellItemAoMarket(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled)
 {
-    if (m_listview.GetSelectedCount() != 1) {
+    if (m_datagrid->getSelectedCount() != 1)
+    {
         return 0;
     }
-    int activeItemIdx = m_listview.GetSelectionMark();
-    DWORD_PTR data = m_listview.GetItemData(activeItemIdx);
 
-    std::tstring url = _T("http://www.aomarket.com/bots/additem?id=%lowid%&ql=%ql%");
+    int activeItemIdx = *(m_datagrid->getSelectedItems().begin());
+    ItemListDataModelPtr model = boost::shared_static_cast<ItemListDataModel>(m_datagrid->getModel());
+    unsigned int ownedItemIndex = model->getItemIndex(activeItemIdx);
 
     g_DBManager.lock();
-    OwnedItemInfoPtr pItemInfo = g_DBManager.getOwnedItemInfo((int)data);
+    OwnedItemInfoPtr pItemInfo = g_DBManager.getOwnedItemInfo(ownedItemIndex);
     g_DBManager.unLock();
 
+    std::tstring url = _T("http://www.aomarket.com/bots/additem?id=%lowid%&ql=%ql%");
     boost::replace_all(url, _T("%lowid%"), pItemInfo->itemloid);
     boost::replace_all(url, _T("%ql%"), pItemInfo->itemql);
 
@@ -202,21 +205,12 @@ LRESULT InventoryView::OnSellItemAoMarket(WORD FromAccelerator, WORD CommandId, 
 
 LRESULT InventoryView::OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled)
 {
-    // Build the set of selected item indexes.
-    std::set<int> selectedIndexes;
-    if (m_listview.GetSelectedCount() < 1) {
+    if (m_datagrid->getSelectedCount() < 1)
+    {
         return 0;
     }
-    else if (m_listview.GetSelectedCount() == 1) {
-        selectedIndexes.insert(m_listview.GetNextItem(-1, LVNI_SELECTED));
-    }
-    else {
-        int itemId = m_listview.GetNextItem(-1, LVNI_SELECTED);
-        while (itemId >= 0) {
-            selectedIndexes.insert(itemId);
-            itemId = m_listview.GetNextItem(itemId, LVNI_SELECTED);
-        }
-    }
+
+    std::set<unsigned int> selectedIndexes = m_datagrid->getSelectedItems();
 
     ItemServer server;
     ExportFormat format;
@@ -286,16 +280,17 @@ LRESULT InventoryView::OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND 
 
     boost::replace_all(itemTemplate, _T("%url%"), urlTemplate);
 
+    ItemListDataModelPtr model = boost::shared_static_cast<ItemListDataModel>(m_datagrid->getModel());
+
     g_DBManager.lock();
     std::tstring output = prefix;
-    for (std::set<int>::iterator it = selectedIndexes.begin(); it != selectedIndexes.end(); ++it)
+    for (std::set<unsigned int>::iterator it = selectedIndexes.begin(); it != selectedIndexes.end(); ++it)
     {
         if (it != selectedIndexes.begin()) {
             output += separator;
         }
 
-        DWORD_PTR data = m_listview.GetItemData(*it);
-        OwnedItemInfoPtr pItemInfo = g_DBManager.getOwnedItemInfo((unsigned int)data);
+        OwnedItemInfoPtr pItemInfo = g_DBManager.getOwnedItemInfo(model->getItemIndex(*it));
 
         std::tstring itemlocation = pItemInfo->ownername;
         itemlocation += _T(" -> ");
@@ -371,14 +366,17 @@ LRESULT InventoryView::OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND 
 
 LRESULT InventoryView::OnShowItemRef(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled)
 {
-    if (m_listview.GetSelectedCount() != 1) {
+    if (m_datagrid->getSelectedCount() != 1)
+    {
         return 0;
     }
-    int activeItemIdx = m_listview.GetSelectionMark();
-    DWORD_PTR data = m_listview.GetItemData(activeItemIdx);
+
+    int activeItemIdx = *(m_datagrid->getSelectedItems().begin());
+    ItemListDataModelPtr model = boost::shared_static_cast<ItemListDataModel>(m_datagrid->getModel());
+    unsigned int ownedItemIndex = model->getItemIndex(activeItemIdx);
 
     g_DBManager.lock();
-    OwnedItemInfoPtr pItemInfo = g_DBManager.getOwnedItemInfo((int)data);
+    OwnedItemInfoPtr pItemInfo = g_DBManager.getOwnedItemInfo(ownedItemIndex);
     g_DBManager.unLock();
 
     std::tstring itemlocation = pItemInfo->ownername;
@@ -411,21 +409,12 @@ LRESULT InventoryView::OnShowItemRef(WORD FromAccelerator, WORD CommandId, HWND 
 
 LRESULT InventoryView::OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled)
 {
-    // Build the set of selected item indexes.
-    std::set<int> selectedIndexes;
-    if (m_listview.GetSelectedCount() < 1) {
+    if (m_datagrid->getSelectedCount() < 1)
+    {
         return 0;
     }
-    else if (m_listview.GetSelectedCount() == 1) {
-        selectedIndexes.insert(m_listview.GetNextItem(-1, LVNI_SELECTED));
-    }
-    else {
-        int itemId = m_listview.GetNextItem(-1, LVNI_SELECTED);
-        while (itemId >= 0) {
-            selectedIndexes.insert(itemId);
-            itemId = m_listview.GetNextItem(itemId, LVNI_SELECTED);
-        }
-    }
+
+    std::set<unsigned int> selectedIndexes = m_datagrid->getSelectedItems();
 
     ItemServer server = SERVER_AUNO;
     if (CommandId == ID_EXPORTTOCSV_JAYDEE) {
@@ -454,16 +443,17 @@ LRESULT InventoryView::OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND 
         return 0;
     }
 
+    ItemListDataModelPtr model = boost::shared_static_cast<ItemListDataModel>(m_datagrid->getModel());
+
     g_DBManager.lock();
     ofs << prefix;
-    for (std::set<int>::iterator it = selectedIndexes.begin(); it != selectedIndexes.end(); ++it)
+    for (std::set<unsigned int>::iterator it = selectedIndexes.begin(); it != selectedIndexes.end(); ++it)
     {
         if (it != selectedIndexes.begin()) {
             ofs << separator;
         }
 
-        DWORD_PTR data = m_listview.GetItemData(*it);
-        OwnedItemInfoPtr pItemInfo = g_DBManager.getOwnedItemInfo((unsigned int)data);
+        OwnedItemInfoPtr pItemInfo = g_DBManager.getOwnedItemInfo(model->getItemIndex(*it));
 
         std::tstring itemlocation = pItemInfo->ownername;
         itemlocation += _T(" -> ");
@@ -488,7 +478,7 @@ void InventoryView::HideFindWindow()
 {
     if (::IsWindowVisible(m_findview))
     {
-        m_listview.SetFocus();
+        m_datagrid->SetFocus();
         m_findview.ShowWindow(SW_HIDE);
     }
 
@@ -520,8 +510,8 @@ LRESULT InventoryView::OnCreate(LPCREATESTRUCT createStruct)
     m_treeview.Create(m_splitter.m_hWnd, rcDefault, NULL, style | TVS_SHOWSELALWAYS | TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_EDITLABELS, WS_EX_CLIENTEDGE);
     m_treeview.SetDlgCtrlID(IDW_TREEVIEW);
 
-    m_listview.Create(m_splitter.m_hWnd, rcDefault, NULL, style | LVS_REPORT /*| LVS_SINGLESEL*/ | LVS_SHOWSELALWAYS, WS_EX_CLIENTEDGE);
-    m_listview.SetDlgCtrlID(IDW_LISTVIEW);
+    m_datagrid->Create(m_splitter.m_hWnd, rcDefault, NULL, style | LVS_REPORT /*| LVS_SINGLESEL*/ | LVS_SHOWSELALWAYS | LVS_OWNERDATA, WS_EX_CLIENTEDGE);
+    m_datagrid->SetDlgCtrlID(IDW_LISTVIEW);
 
     // Populate the tree-view
     {
@@ -571,7 +561,7 @@ LRESULT InventoryView::OnCreate(LPCREATESTRUCT createStruct)
     //m_treeRoot.SetOwner(this);
     //m_treeview.addRootItem(&m_treeRoot);
 
-    m_splitter.SetSplitterPanes(m_treeview, m_listview);
+    m_splitter.SetSplitterPanes(m_treeview, m_datagrid->m_hWnd);
     m_splitter.SetActivePane(SPLIT_PANE_LEFT);
 
     m_accelerators.LoadAccelerators(IDR_INV_ACCEL);
@@ -2149,104 +2139,10 @@ bool InventoryView::PreTranslateMsg(MSG* pMsg)
 // Updates the list view with the results of the SQL query. 'where' is used as the expression after the WHERE keyword.
 void InventoryView::UpdateListView(std::tstring const& where)
 {
-    m_listview.DeleteAllItems();
+    ItemListDataModelPtr data(new ItemListDataModel(where, m_sortColumn, !m_sortDesc));
 
-    std::string selectStr =
-        "SELECT "
-        "   tItems.itemidx, "
-        "   tItems.owner, "
-        "   CASE "
-        "       WHEN ((SELECT ql FROM tblAO WHERE aoid = keyhigh)-(SELECT ql FROM tblAO WHERE aoid = keylow))/2+(SELECT ql FROM tblAO WHERE aoid = keylow) > ql "
-        "       THEN (SELECT name FROM tblAO WHERE aoid = keylow) "
-        "       ELSE (SELECT name FROM tblAO WHERE aoid = keyhigh) "
-        "   END AS name, "
-        "   tItems.ql AS QL, "
-        "   tItems.stack AS Stack, "
-        "   tToons.charname AS Character, "
-        "   tItems.parent AS Container "
-        "FROM "
-        "   tItems JOIN tToons ON tToons.charid = tItems.owner ";
-
-    std::tstringstream sql;
-    sql << from_ascii_copy(selectStr);
-
-    if (!where.empty())
-    {
-        sql << _T(" WHERE ") << where;
-    }
-
-    g_DBManager.lock();
-    SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());
-    g_DBManager.unLock();
-
-    if (pT)
-    {
-        if (pT->Rows() > 0)
-        {
-            // Backup previous column widths and labels
-            std::map<std::tstring, int> columnWidthMap;
-
-            while(m_listview.GetHeader().GetItemCount() > 0)
-            {
-                // Get column label
-                TCHAR buffer[1024];
-                ZeroMemory(buffer, sizeof(buffer));
-                LVCOLUMN columnInfo;
-                columnInfo.mask = LVCF_TEXT;
-                columnInfo.pszText = buffer;
-                columnInfo.cchTextMax = sizeof(buffer);
-                m_listview.GetColumn( 0, &columnInfo);
-
-                // Store label an width
-                columnWidthMap[buffer] = m_listview.GetColumnWidth(0);
-
-                m_listview.DeleteColumn(0);
-            }
-
-            //// Rebuild columns with new labels
-            //for (unsigned int col = 0; col < pT->Columns()-1; col++)
-            //{
-            //   m_listview.AddColumn(pT->Headers()[col+1].c_str(), col);
-            //   int width = columnWidthList.size() > col ? columnWidthList[col] : 100;
-            //   m_listview.SetColumnWidth(col, width);
-            //}
-            std::map<std::tstring, int> columnmap;
-
-            int indx = INT_MAX - 1;
-            for (unsigned int row = 0; row < pT->Rows(); row++)
-            {
-                for (unsigned int col = 2; col < pT->Columns(); col++)
-                {
-                    std::tstring column = from_ascii_copy(pT->Headers()[col]);
-                    if (columnmap.find(column) == columnmap.end())
-                    {
-                        columnmap[column] = m_listview.AddColumn(column.c_str(), col-2);
-                        int w = columnWidthMap.find(column) != columnWidthMap.end() ? columnWidthMap[column] : 100;
-                        m_listview.SetColumnWidth(columnmap[column], w);
-                    }
-
-                    std::tstring data = from_ascii_copy(pT->Data(row, col));
-
-                    // Find proper container name
-                    if (column == _T("Container"))
-                    {
-                        unsigned int id = boost::lexical_cast<unsigned int>(pT->Data(row, col));
-                        unsigned int charid = boost::lexical_cast<unsigned int>(pT->Data(row, 1));
-
-                        data = ServicesSingleton::Instance()->GetContainerName(charid, id);
-                    }
-                    indx = m_listview.AddItem(indx, columnmap[column], data.c_str());
-                }
-                if (pT->Columns() > 0)
-                {
-                    int data = boost::lexical_cast<int>(pT->Data(row, 0));
-                    m_listview.SetItemData(indx, data);
-                }
-            }
-        }
-    }
-
-    m_listview.SortItemsEx(CompareStr, (LPARAM)this);
+    m_datagrid->setModel(data);
+    m_datagrid->autosizeColumnsUseData();
 
     OnSelectionChanged();
 }
@@ -2254,53 +2150,18 @@ void InventoryView::UpdateListView(std::tstring const& where)
 
 void InventoryView::OnSelectionChanged()
 {
-    int count = m_listview.GetSelectedCount();
-    if (count == 1) {
+    std::set<unsigned int> items = m_datagrid->getSelectedItems();
+
+    if (items.size() == 1) 
+    {
         m_toolbar.EnableButton(ID_SELL_ITEM_AOMARKET, TRUE);
-        DWORD_PTR data = m_listview.GetItemData(m_listview.GetNextItem(-1, LVNI_SELECTED));
-        m_infoview.SetCurrentItem((unsigned int)data);
+        m_infoview.SetCurrentItem(*items.begin());
     }
-    else {
+    else
+    {
         m_toolbar.EnableButton(ID_SELL_ITEM_AOMARKET, FALSE);
         m_infoview.SetCurrentItem(0);
     }
-}
-
-
-// Static callback function for sorting items.
-int InventoryView::CompareStr(LPARAM param1, LPARAM param2, LPARAM sort)
-{
-    InventoryView* pThis = (InventoryView*)sort;
-
-    int result = 0;
-
-    TCHAR name1[MAX_PATH];
-    TCHAR name2[MAX_PATH];
-
-    ZeroMemory(name1, sizeof(name1));
-    ZeroMemory(name2, sizeof(name2));
-
-    pThis->m_listview.GetItemText((int)param1, pThis->m_sortColumn, name1, sizeof(name1) - 1);
-    pThis->m_listview.GetItemText((int)param2, pThis->m_sortColumn, name2, sizeof(name2) - 1);
-
-    switch (pThis->m_sortColumn)
-    {
-    case COL_QL:
-    case COL_STACK:
-        {
-            int a = boost::lexical_cast<int>(to_ascii_copy(name1));
-            int b = boost::lexical_cast<int>(to_ascii_copy(name2));
-            result = pThis->m_sortDesc ? b - a : a - b;
-        }
-        break;
-
-    default:
-        {
-            result = pThis->m_sortDesc ? StrCmpI(name2, name1) : StrCmpI(name1, name2);
-        }
-    }
-
-    return result;
 }
 
 
@@ -2336,311 +2197,4 @@ std::tstring InventoryView::GetServerItemURLTemplate( ItemServer server )
     }
 
     return retval;
-}
-
-
-
-
-
-
-InfoView::InfoView()
-: m_pParent(NULL) 
-{
-}
-
-
-void InfoView::SetParent(InventoryView* parent)
-{
-    m_pParent = parent;
-}
-
-
-BOOL InfoView::PreTranslateMsg(MSG* pMsg)
-{
-    return IsDialogMessage(pMsg);
-}
-
-
-LRESULT InfoView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
-{
-    this->SetWindowText(_T("Info View"));
-
-    DlgResize_Init(false, true, WS_CLIPCHILDREN);
-    return 0;
-}
-
-
-LRESULT InfoView::OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
-{
-    LPMSG pMsg = (LPMSG)lParam;
-    return this->PreTranslateMsg(pMsg);
-}
-
-
-LRESULT InfoView::OnButtonClicked(WORD commandID, WORD buttonID, HWND hButton, BOOL &bHandled)
-{
-    if (m_currentItem == 0) {
-        return 0;
-    }
-
-    InventoryView::ItemServer server;
-    switch (buttonID)
-    {
-    case IDC_JAYDEE:
-        server = InventoryView::SERVER_JAYDEE;
-        break;
-    
-    case IDC_AUNO:
-        server = InventoryView::SERVER_AUNO;
-        break;
-    
-    default:
-        assert(false);  // Wrong button ID?
-        return 0;
-    }
-    std::tstring url = InventoryView::GetServerItemURLTemplate(server);
-
-    g_DBManager.lock();
-    OwnedItemInfoPtr pItemInfo = g_DBManager.getOwnedItemInfo(m_currentItem);
-    g_DBManager.unLock();
-
-    boost::replace_all(url, _T("%lowid%"), pItemInfo->itemloid);
-    boost::replace_all(url, _T("%hiid%"), pItemInfo->itemhiid);
-    boost::replace_all(url, _T("%ql%"), pItemInfo->itemql);
-
-    ShellExecute(NULL, _T("open"), url.c_str(), NULL, NULL, SW_SHOWDEFAULT);
-
-    return 0;
-}
-
-
-void InfoView::SetCurrentItem(unsigned int item)
-{
-    m_currentItem = item;
-
-    WTL::CListViewCtrl lv(GetDlgItem(IDC_LISTVIEW));
-
-    lv.DeleteAllItems();
-
-    std::tstringstream sql;
-    sql << _T("SELECT * FROM tItems WHERE itemidx = ") << item;
-
-    g_DBManager.lock();
-    SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());
-    g_DBManager.unLock();
-
-    if (pT)
-    {
-        if (pT->Rows() > 0)
-        {
-            // Backup previous column widths
-            std::vector<int> columnWidthList;
-            while(lv.GetHeader().GetItemCount() > 0)
-            {
-                columnWidthList.push_back(lv.GetColumnWidth(0));
-                lv.DeleteColumn(0);
-            }
-
-            // Rebuild columns with new labels
-            lv.AddColumn(_T("Property"), 0);
-            lv.AddColumn(_T("Value"), 1);
-
-            int width = columnWidthList.size() > 0 ? columnWidthList[0] : 75;
-            lv.SetColumnWidth(0, width);
-            width = columnWidthList.size() > 1 ? columnWidthList[1] : 120;
-            lv.SetColumnWidth(1, width);
-
-            // Fill content
-            int indx = INT_MAX - 1;
-            for (unsigned int col = 0; col < pT->Columns(); col++)
-            {
-                indx = lv.AddItem(indx, 0, from_ascii_copy(pT->Headers()[col]).c_str());
-                lv.AddItem(indx, 1, from_ascii_copy(pT->Data()[col]).c_str());
-            }
-        }
-    }
-}
-
-
-
-
-
-
-
-
-FindView::FindView()
-: m_lastQueryChar(-1)
-, m_lastQueryQlMin(-1)
-, m_lastQueryQlMax(-1)
-, m_pParent(NULL)
-{
-}
-
-
-void FindView::SetParent(InventoryView* parent)
-{
-    m_pParent = parent;
-}
-
-
-LRESULT FindView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
-{
-    this->SetWindowText(_T("Find View"));
-
-    DlgResize_Init(false, true, WS_CLIPCHILDREN);
-    return 0;
-}
-
-
-LRESULT FindView::OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
-{
-    LPMSG pMsg = (LPMSG)lParam;
-    return this->PreTranslateMsg(pMsg);
-}
-
-
-BOOL FindView::PreTranslateMsg(MSG* pMsg)
-{
-    return IsDialogMessage(pMsg);
-}
-
-
-LRESULT FindView::OnCbnBuildCharcombo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-{
-    KillTimer(1);
-
-    CComboBox cb = GetDlgItem(IDC_CHARCOMBO);
-
-    int oldselection = cb.GetCurSel();
-
-    cb.ResetContent();
-    int item = cb.AddString(_T("-"));
-    cb.SetItemData(item, 0);
-
-    g_DBManager.lock();
-    SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT DISTINCT owner FROM tItems"));
-    g_DBManager.unLock();
-
-    if (pT != NULL)
-    {
-        for (unsigned int i = 0; i < pT->Rows(); i++)
-        {
-            unsigned int id = boost::lexical_cast<unsigned int>(pT->Data(i,0));
-
-            g_DBManager.lock();
-            std::tstring name = g_DBManager.getToonName(id);
-            g_DBManager.unLock();
-
-            if (name.empty())
-            {
-                name = from_ascii_copy(pT->Data()[pT->Columns()*i]);
-            }
-
-            if ((item = cb.AddString(name.c_str())) != CB_ERR)
-            {
-                cb.SetItemData(item, id);
-            }
-        }
-    }
-
-    if (oldselection >= 0)
-    {
-        cb.SetCurSel(oldselection);
-    }
-
-    return 0;
-}
-
-
-LRESULT FindView::OnEnChangeItemtext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-{
-    SetTimer(1, 1500);
-    return 0;
-}
-
-
-LRESULT FindView::OnCbnSelChangeCharcombo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-{
-    UpdateFindQuery();
-    return 0;
-}
-
-
-LRESULT FindView::OnTimer(UINT wParam, TIMERPROC lParam)
-{
-    if (wParam == 1)
-    {
-        UpdateFindQuery();
-        KillTimer(1);
-    }
-    return 0;
-}
-
-
-void FindView::UpdateFindQuery()
-{
-    KillTimer(1);
-
-    CComboBox cb = GetDlgItem(IDC_CHARCOMBO);
-    CEdit eb = GetDlgItem(IDC_ITEMTEXT);
-    CEdit qlmin = GetDlgItem(IDC_QLMIN);
-    CEdit qlmax = GetDlgItem(IDC_QLMAX);
-
-    unsigned int charid = 0;
-    int item = -1;
-    if ((item = cb.GetCurSel()) != CB_ERR)
-    {
-        charid = (unsigned int)cb.GetItemData(item);
-    }
-
-    TCHAR buffer[MAX_PATH];
-    ZeroMemory(buffer, MAX_PATH);
-    eb.GetWindowText(buffer, MAX_PATH);
-    std::tstring text(buffer);
-
-    int minql = -1;
-    ZeroMemory(buffer, MAX_PATH);
-    qlmin.GetWindowText(buffer, MAX_PATH);
-    std::tstring qlminText(buffer);
-    try {
-        minql = boost::lexical_cast<int>(qlminText);
-    }
-    catch(boost::bad_lexical_cast &/*e*/) {
-        // Go with the default value
-    }
-
-    int maxql = -1;
-    ZeroMemory(buffer, MAX_PATH);
-    qlmax.GetWindowText(buffer, MAX_PATH);
-    std::tstring qlmaxText(buffer);
-    try {
-        maxql = boost::lexical_cast<int>(qlmaxText);
-    }
-    catch(boost::bad_lexical_cast &/*e*/) {
-        // Go with the default value
-    }
-
-    if ( text.size() > 2
-        && ( m_lastQueryText != text || m_lastQueryChar != charid || m_lastQueryQlMin != minql || m_lastQueryQlMax != maxql ) )
-    {
-        m_lastQueryText = text;
-        m_lastQueryChar = charid;
-        m_lastQueryQlMin = minql;
-        m_lastQueryQlMax = maxql;
-        std::tstringstream sql;
-
-        if (charid > 0) {
-            sql << _T("owner = ") << charid << _T(" AND ");
-        }
-        if (minql > -1) {
-            sql << _T("titems.ql >= ") << minql << _T(" AND ");
-        }
-        if (maxql > -1) {
-            sql << _T("titems.ql <= ") << maxql << _T(" AND ");
-        }
-
-        sql << _T("keylow IN (SELECT aoid FROM aodb.tblAO WHERE name LIKE \"%") << text << _T("%\")");
-
-        m_pParent->UpdateListView(sql.str());
-    }
 }

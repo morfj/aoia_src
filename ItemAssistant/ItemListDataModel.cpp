@@ -53,7 +53,9 @@ namespace aoia {
             _T("            END ")
             _T("            FROM tItems I2 WHERE I2.children = I.parent) ")
             _T("    END AS container, ")
-            _T("    T.charid ")
+            _T("    T.charid, ")
+            _T("    I.itemidx, ")
+            _T("    A.aoid ")
             _T("FROM ")
             _T("    tItems I JOIN aodb.tblAO A ON I.keyhigh = A.aoid JOIN tToons T ON I.owner = T.charid ");
 
@@ -165,8 +167,20 @@ namespace aoia {
             return 0;
         }
 
-        // The AOID is selected as column index 2 in the query
-        return boost::lexical_cast<unsigned int>(m_result->Data(index, 2));
+        // The AOID is selected as column index 7 in the query
+        return boost::lexical_cast<unsigned int>(m_result->Data(index, 7));
+    }
+
+
+    unsigned int ItemListDataModel::getItemIndex(unsigned int rowIndex) const
+    {
+        if (!m_result)
+        {
+            return 0;
+        }
+
+        // The owned-item-index is selected as column index 6 in the query
+        return boost::lexical_cast<unsigned int>(m_result->Data(rowIndex, 6));
     }
 
 

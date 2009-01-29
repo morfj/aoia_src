@@ -222,11 +222,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FindPanel.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\IdentifyListDataModel.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\IdentifyView.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\InfoPanel.cpp"
 				>
 			</File>
 			<File
@@ -352,11 +360,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FindPanel.h"
+				>
+			</File>
+			<File
 				RelativePath=".\IdentifyListDataModel.h"
 				>
 			</File>
 			<File
 				RelativePath=".\IdentifyView.h"
+				>
+			</File>
+			<File
+				RelativePath=".\InfoPanel.h"
 				>
 			</File>
 			<File
@@ -496,10 +512,6 @@
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath=".\ClassDiagram1.cd"
-			>
-		</File>
 		<File
 			RelativePath=".\README.txt"
 			>

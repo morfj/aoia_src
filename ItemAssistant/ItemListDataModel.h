@@ -47,6 +47,9 @@ namespace aoia {
         /// Return the AOID of the specified item.
         unsigned int getItemId(unsigned int index) const;
 
+        /// Return the owned-item-index of the item at the specified row.
+        unsigned int getItemIndex(unsigned int rowIndex) const;
+
         /// Tell the datamodel to resort based on a particular column and direction.
         void sortData(unsigned int columnIndex, bool ascending = true);
 
