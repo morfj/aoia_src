@@ -2152,10 +2152,11 @@ void InventoryView::OnSelectionChanged()
 {
     std::set<unsigned int> items = m_datagrid->getSelectedItems();
 
-    if (items.size() == 1) 
+    if (items.size() == 1)
     {
         m_toolbar.EnableButton(ID_SELL_ITEM_AOMARKET, TRUE);
-        m_infoview.SetCurrentItem(*items.begin());
+        ItemListDataModelPtr model = boost::shared_static_cast<ItemListDataModel>(m_datagrid->getModel());
+        m_infoview.SetCurrentItem(model->getItemIndex(*items.begin()));
     }
     else
     {
