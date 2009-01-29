@@ -8,6 +8,12 @@ namespace aoia {
     }
 
 
+    DataGridModel::connection_t DataGridModel::connectCollectionUpdated(collection_signal_t::slot_function_type subscriber)
+    {
+        return m_allUpdatedSignal.connect(subscriber);
+    }
+
+
     DataGridModel::connection_t DataGridModel::connectItemAdded(item_signal_t::slot_function_type subscriber)
     {
         return m_itemAddedSignal.connect(subscriber);
@@ -29,6 +35,12 @@ namespace aoia {
     void DataGridModel::disconnect(connection_t subscriber)
     {
         subscriber.disconnect();
+    }
+
+
+    void DataGridModel::signalCollectionUpdated()
+    {
+        m_allUpdatedSignal();
     }
 
 

@@ -2,6 +2,8 @@
 #define DATAGRIDCONTROL_H
 
 #include "DataGridModel.h"
+#include <set>
+
 
 namespace aoia {
 
@@ -37,12 +39,16 @@ namespace aoia {
         void autosizeColumnsUseHeader();
         void autosizeColumnsUseData(bool onlyVisible = true);
 
+        unsigned int getSelectedCount() const;
+        std::set<unsigned int> getSelectedItems() const;
+
     protected:
         LRESULT onCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled);
         LRESULT onGetDispInfo(int wParam, LPNMHDR lParam, BOOL &bHandled);
         //LRESULT onCacheHint(int wParam, LPNMHDR lParam, BOOL &bHandled);
         //LRESULT onFindItem(int wParam, LPNMHDR lParam, BOOL &bHandled);
 
+        void onAllItemsUpdated();
         void onItemAdded(unsigned int index);
         void onItemRemoved(unsigned int index);
         void onAllItemsRemoved();
@@ -56,6 +62,7 @@ namespace aoia {
         boost::signals::connection m_addSignalConnection;
         boost::signals::connection m_removeSignalConnection;
         boost::signals::connection m_clearSignalConnection;
+        boost::signals::connection m_updateSignalConnection;
     };
 
     typedef boost::shared_ptr<DataGridControl> DataGridControlPtr;

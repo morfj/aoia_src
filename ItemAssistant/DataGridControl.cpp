@@ -29,6 +29,7 @@ namespace aoia {
             m_model->disconnect(m_addSignalConnection);
             m_model->disconnect(m_removeSignalConnection);
             m_model->disconnect(m_clearSignalConnection);
+            m_model->disconnect(m_updateSignalConnection);
         }
         m_model = model;
         if (m_model)
@@ -36,12 +37,11 @@ namespace aoia {
             m_addSignalConnection = m_model->connectItemAdded(boost::bind(&DataGridControl::onItemAdded, this, _1));
             m_removeSignalConnection = m_model->connectItemRemoved(boost::bind(&DataGridControl::onItemRemoved, this, _1));
             m_clearSignalConnection = m_model->connectAllRemoved(boost::bind(&DataGridControl::onAllItemsRemoved, this));
+            m_updateSignalConnection = m_model->connectCollectionUpdated(boost::bind(&DataGridControl::onAllItemsUpdated, this));
         }
 
         updateColumns();
-        for (unsigned int i = 0; i < m_model->getItemCount(); ++i) {
-            m_listView.InsertItem(i, LPSTR_TEXTCALLBACK);
-        }
+        m_listView.SetItemCountEx(m_model->getItemCount(), 0);
     }
 
 
@@ -67,6 +67,13 @@ namespace aoia {
             memcpy(pdi->item.pszText, text.c_str(), len);
         }
         return 0;
+    }
+
+
+    void DataGridControl::onAllItemsUpdated()
+    {
+        m_listView.SetItemCountEx(m_model->getItemCount(), 0);
+        m_listView.Invalidate(FALSE);
     }
 
 
@@ -137,7 +144,7 @@ namespace aoia {
             unsigned int maxRow = m_listView.GetItemCount();
             TCHAR buffer[MAX_PATH];
 
-            for (int i = 0; i < m_model->getColumnCount(); ++i) 
+            for (unsigned int i = 0; i < m_model->getColumnCount(); ++i) 
             {            
                 unsigned int maxWidth = m_listView.GetStringWidth(m_model->getColumnName(i).c_str());
                 for (unsigned int rowIndex = firstRow; (numRows-- > 0) && (rowIndex < maxRow); rowIndex++)
@@ -148,6 +155,31 @@ namespace aoia {
                 m_listView.SetColumnWidth(i, max(maxWidth + 15, (unsigned int)m_listView.GetColumnWidth(i)));
             }
         }
+    }
+
+
+    unsigned int DataGridControl::getSelectedCount() const
+    {
+        return m_listView.GetSelectedCount();
+    }
+
+
+    std::set<unsigned int> DataGridControl::getSelectedItems() const
+    {
+        std::set<unsigned int> result;
+        
+        int lastId = -1;
+        do
+        {
+            lastId = m_listView.GetNextItem(lastId, LVNI_SELECTED);
+            if (lastId > -1)
+            {
+                result.insert(lastId);
+            }
+        }
+        while(lastId > -1);
+
+        return result;
     }
 
 }   // namespace
