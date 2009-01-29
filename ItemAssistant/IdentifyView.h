@@ -21,7 +21,9 @@ public:
 
     BEGIN_MSG_MAP_EX(IdentifyView)
         MSG_WM_CREATE(onCreate)
-        NOTIFY_CODE_HANDLER_EX(LVN_ITEMCHANGING, onListItemChanging)
+        //NOTIFY_CODE_HANDLER_EX(LVN_ITEMCHANGING, onListItemChanging)
+        NOTIFY_CODE_HANDLER_EX(LVN_ITEMCHANGED, onListItemChanged)
+        NOTIFY_CODE_HANDLER_EX(LVN_ODSTATECHANGED, onListItemStateChanged)
         CHAIN_MSG_MAP(inherited)
         CHAIN_MSG_MAP(WTL::CDialogResize<IdentifyView>)
         REFLECT_NOTIFICATIONS()
@@ -43,7 +45,9 @@ public:
 
 protected:
     LRESULT onCreate(LPCREATESTRUCT createStruct);
-    LRESULT onListItemChanging(LPNMHDR lParam);
+    //LRESULT onListItemChanging(LPNMHDR lParam);
+    LRESULT onListItemChanged(LPNMHDR lParam);
+    LRESULT onListItemStateChanged(LPNMHDR lParam);
 
     struct Identifyable
     {

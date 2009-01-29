@@ -36,7 +36,7 @@ LRESULT IdentifyView::onCreate(LPCREATESTRUCT createStruct)
     m_splitter.SetSplitterExtendedStyle(0);
     m_splitter.SetDlgCtrlID(IDW_SPLITTER);
 
-    DWORD gridStyle = WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS;
+    DWORD gridStyle = WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_OWNERDATA;
     m_identifyList->Create(m_splitter.m_hWnd, rcDefault, NULL, gridStyle, WS_EX_CLIENTEDGE);
     m_identifyList->SetDlgCtrlID(IDW_IDENTLIST);
 
@@ -58,7 +58,32 @@ LRESULT IdentifyView::onCreate(LPCREATESTRUCT createStruct)
 }
 
 
-LRESULT IdentifyView::onListItemChanging(LPNMHDR lParam)
+//LRESULT IdentifyView::onListItemChanging(LPNMHDR lParam)
+//{
+//    // Check that it is an event from the correct child window.
+//    if (lParam->hwndFrom == m_identifyList->m_hWnd)
+//    {
+//        LPNMLISTVIEW pItem = (LPNMLISTVIEW)lParam;
+//
+//        // Check to see if the change is a selection event.
+//        if ( !(pItem->uOldState & LVIS_SELECTED) && (pItem->uNewState & LVIS_SELECTED) )
+//        {
+//            std::set<unsigned int> aoids;
+//            aoids.insert(m_identifyListModel->getItemId(pItem->iItem));
+//
+//            ItemListDataModelPtr data(new ItemListDataModel(aoids));
+//
+//            m_datagrid->setModel(data);
+//            m_datagrid->autosizeColumnsUseData();
+//        }
+//    }
+//
+//    return FALSE;
+//}
+
+
+// Normal singleselect change notifications
+LRESULT IdentifyView::onListItemChanged(LPNMHDR lParam)
 {
     // Check that it is an event from the correct child window.
     if (lParam->hwndFrom == m_identifyList->m_hWnd)
@@ -68,24 +93,8 @@ LRESULT IdentifyView::onListItemChanging(LPNMHDR lParam)
         // Check to see if the change is a selection event.
         if ( !(pItem->uOldState & LVIS_SELECTED) && (pItem->uNewState & LVIS_SELECTED) )
         {
-            unsigned int aoid = m_identifyListModel->getItemId(pItem->iItem);
-
-            std::tstringstream sql;
-            sql << _T("SELECT *, ")
-                << _T("(SELECT CASE ")
-                << _T("     WHEN parent = 0 THEN 'Unknown' ")
-                << _T("     WHEN parent = 1 THEN 'Bank' ")
-                << _T("     WHEN parent = 2 THEN 'Inventory' ")
-                << _T("     WHEN parent = 3 THEN 'Shop' ")
-                << _T("     ELSE 'Backpack' ")
-                << _T(" END) AS Location ")
-                << _T("FROM tItems I JOIN aodb.tblAO A ON I.keyhigh = A.aoid JOIN tToons T ON I.owner = T.charid ")
-                << _T("WHERE keyhigh = ") << aoid;
-
-            //boost::shared_ptr<QueryDataGridModel> data(new QueryDataGridModel(sql.str()));
-            
             std::set<unsigned int> aoids;
-            aoids.insert(aoid);
+            aoids.insert(m_identifyListModel->getItemId(pItem->iItem));
 
             ItemListDataModelPtr data(new ItemListDataModel(aoids));
 
@@ -95,4 +104,29 @@ LRESULT IdentifyView::onListItemChanging(LPNMHDR lParam)
     }
 
     return FALSE;
+}
+
+
+// Owner data (virtual lists) range selection changes
+LRESULT IdentifyView::onListItemStateChanged(LPNMHDR lParam)
+{
+    LPNMLVODSTATECHANGE lStateChange = (LPNMLVODSTATECHANGE)lParam;
+
+    // Check that it is an event from the correct child window.
+    if (lStateChange->hdr.hwndFrom == m_identifyList->m_hWnd)
+    {
+        // Check to see if the change is a selection event.
+        if ( !(lStateChange->uOldState & LVIS_SELECTED) && (lStateChange->uNewState & LVIS_SELECTED) )
+        {
+            std::set<unsigned int> aoids;
+            aoids.insert(m_identifyListModel->getItemId(lStateChange->iFrom));
+
+            ItemListDataModelPtr data(new ItemListDataModel(aoids));
+
+            m_datagrid->setModel(data);
+            m_datagrid->autosizeColumnsUseData();
+        }
+    }
+
+    return 0;
 }

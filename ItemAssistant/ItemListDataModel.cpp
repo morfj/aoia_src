@@ -5,9 +5,15 @@
 
 namespace aoia {
 
-    ItemListDataModel::ItemListDataModel(std::set<unsigned int> const& aoids)
+    ItemListDataModel::ItemListDataModel(std::tstring const& predicate, unsigned int sortColumnIndex, bool sortAscending)
     {
-        std::ostringstream aoid_array;
+        runQuery(predicate, sortColumnIndex, sortAscending);
+    }
+
+
+    ItemListDataModel::ItemListDataModel(std::set<unsigned int> const& aoids, unsigned int sortColumnIndex, bool sortAscending)
+    {
+        std::tstringstream aoid_array;
         for (std::set<unsigned int>::const_iterator it = aoids.begin(); it != aoids.end(); ++it)
         {
             if (it != aoids.begin())
@@ -17,44 +23,61 @@ namespace aoia {
             aoid_array << *it;
         }
 
-        std::string sql = 
-            "SELECT "
-            "    A.name, "
-            "    I.ql, "
-            "    T.charname, "
-            "    I.parent, "
-            //"    CASE "
-            //"        WHEN parent = 1 THEN 'Bank' "
-            //"        WHEN parent = 2 THEN 'Inventory' "
-            //"        WHEN parent = 3 THEN 'Shop' "
-            //"        WHEN parent > 10 THEN 'Backpack' "
-            //"        ELSE 'Unknown' "
-            //"    END AS location "
-            "    CASE "
-            "        WHEN parent = 1 THEN 'Bank' "
-            "        WHEN parent = 2 THEN 'Inventory' "
-            "        WHEN parent = 3 THEN 'Shop' "
-            "        WHEN I.parent > 10 THEN (SELECT "
-            "            CASE "
-            "                WHEN I2.parent = 1 THEN 'Bank' "
-            "                WHEN I2.parent = 2 THEN 'Inventory' "
-            "                WHEN I2.parent = 3 THEN 'Shop' "
-            "            END "
-            "            FROM tItems I2 WHERE I2.children = I.parent) "
-            "    END AS container, "
-            "    T.charid "
-            "FROM "
-            "    tItems I JOIN aodb.tblAO A ON I.keyhigh = A.aoid JOIN tToons T ON I.owner = T.charid "
-            "WHERE keyhigh IN ";
-
-        sql += "(" + aoid_array.str() + ")";
-
-        m_result = g_DBManager.ExecTable(from_ascii_copy(sql));
+        std::tstring predicate = _T("A.aoid IN (") + aoid_array.str() + _T(")");
+        runQuery(predicate, sortColumnIndex, sortAscending);
     }
 
 
     ItemListDataModel::~ItemListDataModel()
     {
+    }
+
+
+    void ItemListDataModel::runQuery( std::tstring const& predicate, int sortColumn, bool sortAscending )
+    {
+        std::tstring sql = 
+            _T("SELECT ")
+            _T("    A.name, ")
+            _T("    I.ql, ")
+            _T("    T.charname, ")
+            _T("    I.parent, ")
+            _T("    CASE ")
+            _T("        WHEN parent = 1 THEN 'Bank' ")
+            _T("        WHEN parent = 2 THEN 'Inventory' ")
+            _T("        WHEN parent = 3 THEN 'Shop' ")
+            _T("        WHEN I.parent > 10 THEN (SELECT ")
+            _T("            CASE ")
+            _T("                WHEN I2.parent = 1 THEN 'Bank' ")
+            _T("                WHEN I2.parent = 2 THEN 'Inventory' ")
+            _T("                WHEN I2.parent = 3 THEN 'Shop' ")
+            _T("            END ")
+            _T("            FROM tItems I2 WHERE I2.children = I.parent) ")
+            _T("    END AS container, ")
+            _T("    T.charid ")
+            _T("FROM ")
+            _T("    tItems I JOIN aodb.tblAO A ON I.keyhigh = A.aoid JOIN tToons T ON I.owner = T.charid ");
+
+        if (!predicate.empty())
+        {
+            sql += _T(" WHERE ");
+            sql += predicate;
+        }
+
+        std::tstring sort_predicate;
+        if (sortColumn > -1 && sortColumn < COL_COUNT)
+        {
+            sort_predicate = _T(" ORDER BY ");
+            sort_predicate += boost::lexical_cast<std::tstring>(sortColumn + 1);
+        }
+
+        if (!sort_predicate.empty())
+        {
+            sort_predicate += sortAscending ? _T(" ASC ") : _T(" DESC ");
+            sql += sort_predicate;
+        }
+
+        m_result = g_DBManager.ExecTable(sql);
+        m_lastPredicate = predicate;
     }
 
 
@@ -144,6 +167,14 @@ namespace aoia {
 
         // The AOID is selected as column index 2 in the query
         return boost::lexical_cast<unsigned int>(m_result->Data(index, 2));
+    }
+
+
+    void ItemListDataModel::sortData(unsigned int columnIndex, bool ascending)
+    {
+        // TODO: Add support for sorting the backpack column properly.
+        runQuery(m_lastPredicate, columnIndex, ascending);
+        signalCollectionUpdated();
     }
 
 }

@@ -9,13 +9,27 @@
 namespace aoia {
 
     /**
-     * Datamodel that searches for all recorded items that matches a set of AOIDs.
+     * Datamodel that searches for all recorded items that matches the specified WHERE predicate.
+     *
+     * The predicate must make sure to address the columns in an un-ambigous 
+     * way since the query is a joining of 3 different tables. Each table has 
+     * its own alias in the query:
+     * - tItems has the alias \e I
+     * - aodb.tblAO has the alias \e A
+     * - tToons has the alias \e T 
+     *
+     * Example predicate:
+     * - keyhigh = 123456
      */
     class ItemListDataModel
         : public DataGridModel
     {
     public:
-        ItemListDataModel(std::set<unsigned int> const& aoids);
+        /// Constructor that takes a general SQL predicate as input.
+        ItemListDataModel(std::tstring const& predicate, unsigned int sortColumnIndex = -1, bool sortAscending = true);
+        /// Convenience constructor for running a query where the predicate is an 
+        /// IN-statement of the AOIDs in the supplied set.
+        ItemListDataModel(std::set<unsigned int> const& aoids, unsigned int sortColumnIndex = -1, bool sortAscending = true);
         virtual ~ItemListDataModel();
 
         /// Return number of columns.
@@ -33,6 +47,9 @@ namespace aoia {
         /// Return the AOID of the specified item.
         unsigned int getItemId(unsigned int index) const;
 
+        /// Tell the datamodel to resort based on a particular column and direction.
+        void sortData(unsigned int columnIndex, bool ascending = true);
+
     protected:
         // Enumeration of publicly visible columns.
         enum ColumnID
@@ -45,8 +62,11 @@ namespace aoia {
             COL_COUNT       // This should always be last!
         };
 
+        void runQuery(std::tstring const& predicate, int sortColumn = -1, bool sortAscending = true);
+
     private:
         SQLite::TablePtr m_result;
+        std::tstring m_lastPredicate;
     };
 
     typedef boost::shared_ptr<ItemListDataModel> ItemListDataModelPtr;
