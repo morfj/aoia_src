@@ -826,67 +826,6 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 			else if (opId == AO::CHAR_ACTION_TRADESKILL)
 			{
 				//tradeskill. do nothing. we will get delete/trade operations for all.
-
-				//tradeskill. Source = fromType/fromItemSlotId
-				//target: itemId.low = target from container type (0x68), itemId.high=from slot id.
-
-				//No msg tells us if any of the items should be deleted!
-				//WE need to know if target/source is consumed! is there a tradeskill db in the client?
-				//The downside is we also delete failed tradeskills...
-
-// bio-com plus moster parts:
-//[11556] AOItemOperation: 
-//[11556] operationId  0x51 
-//[11556] unknown3  0x0 
-//[11556] fromType  0x68 
-//[11556] fromContainerTempId 0 
-//[11556] fromItemSlotId 5d 
-//[11556] itemId [x68|77 (x4d)]  //77=monster parts
-//[11556] AOPartnerTradeItem: 
-//[11556] target [50000|1738982964] 
-//[11556] operationId 0x57 
-//[11556] itemid [154359|154359] 
-//[11556] ql c8 stack 1 
-
-				//currently, we delete both items unless they are on the whitelist.
-
-		/*		OutputDebugString(itemOp.print().c_str());
-
-
-				g_DBManager.lock();
-				g_DBManager.Begin();
-
-				{
-					//remove tradeskilled source:
-					std::tstringstream sql;
-					sql << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
-					<< _T(" AND parent = 2")
-					<< _T(" AND slot = ") << itemOp.fromItemSlotId()
-					<< _T(" AND keylow != 154331")// bio-communitor
-					<< _T(" AND keylow != 161699")// nano prog. interface
-					<< _T(" AND keylow != 229870")//ancient novictum refiner
-					<< _T(" AND keylow != 247100");// Kyr'Ozch Structural Analyzer
-
-
-					g_DBManager.Exec(sql.str());
-					OutputDebugString(sql.str().c_str());
-				}
-
-				{
-					//remove tradeskilled target:
-					std::tstringstream sql;
-					sql << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
-					<< _T(" AND parent = 2")
-					<< _T(" AND slot = ") << itemOp.itemId().High()
-					<< _T(" AND keylow != 154331 AND keylow != 161699 AND keylow != 247100");
-
-					g_DBManager.Exec(sql.str());
-					OutputDebugString(sql.str().c_str());
-				}
-
-				g_DBManager.Commit();
-				g_DBManager.unLock();*/
-			
 			}
 			else if (opId == AO::CHAR_ACTION_LOGOFF1 ||opId == AO::CHAR_ACTION_LOGOFF2) 
 			{
@@ -1042,8 +981,8 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 			OutputDebugString(charOp.print().c_str());
 #endif
 
-				//Eek a quest item (key or use-item) gets deleted, only temp id sent in here.
-				//we got this id from a MSG_SPAWN_REWARD before a full sync or when item was spawned TODO:when was that?
+				//A quest item (key or use-item) gets deleted, only temp id sent in here.
+				//we got this id from a MSG_SPAWN_REWARD before a full sync or when item was spawned
 				
 				//the id is stored in  charOp.fromContainerTempId() + charOp.fromItemSlotId()
 
@@ -1059,8 +998,6 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 					std::tstringstream sql;
 					sql << _T("DELETE FROM tItems WHERE owner = ") << charId 
 					<< _T(" AND parent = ") << fromContainerId
-				//	<< _T(" AND keylow = ") << itemOp.itemId().Low()
-				//	<< _T(" AND keyhigh = ") << itemOp.itemId().High()
 					<< _T(" AND slot = ") << realSlotId;
 					
 					g_DBManager.Exec(sql.str());
@@ -1645,8 +1582,6 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 	case AO::MSG_ITEM_MOVE: //0x47537A24:// what about 0x52526858:
 		{
 
-			//TODO: Hotswap support!
-
 	//	The ItemMoved is identical to the client send version except the header is server type.
 			Native::AOItemMoved moveOp((AO::ItemMoved*)msg.start(), true);
 #ifdef DEBUG
@@ -1742,11 +1677,14 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 				}
 				else if (newSlot >= 0x6f)
 				{
-					//Check if item is stackable, we are moving to inventory 
+					//Check if item is stackable, splittable, we are moving to inventory 
 					//and there is an item with the same itemkey there.
 					//If so join with the one with the lowest slotId (I think).
 
-					if (g_DBManager.getItemProperties(moveOp.charid(), fromContainerId, moveOp.fromItemSlotId()) & PROP_STACKABLE)
+					unsigned int itemProp = g_DBManager.getItemProperties(moveOp.charid(), fromContainerId, moveOp.fromItemSlotId());
+
+					//DID during downtime, check this with extruder bars and ammo at least
+					if ((itemProp & PROP_STACKABLE) && (!(itemProp & PROP_NO_SPLIT)))
 					{
 					//	OutputDebugString(_T("Its stackable"));
 						unsigned int newSlotId = g_DBManager.findFirstItemOfSameType(moveOp.charid(), fromContainerId, moveOp.fromItemSlotId(), newParent);
