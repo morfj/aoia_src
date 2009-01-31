@@ -309,9 +309,13 @@ void DBManager::setToonShopId(unsigned int charid, unsigned int shopid)
 {
     assert(charid != 0);
     assert(shopid != 0);
+    
+    std::ostringstream sql;
+    sql << "UPDATE OR IGNORE tToons SET shopid=" << shopid << " WHERE charid=" << charid;
+
     g_DBManager.Begin();
-    g_DBManager.Exec(STREAM2STR("UPDATE OR IGNORE tToons SET shopid = " << shopid << " WHERE charid = " << charid));
-	OutputDebugString(STREAM2STR("UPDATE OR IGNORE tToons SET shopid = " << shopid << " WHERE charid = " << charid).c_str());
+    g_DBManager.Exec(sql.str());
+	OutputDebugString(from_ascii_copy(sql.str()).c_str());
     g_DBManager.Commit();
 }
 
@@ -339,7 +343,7 @@ unsigned int DBManager::getToonDimension(unsigned int charid) const
         {
             result = boost::lexical_cast<unsigned int>(pT->Data(0,0));
         }
-        catch (boost::bad_lexical_cast &e)
+        catch (boost::bad_lexical_cast &/*e*/)
         {
             // Wierd.. lets debug!
             assert(false);
