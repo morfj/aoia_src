@@ -942,7 +942,7 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 
 unsigned int InventoryView::GetFromContainerId(unsigned int charId, unsigned short fromType, unsigned short fromSlotId)
 {
-    if (fromType == 0x006b) //backpack
+    if (fromType == 0x006b) //backpack. fromSlotId contains a temp container id.
 		return ServicesSingleton::Instance()->GetContainerId(charId, fromSlotId);
 
 	else if (fromType == 0x0068//inv
@@ -1002,11 +1002,9 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
 			Native::AOCharacterAction charOp((AO::CharacterAction*)msg.start(), true);
 
-/*#ifdef DEBUG
-			OutputDebugString(charOp.print().c_str());
-#endif*/
-			unsigned int opId = charOp.operationId();
 
+			unsigned int opId = charOp.operationId();
+	
 			//TODO: switch statement
 			if (opId == 0x70) //delete (user or tradeskill)
 			{
@@ -1037,8 +1035,38 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 				g_DBManager.unLock();
 
 			}
-			else
+			if (opId == 0x2f)
 			{
+
+#ifdef DEBUG
+			OutputDebugString(charOp.print().c_str());
+#endif
+
+				//Eek a quest item (key or use-item) gets deleted, only temp id sent in here.
+				//we got this id from a MSG_SPAWN_REWARD before a full sync or when item was spawned TODO:when was that?
+				
+				//the id is stored in  charOp.fromContainerTempId() + charOp.fromItemSlotId()
+
+				unsigned int fromContainerId = AO::INV_TOONINV;
+				unsigned int charId = charOp.charid();
+
+				unsigned int itemTempId = (charOp.fromContainerTempId() << 16) + charOp.fromItemSlotId();
+
+				unsigned int realSlotId = ServicesSingleton::Instance()->GetItemSlotId(charId, itemTempId);
+
+				if (realSlotId > 0)
+				{
+					std::tstringstream sql;
+					sql << _T("DELETE FROM tItems WHERE owner = ") << charId 
+					<< _T(" AND parent = ") << fromContainerId
+				//	<< _T(" AND keylow = ") << itemOp.itemId().Low()
+				//	<< _T(" AND keyhigh = ") << itemOp.itemId().High()
+					<< _T(" AND slot = ") << realSlotId;
+					
+					g_DBManager.Exec(sql.str());
+					OutputDebugString(sql.str().c_str());
+				}
+
 				return;
 			}
 		}
@@ -1056,87 +1084,123 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 			//when trade partner adds/removes items to trade window
 			Native::AOPartnerTradeItem item((AO::PartnerTradeItem*)msg.start());
 
+			if (item.targetId() == msg.characterId()) //else we get other ppl using stims etc.. :)
+			{
+				unsigned int opId = item.operationId();
 #ifdef DEBUG
-			OutputDebugString(item.print().c_str());
+
+				if (opId == 0x07 || opId == 0x06) //vicinity item swaps!
+				{
+					return;
+				}
+				else if (opId == 0x20)//when perking a mob
+				{
+					return;
+				}
+				else
+				{
+					//OutputDebugString(_T("Unknown trade operation id:"));
+					OutputDebugString(item.print().c_str());
+				}
 #endif
 			
-			unsigned int opId = item.operationId();
-			if (opId == 0x55) //trade partner adds an item
-			{
-
-				unsigned int otherTradeContainer = AO::INV_TRADEPARTNER;
-				g_DBManager.lock();
-				g_DBManager.Begin();
-
-				unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), otherTradeContainer);
-
-				g_DBManager.insertItem(
-                    item.itemid().Low(),
-                    item.itemid().High(),
-                    item.ql(),
-					item.flags(),
-                    item.stack(),
-                    otherTradeContainer,
-                    nextFreeInvSlot,
-                    0,
-                    item.charid());
-
-				g_DBManager.Commit();
-				g_DBManager.unLock();
-			}
-			else if (opId == 0x56) //trade partner removes an item
-			{
-				if (item.partnerFromType() == 0x6c)//remove from trade window
+				
+				if (opId == 0x55) //trade partner adds an item
 				{
+
 					unsigned int otherTradeContainer = AO::INV_TRADEPARTNER;
 					g_DBManager.lock();
 					g_DBManager.Begin();
 
-					std::tstringstream sql;
+					unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), otherTradeContainer);
 
-					sql << _T("DELETE FROM tItems")
-						<< _T(" WHERE parent = ") << otherTradeContainer
-						<< _T(" AND slot = ") << item.partnerFromItemSlotId()
-						<< _T(" AND owner = ") << item.charid();
-					g_DBManager.Exec(sql.str());
-					OutputDebugString(sql.str().c_str());
+					g_DBManager.insertItem(
+						item.itemid().Low(),
+						item.itemid().High(),
+						item.ql(),
+						item.flags(),
+						item.stack(),
+						otherTradeContainer,
+						nextFreeInvSlot,
+						0,
+						item.charid());
 
 					g_DBManager.Commit();
 					g_DBManager.unLock();
 				}
-			}
-			else if (opId == 0x57)//tradeskill result added to overflow
-			{
-				OutputDebugString(item.print().c_str());
-				// if no overflow window open, it goes in there, and gets moved to inv at once (MSG_ITEM_MOVE).
-				// if overflow window open, it goes there and an MSG_CONTAINER msg follows
-				unsigned int otherTradeContainer = AO::INV_OVERFLOW;
-				g_DBManager.lock();
-				g_DBManager.Begin();
-
-				unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), otherTradeContainer);
-
-
-				g_DBManager.insertItem(
-                    item.itemid().Low(),
-                    item.itemid().High(),
-                    item.ql(),
-					item.flags(),
-                    item.stack(),
-                    otherTradeContainer,  // 2 = inventory
-                    nextFreeInvSlot,
-                    0,
-                    item.charid());
-
-				g_DBManager.Commit();
-				g_DBManager.unLock();
-	
-			}
-			else if (opId == 0x03)//item used/deleted if stack=1
-			{
-				//TODO: What if ppl delete an item from a loot container we have openened??
-				if (item.targetId() == msg.characterId()) //else we get other ppl using stims etc.. :)
+				else if (opId == 0x56) //trade partner removes an item
 				{
+					if (item.partnerFromType() == 0x6c)//remove from trade window
+					{
+						unsigned int otherTradeContainer = AO::INV_TRADEPARTNER;
+						g_DBManager.lock();
+						g_DBManager.Begin();
+
+						std::tstringstream sql;
+
+						sql << _T("DELETE FROM tItems")
+							<< _T(" WHERE parent = ") << otherTradeContainer
+							<< _T(" AND slot = ") << item.partnerFromItemSlotId()
+							<< _T(" AND owner = ") << item.charid();
+						g_DBManager.Exec(sql.str());
+						OutputDebugString(sql.str().c_str());
+
+						g_DBManager.Commit();
+						g_DBManager.unLock();
+					}
+				}
+				else if (opId == 0x57)//tradeskill result added to overflow
+				{
+					// if no overflow window open, it goes in there, and gets moved to inv at once (MSG_ITEM_MOVE).
+					// if overflow window open, it goes there and an MSG_CONTAINER msg follows
+					unsigned int otherTradeContainer = AO::INV_OVERFLOW;
+
+					if (item.partnerFromType() != 0x6e)
+					{
+						OutputDebugString(_T("Unexpected parter from type!"));
+						OutputDebugString(_T("Unexpected parter from type!"));
+						OutputDebugString(_T("Unexpected parter from type!"));
+						OutputDebugString(item.print().c_str());
+						return;
+					}
+
+					unsigned int slotId = item.partnerFromItemSlotId();
+
+					g_DBManager.lock();
+					g_DBManager.Begin();
+
+					if (slotId >= 0x6f)
+						slotId = g_DBManager.findNextAvailableContainerSlot(item.charid(), otherTradeContainer);
+
+					g_DBManager.insertItem(
+						item.itemid().Low(),
+						item.itemid().High(),
+						item.ql(),
+						item.flags(),
+						item.stack(),
+						otherTradeContainer,  // 2 = inventory
+						slotId,
+						0,
+						item.charid());
+
+
+					{
+						std::tstringstream logS;
+						logS << _T("~INSERT (") << item.itemid().Low() << _T("/") << item.ql() << _T("/") << item.stack()
+							<< _T(") WHERE parent = ") << otherTradeContainer
+							<< _T(" AND slot = ") << slotId
+							<< _T(" AND owner = ") << item.charid();
+						OutputDebugString(logS.str().c_str());
+					}
+
+					g_DBManager.Commit();
+					g_DBManager.unLock();
+		
+				}
+				else if (opId == 0x03)//item used/deleted if stack=1
+				{
+					//TODO: What if ppl delete an item from a loot container we have openened??
+					
 					unsigned int fromContainerId = GetFromContainerId(item.charid(),
 					item.partnerFromType(), item.partnerFromContainerTempId());
 
@@ -1194,25 +1258,10 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
 					g_DBManager.Commit();
 					g_DBManager.unLock();
+					
+			
 				}
-		
 			}
-
-#ifdef DEBUG
-			else if (opId == 0x07 || opId == 0x06) //vicinity item swaps!
-			{
-				return;
-			}
-			else if (opId == 0x20)//when perking a mob
-			{
-				return;
-			}
-			else
-			{
-				OutputDebugString(_T("Unknown trade operation id:"));
-				OutputDebugString(item.print().c_str());
-			}
-#endif
 
 		}
 		break;
@@ -1527,45 +1576,68 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 		{
 			Native::AOBackpack bp((AO::Backpack*)msg.start(), true);
 
+			if (bp.owner().High() == msg.characterId())
+            {
 #ifdef DEBUG
+				OutputDebugString(_T("MSG_SPAWN_REWARD"));
 				OutputDebugString(bp.print().c_str());
 #endif
-		//	if (bp.operationId() == 0x65) //I bought a backpack (I think)
-			{
-				unsigned int containerId = bp.targetId();
-
-				unsigned int newParent = AO::INV_OVERFLOW;
-
-				g_DBManager.lock();
-				g_DBManager.Begin();
-
-				//find a free spot:
-				unsigned int slotId = 0x6f;//= bp.invSlot();
-				if (slotId >= 0x6f)
-					slotId = g_DBManager.findNextAvailableContainerSlot(msg.characterId(), newParent);
-
-				// Add item
-				g_DBManager.insertItem(
-					bp.keyLow(),
-					bp.keyHigh(),
-					bp.ql(),
-					bp.flags(),
-					1,//stack
-					newParent,
-					slotId ,//bp.invSlot(),
-					0,
-					msg.characterId());
-
-#ifdef DEBUG
+				
+				if (bp.operationId() == 0x01)
 				{
-					// Log
-					std::tstringstream sql;
-					sql << _T("Reward:") << bp.keyLow() << _T("FL:\t") << bp.flags();
-					OutputDebugString(sql.str().c_str());
+					//TODO:
+					//this sets an item's temp id on zone!
+					//stored in bp.target().High() in this msg.
+					//also contains inv slot id. (plus keylow/ql/stack/flags)
+					//when mission deleted, this id is sent in a MSG_CHAR_OPERATION/op 0x2f
+					OutputDebugString(_T("updating!"));
+					ServicesSingleton::Instance()->UpdateTempItemId(bp.charid(), bp.targetId(), bp.invSlot());
 				}
-#endif
-				g_DBManager.Commit();
-				g_DBManager.unLock();
+				else if (bp.operationId() == 0x71) //I got an mission item
+				{
+					unsigned int containerId = bp.targetId();
+
+					unsigned int newParent = AO::INV_OVERFLOW;
+
+					g_DBManager.lock();
+					g_DBManager.Begin();
+
+					//find a free spot:
+					unsigned int slotId = bp.invSlot();
+					if (slotId >= 0x6f)
+						slotId = g_DBManager.findNextAvailableContainerSlot(msg.characterId(), newParent);
+
+					// Add item
+					g_DBManager.insertItem(
+						bp.keyLow(),
+						bp.keyHigh(),
+						bp.ql(),
+						bp.flags(),
+						1,//stack
+						newParent,
+						slotId ,//bp.invSlot(),
+						0,
+						msg.characterId());
+
+					OutputDebugString(_T("updating!"));
+
+					//this will be moved to the next inv slot in the next msg.
+					unsigned int invSlotId = bp.invSlot();
+					if (invSlotId >= 0x6f)
+						invSlotId = g_DBManager.findNextAvailableContainerSlot(msg.characterId(), AO::INV_TOONINV);
+
+					ServicesSingleton::Instance()->UpdateTempItemId(bp.charid(), bp.targetId(), invSlotId);
+
+					g_DBManager.Commit();
+					g_DBManager.unLock();
+				}
+				else
+				{
+					OutputDebugString(_T("UNKNOWN MSG_SPAWN_REWARD operation Id!"));
+					OutputDebugString(_T("UNKNOWN MSG_SPAWN_REWARD operation Id!"));
+					OutputDebugString(_T("UNKNOWN MSG_SPAWN_REWARD operation Id!"));
+					OutputDebugString(_T("UNKNOWN MSG_SPAWN_REWARD operation Id!"));
+				}
 			}
 		}
 		break;
@@ -1778,13 +1850,14 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
         {
             Native::AOBackpack bp((AO::Backpack*)msg.start(), true);
 
-#ifdef DEBUG
-				OutputDebugString(bp.print().c_str());
-#endif
+
 
             if (bp.owner().High() == msg.characterId())
             {
-
+				#ifdef DEBUG
+						OutputDebugString(_T("MSG_BACKPACK"));
+						OutputDebugString(bp.print().c_str());
+				#endif
 
 				if (bp.operationId() == 0x65) //I bought a backpack (I think)
 				{
@@ -1880,7 +1953,10 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 			unsigned int containerId = bp.containerid().High();
 
 			if (bp.tempContainerId() == 0x006e && bp.containerid().Low() == 0xc350)
+			{
+				OutputDebugString(_T("Overflow container msg"));
 				containerId = AO::INV_OVERFLOW;
+			}
 
 			//bp.containerid().Low() = C76A  => This is some loot container.
 			//bp.containerid().Low() = C749  => I think it means it is in my inv.

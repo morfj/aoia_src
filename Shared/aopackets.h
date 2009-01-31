@@ -134,7 +134,7 @@ namespace AO {
 
 	struct CharacterAction
 	{
-		//MSG_ITEM_OPERATION
+		//MSG_CHAR_OPERATION
 		Header header;
 		//00 00 00 00 70 00 00 00 00 00 00 00 68 00 00 00 4e 00 01 3f 5d 00 01 3f 5c 00 00
 		unsigned char	unknown1;//01
@@ -147,7 +147,7 @@ namespace AO {
 
 	struct ServerCharacterAction
 	{
-		//MSG_ITEM_OPERATION
+		//MSG_CHAR_OPERATION
 		Header header;
 		//00 00 00 00 70 00 00 00 00 00 00 00 68 00 00 00 4e 00 01 3f 5d 00 01 3f 5c 00 00
 		unsigned char	unknown1;//01
@@ -367,11 +367,12 @@ namespace AO {
 		MSG_ITEM_MOVE	=	0x47537a24,    //Client or server msg move item between inv/bank/wear/backpack
 		MSG_ITEM_BOUGHT	=	0x052e2f0c,	//Sent from server when buying stuff, 1 message pr item.
 		MSG_OPENBACKPACK=	0x52526858,//1196653092: from client when opening backpack
-		MSG_CHAR_OPERATION= 0x5e477770,  //from client when deleting an item, splitting or joining, nano, perk, tradeskill+++
+		MSG_CHAR_OPERATION= 0x5e477770,  //was MSG_ITEM_OPERATION //from client when deleting an item, splitting or joining, nano, perk, tradeskill+++
 		MSG_SHOP_TRANSACTION=0x36284f6e,  //from server and client when adding/removing/accepting shop stuff
 		MSG_PARTNER_TRADE = 0x35505644, //from server when trade partner adds/removes items.
 		MSG_SHOW_TEXT	 =	0x206b4b73, //from server when showing yellow text (like "You succesfully combined.../XXX is already fully loaded")
 		MSG_SPAWN_REWARD =  0x3b11256f,
+		//MSG_DELETE_MISH??=	0x212c487a 
 		/*
 		followed by a move slotId0 from overflow each!
 		spiked food sack: (id 0187C4)
