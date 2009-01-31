@@ -9,7 +9,7 @@ namespace aoia {
 
     IdentifyListDataModel::IdentifyListDataModel()
     {
-        m_result = g_DBManager.ExecTable(_T("SELECT AO.name, I.purpose, I.aoid FROM tblIdentify I JOIN tblAO AO ON I.highid = AO.aoid ORDER BY AO.name"));
+        m_result = g_DBManager.ExecTable(_T("SELECT AO.name, I.purpose, I.aoid, I.lowid, I.highid FROM tblIdentify I JOIN tblAO AO ON I.highid = AO.aoid ORDER BY AO.name"));
     }
 
 
@@ -81,4 +81,27 @@ namespace aoia {
         return boost::lexical_cast<unsigned int>(m_result->Data(index, 2));
     }
 
+
+    unsigned int IdentifyListDataModel::getItemLowId(unsigned int rowIndex) const
+    {
+        if (!m_result)
+        {
+            return 0;
+        }
+
+        // The LOWID is selected as column index 3 in the query
+        return boost::lexical_cast<unsigned int>(m_result->Data(rowIndex, 3));
+    }
+
+
+    unsigned int IdentifyListDataModel::getItemHighId(unsigned int rowIndex) const
+    {
+        if (!m_result)
+        {
+            return 0;
+        }
+
+        // The HIGHID is selected as column index 4 in the query
+        return boost::lexical_cast<unsigned int>(m_result->Data(rowIndex, 4));
+    }
 }

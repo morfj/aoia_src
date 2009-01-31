@@ -95,6 +95,8 @@ LRESULT IdentifyView::onListItemChanged(LPNMHDR lParam)
         {
             std::set<unsigned int> aoids;
             aoids.insert(m_identifyListModel->getItemId(pItem->iItem));
+            aoids.insert(m_identifyListModel->getItemLowId(pItem->iItem));
+            aoids.insert(m_identifyListModel->getItemHighId(pItem->iItem));
 
             ItemListDataModelPtr data(new ItemListDataModel(aoids));
 
@@ -120,6 +122,8 @@ LRESULT IdentifyView::onListItemStateChanged(LPNMHDR lParam)
         {
             std::set<unsigned int> aoids;
             aoids.insert(m_identifyListModel->getItemId(lStateChange->iFrom));
+            aoids.insert(m_identifyListModel->getItemLowId(lStateChange->iFrom));
+            aoids.insert(m_identifyListModel->getItemHighId(lStateChange->iFrom));
 
             ItemListDataModelPtr data(new ItemListDataModel(aoids));
 

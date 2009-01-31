@@ -29,8 +29,14 @@ namespace aoia {
         /// Return the name of a specified item.
         virtual std::tstring getItemProperty(unsigned int index, unsigned int column) const;
 
-        /// Return the AOID of the specified item.
+        /// Return the AOID of the specified item that can be made from the item at row \e index.
         unsigned int getItemId(unsigned int index) const;
+
+        /// Return the low ID of the item at row \e rowIndex.
+        unsigned int getItemLowId(unsigned int rowIndex) const;
+
+        /// Return the high ID of the item at row \e rowIndex.
+        unsigned int getItemHighId(unsigned int rowIndex) const;
 
     private:
         SQLite::TablePtr m_result;
