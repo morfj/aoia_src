@@ -660,7 +660,7 @@ void DBManager::createDBScheme() const
     Exec(_T("CREATE VIEW vInvItems AS SELECT * FROM tItems WHERE parent=2"));
     Exec(_T("CREATE INDEX iOwner ON tItems (owner)"));
     Exec(_T("CREATE INDEX iParent ON tItems (parent)"));
-    Exec(_T("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0')"));
+    Exec(_T("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0', dimensionid INTEGER DEFAULT '0')"));
     Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));
     Exec(_T("CREATE TABLE tDimensions (dimensionid INTEGER NOT NULL PRIMARY KEY UNIQUE, dimensionname VARCHAR)"));
     Exec(_T("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (11, 'Atlantean (Rubi-Ka 1)')"));
