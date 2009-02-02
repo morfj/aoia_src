@@ -1027,11 +1027,9 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 				unsigned int opId = item.operationId();
 #ifdef DEBUG
 
-				if (opId == 0x07 || opId == 0x06) //vicinity item swaps!
-				{
-					return;
-				}
-				else if (opId == 0x20)//when perking a mob
+			//	if (opId == 0x07 || opId == 0x06) //vicinity item swaps!
+				
+				if (opId == 0x20)//when perking a mob
 				{
 					return;
 				}
@@ -1135,20 +1133,15 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 					g_DBManager.unLock();
 		
 				}
-				else if (opId == 0x03)//item used/deleted if stack=1
+				else if (opId == 0x03)//item used/deleted if stack=1 and depleteable
 				{
-					//TODO: What if ppl delete an item from a loot container we have openened??
+					//Checking deplete and delete if stack=0.
+
+					//TODO: Things that do not deplete by 1 each use. (ammo stacks)
+					//Box of ammo did not deplete
 					
 					unsigned int fromContainerId = GetFromContainerId(item.charid(),
 					item.partnerFromType(), item.partnerFromContainerTempId());
-
-					//TODO: check if it is a depleteable item!! Hopefully in flags...
-
-					//OR:make a list of multi-useable items:
-					//grafts, flurry, rings etc..
-					//
-
-					
 
 					g_DBManager.lock();
 					g_DBManager.Begin();
