@@ -295,6 +295,7 @@ LRESULT InventoryView::OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND 
         std::tstring itemlocation = pItemInfo->ownername;
         itemlocation += _T(" -> ");
         itemlocation += pItemInfo->containername;
+        boost::replace_all(itemlocation, _T("\""), _T("&quot;"));
 
         std::tstring itemStr = itemTemplate;
         boost::replace_all(itemStr, _T("%lowid%"), pItemInfo->itemloid);
