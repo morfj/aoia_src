@@ -11,11 +11,13 @@
 
 
 PatternMatchView::PatternMatchView(void)
-: m_availfilter(-1.0f)
-, m_toonid(0) 
-, m_sortDesc(true)
-, m_sortColumn(1)
+    : m_availfilter(-1.0f)
+    , m_dimensionid(0)
+    , m_toonid(0) 
+    , m_sortDesc(true)
+    , m_sortColumn(1)
 {
+    m_availCalc.SetOwner(this);
 }
 
 
@@ -28,6 +30,8 @@ LRESULT PatternMatchView::OnCreate(LPCREATESTRUCT createStruct)
 {
     DWORD style = WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 
+    m_listview.Create(m_hWnd, rcDefault, NULL, style | LVS_REPORT | LVS_SINGLESEL, WS_EX_CLIENTEDGE);
+
     m_filterview.SetParent(this);
     m_filterview.Create(m_hWnd);
     m_filterview.ShowWindow(SW_SHOWNOACTIVATE);
@@ -35,8 +39,6 @@ LRESULT PatternMatchView::OnCreate(LPCREATESTRUCT createStruct)
     m_webview.SetParent(this);
     m_webview.Create(m_hWnd);
     m_webview.ShowWindow(SW_SHOWNOACTIVATE);
-
-    m_listview.Create(m_hWnd, rcDefault, NULL, style | LVS_REPORT | LVS_SINGLESEL, WS_EX_CLIENTEDGE);
 
     m_accelerators.LoadAccelerators(IDR_PB_ACCEL);
 
@@ -59,10 +61,7 @@ LRESULT PatternMatchView::OnCreate(LPCREATESTRUCT createStruct)
         UpdatePbListView();
     }
 
-    // Start the background update of availability
-    m_availCalc.SetOwner(this);
-    //m_availCalc.Begin();
-
+    // Build the toolbar
     TBBUTTON buttons[3];
     buttons[0].iBitmap = 0;
     buttons[0].idCommand = ID_RECALCULATE;
@@ -129,9 +128,11 @@ void PatternMatchView::SetBossAvail(unsigned int pbid, float avail)
 }
 
 
-void PatternMatchView::SetFilterSettings(unsigned int toonid, float availfilter, bool excludeAssembled)
+void PatternMatchView::SetFilterSettings(unsigned int dimensionid, unsigned int toonid, float availfilter, bool excludeAssembled)
 {
-    if (toonid != m_availCalc.Toon() || excludeAssembled != m_availCalc.ExcludeAssembled())
+    if (dimensionid != m_availCalc.getDimensionId() ||
+        toonid != m_availCalc.Toon() || 
+        excludeAssembled != m_availCalc.ExcludeAssembled())
     {
         SetBossAvail(0, -1.0f);
 
@@ -147,11 +148,13 @@ void PatternMatchView::SetFilterSettings(unsigned int toonid, float availfilter,
         }
 
         // Restart thread
+        m_availCalc.setDimensionId(dimensionid);
         m_availCalc.SetToon(toonid);
         m_availCalc.SetExcludeAssembled(excludeAssembled);
         m_availCalc.Begin();
     }
 
+    m_dimensionid = dimensionid;
     m_toonid = toonid;
     m_availfilter = availfilter;
 
@@ -342,7 +345,7 @@ LRESULT PatternMatchView::OnItemChanging(LPNMHDR lParam)
     // Check to see if the change is a selection event.
     if ( !(pItem->uOldState & LVIS_SELECTED) && (pItem->uNewState & LVIS_SELECTED) ) {
         unsigned int data = m_listview.GetItemData(pItem->iItem);
-        PatternReport report(data, m_toonid);
+        PatternReport report(m_dimensionid, data, m_toonid, m_availCalc.ExcludeAssembled());
         m_webview.SetHTML( report.toString() );
     }
 
@@ -454,93 +457,6 @@ int PatternMatchView::CompareStr(LPARAM param1, LPARAM param2, LPARAM sort)
 }
 
 
-float PatternMatchView::CalcPbAvailability(unsigned int pbid, unsigned int toonid, bool excludeAssembled)
-{
-    std::map<std::tstring, unsigned int> vals;
-
-    // Get a list of all pattern pieces for the specified pocket boss (optionally exclude ABCD assemblies)
-    SQLite::TablePtr pIDs;
-    g_DBManager.lock();
-    {
-        std::tstringstream sql;
-        sql << _T("SELECT aoid, pattern FROM tblPatterns WHERE name = (SELECT name FROM tblPocketBoss WHERE pbid = ") << pbid << _T(")");
-        if (excludeAssembled) {
-            sql << _T("AND pattern != 'ABCD'");
-        }
-        pIDs = g_DBManager.ExecTable(sql.str());
-    }
-    g_DBManager.unLock();
-
-    if (pIDs == NULL) {
-        return 0.0f;
-    }
-
-    for (unsigned int idIdx = 0; idIdx < pIDs->Rows(); ++idIdx)
-    {
-        std::tstring pattern = from_ascii_copy(pIDs->Data(idIdx, 1));
-        std::tstring id = from_ascii_copy(pIDs->Data(idIdx, 0));
-
-        std::tstring sql = STREAM2STR("SELECT COUNT(itemidx) FROM tItems WHERE tItems.keylow = " << id);
-        if (toonid > 0)
-        {
-            sql += STREAM2STR(" AND tItems.owner = " << toonid);
-        }
-
-        g_DBManager.lock();
-        SQLite::TablePtr pItemCount = g_DBManager.ExecTable(sql);
-        g_DBManager.unLock();
-
-        if (pItemCount && pItemCount->Rows() > 0) {
-            vals[pattern] += boost::lexical_cast<unsigned int>(pItemCount->Data(0, 0));
-        }
-    }
-
-    float result = 0;
-
-    if (vals[_T("AB")] > 0)
-    {
-        vals[_T("A")] += vals[_T("AB")];
-        vals[_T("B")] += vals[_T("AB")];
-    }
-    if (vals[_T("ABC")] > 0)
-    {
-        vals[_T("A")] += vals[_T("ABC")];
-        vals[_T("B")] += vals[_T("ABC")];
-        vals[_T("C")] += vals[_T("ABC")];
-    }
-
-    result += vals[_T("ABCD")];
-
-    unsigned int v = min(vals[_T("A")], min(vals[_T("B")], min(vals[_T("C")], vals[_T("D")])));
-
-    if (v > 0)
-    {
-        result += v;
-        vals[_T("A")] -= v;
-        vals[_T("B")] -= v;
-        vals[_T("C")] -= v;
-        vals[_T("D")] -= v;
-    }
-
-    if (vals[_T("A")] > 0)
-    {
-        result += 0.25;
-    }
-    if (vals[_T("B")] > 0)
-    {
-        result += 0.25;
-    }
-    if (vals[_T("C")] > 0)
-    {
-        result += 0.25;
-    }
-    if (vals[_T("D")] > 0)
-    {
-        result += 0.25;
-    }
-
-    return result;
-}
 
 
 
@@ -551,6 +467,7 @@ LRESULT FilterView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 {
     SetWindowText(_T("Filter View"));
 
+    updateDimensionList();
     UpdateToonList();
 
     CheckDlgButton(IDC_SHOW_ALL, 1);
@@ -558,6 +475,8 @@ LRESULT FilterView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
     WTL::CProgressBarCtrl progressbar = GetDlgItem(IDC_PROGRESS);
     progressbar.SetRange(0, 100);
     progressbar.SetPos(0);
+
+    UpdateFilterSettings();
 
     return 0;
 }
@@ -567,6 +486,65 @@ LRESULT FilterView::OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 {
     LPMSG pMsg = (LPMSG)lParam;
     return this->PreTranslateMsg(pMsg);
+}
+
+
+void FilterView::updateDimensionList()
+{
+    WTL::CComboBox cb = GetDlgItem(IDC_DIMENSIONCOMBO);
+
+    int oldselection = cb.GetCurSel();
+    int item = 0;
+
+    cb.ResetContent();
+
+    std::map<unsigned int, std::tstring> dimensionNames;
+    g_DBManager.lock();
+    g_DBManager.getDimensions(dimensionNames);
+    SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT DISTINCT dimensionid FROM tToons"));
+    g_DBManager.unLock();
+
+    // Add named dimensions.
+    for (std::map<unsigned int, std::tstring>::iterator it = dimensionNames.begin(); it != dimensionNames.end(); ++it)
+    {
+        if ((item = cb.AddString(it->second.c_str())) != CB_ERR)
+        {
+            cb.SetItemData(item, it->first);
+        }
+    }
+
+    // Add un-named dimensions.
+    for (unsigned int i = 0; i < pT->Rows(); ++i)
+    {
+        unsigned int dimId = boost::lexical_cast<unsigned int>(pT->Data(i, 0));
+        std::tstring dimName;
+        if (dimensionNames.find(dimId) != dimensionNames.end())
+        {
+            continue;   // Skip named ones.
+        }
+        else 
+        {
+            dimName = _T("Unknown Dimension");
+            if (dimId > 0)
+            {
+                dimName += STREAM2STR(" (0x" << std::hex << dimId << ")");
+            }
+        }
+
+        if ((item = cb.AddString(dimName.c_str())) != CB_ERR)
+        {
+            cb.SetItemData(item, dimId);
+        }
+    }
+
+    if (oldselection >= 0)
+    {
+        cb.SetCurSel(oldselection);
+    }
+    else if (oldselection == -1)
+    {
+        cb.SetCurSel(0);
+    }
 }
 
 
@@ -620,6 +598,9 @@ void FilterView::SetProgress(unsigned short percent)
 
 void FilterView::UpdateFilterSettings()
 {
+    WTL::CComboBox dimCb = GetDlgItem(IDC_DIMENSIONCOMBO);
+    unsigned int dimensionid = (unsigned int) dimCb.GetItemData(dimCb.GetCurSel());
+
     unsigned int toonid = 0;
 
     WTL::CComboBox tooncb = GetDlgItem(IDC_CHARCOMBO);
@@ -649,7 +630,7 @@ void FilterView::UpdateFilterSettings()
         excludeAssembled = true;
     }
 
-    m_pParent->SetFilterSettings(toonid, availfilter, excludeAssembled);
+    m_pParent->SetFilterSettings(dimensionid, toonid, availfilter, excludeAssembled);
 }
 
 
@@ -662,6 +643,13 @@ void FilterView::SetParent(PatternMatchView* parent)
 BOOL FilterView::PreTranslateMsg(MSG* pMsg)
 {
     return IsDialogMessage(pMsg);
+}
+
+
+LRESULT FilterView::onDimensionComboSelection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+    UpdateFilterSettings();
+    return 0;
 }
 
 
@@ -835,7 +823,7 @@ DWORD AvailCalcThread::ThreadProc()
             {
                 unsigned int pbid = list[m_index]->pbid;
                 m_pOwner->PbListMutex().MutexOff();
-                float avail = PatternMatchView::CalcPbAvailability(pbid, m_toon, m_excludeAssembled);
+                float avail = CalcPbAvailability(m_dimensionid, pbid, m_toon, m_excludeAssembled);
                 m_pOwner->PbListMutex().MutexOn();
                 m_pOwner->SetBossAvail(pbid, avail);
                 unsigned short percent = (unsigned int)(((m_index + 1) * 100) / list.size());
@@ -862,4 +850,96 @@ DWORD AvailCalcThread::ThreadProc()
     m_term = false;
 
     return 0;
+}
+
+
+float AvailCalcThread::CalcPbAvailability(unsigned int dimensionid, unsigned int pbid, unsigned int toonid, bool excludeassembled)
+{
+    std::map<std::tstring, unsigned int> vals;
+
+    // Get a list of all pattern pieces for the specified pocket boss (optionally exclude ABCD assemblies)
+    SQLite::TablePtr pIDs;
+    g_DBManager.lock();
+    {
+        std::tstringstream sql;
+        sql << _T("SELECT aoid, pattern FROM tblPatterns WHERE name = (SELECT name FROM tblPocketBoss WHERE pbid = ") << pbid << _T(")");
+        if (excludeassembled)
+        {
+            sql << _T("AND pattern != 'ABCD'");
+        }
+        pIDs = g_DBManager.ExecTable(sql.str());
+    }
+    g_DBManager.unLock();
+
+    if (pIDs == NULL)
+    {
+        return 0.0f;
+    }
+
+    // Loop all the pattern pieces and searches for recorded items.
+    for (unsigned int idIdx = 0; idIdx < pIDs->Rows(); ++idIdx)
+    {
+        std::tstring pattern = from_ascii_copy(pIDs->Data(idIdx, 1));
+        std::tstring id = from_ascii_copy(pIDs->Data(idIdx, 0));
+
+        std::tstring sql = STREAM2STR("SELECT COUNT(itemidx) FROM tItems I JOIN tToons T ON I.owner = T.charid WHERE I.keylow = " << id << " AND T.dimensionid = " << dimensionid);
+        if (toonid > 0)
+        {
+            sql += STREAM2STR(" AND I.owner = " << toonid);
+        }
+
+        g_DBManager.lock();
+        SQLite::TablePtr pItemCount = g_DBManager.ExecTable(sql);
+        g_DBManager.unLock();
+
+        if (pItemCount && pItemCount->Rows() > 0) {
+            vals[pattern] += boost::lexical_cast<unsigned int>(pItemCount->Data(0, 0));
+        }
+    }
+
+    float result = 0;
+
+    if (vals[_T("AB")] > 0)
+    {
+        vals[_T("A")] += vals[_T("AB")];
+        vals[_T("B")] += vals[_T("AB")];
+    }
+    if (vals[_T("ABC")] > 0)
+    {
+        vals[_T("A")] += vals[_T("ABC")];
+        vals[_T("B")] += vals[_T("ABC")];
+        vals[_T("C")] += vals[_T("ABC")];
+    }
+
+    result += vals[_T("ABCD")];
+
+    unsigned int v = min(vals[_T("A")], min(vals[_T("B")], min(vals[_T("C")], vals[_T("D")])));
+
+    if (v > 0)
+    {
+        result += v;
+        vals[_T("A")] -= v;
+        vals[_T("B")] -= v;
+        vals[_T("C")] -= v;
+        vals[_T("D")] -= v;
+    }
+
+    if (vals[_T("A")] > 0)
+    {
+        result += 0.25;
+    }
+    if (vals[_T("B")] > 0)
+    {
+        result += 0.25;
+    }
+    if (vals[_T("C")] > 0)
+    {
+        result += 0.25;
+    }
+    if (vals[_T("D")] > 0)
+    {
+        result += 0.25;
+    }
+
+    return result;
 }

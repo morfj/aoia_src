@@ -47,6 +47,7 @@
 #define IDC_ITEMTEXT                    1007
 #define IDC_CHARCOMBO                   1008
 #define IDC_STATIC_TOON                 1009
+#define IDC_DIMENSIONCOMBO              1009
 #define IDC_PIECES                      1011
 #define IDC_NOVI                        1012
 #define IDC_PBCOMBO                     1013

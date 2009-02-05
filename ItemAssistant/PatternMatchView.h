@@ -22,6 +22,7 @@ public:
     void SetParent(PatternMatchView* parent);
     BOOL PreTranslateMsg(MSG* pMsg);
     void SetProgress(unsigned short percent);
+    void updateDimensionList();
     void UpdateToonList();
 
     BEGIN_MSG_MAP(FilterView)
@@ -30,6 +31,7 @@ public:
         COMMAND_HANDLER(IDC_SHOW_ALL, BN_CLICKED, OnBnClickedShowAll)
         COMMAND_HANDLER(IDC_SHOW_PARTIALS, BN_CLICKED, OnBnClickedShowPartials)
         COMMAND_HANDLER(IDC_COMPLETABLE, BN_CLICKED, OnBnClickedCompletable)
+        COMMAND_HANDLER(IDC_DIMENSIONCOMBO, CBN_SELCHANGE, onDimensionComboSelection)
         COMMAND_HANDLER(IDC_CHARCOMBO, CBN_SELCHANGE, OnCbnSelchangeCharcombo)
         COMMAND_HANDLER(IDC_EXCLUDE_ASSEMBLED, BN_CLICKED, OnExcludeAssembledPatternsClicked)
         DEFAULT_REFLECTION_HANDLER()
@@ -41,6 +43,7 @@ public:
 protected:
     void UpdateFilterSettings();
 
+    LRESULT onDimensionComboSelection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnCbnSelchangeCharcombo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnBnClickedShowAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnBnClickedShowPartials(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -86,14 +89,25 @@ private:
 };
 
 
+/**
+ * \brief
+ * This class spawns a new thread that will search for pocketboss patterns 
+ * given the current search criterias.
+ * 
+ * To trigger a search, set the appropriate filters and call Begin().
+ * To cancel a search call StopPlease() followed by End().
+ * Updates are posted to the owner as \e WM_UPDATE_PBLIST messages.
+ */
 class AvailCalcThread : public Thread
 {
 public:
-    AvailCalcThread() : m_index(0), m_term(false), m_toon(0), m_excludeAssembled(false) { }
+    AvailCalcThread() : m_index(0), m_term(false), m_dimensionid(0), m_toon(0), m_excludeAssembled(false) { }
     virtual ~AvailCalcThread() { }
 
     void SetOwner(PatternMatchView* owner) { m_pOwner = owner; }
+    void setDimensionId(unsigned int dimensionid) { m_dimensionid = dimensionid; }
     void SetToon(unsigned int toon = 0) { m_toon = toon; }
+    unsigned int getDimensionId() const { return m_dimensionid; }
     unsigned int Toon() const { return m_toon; }
     void SetExcludeAssembled(bool newVal) { m_excludeAssembled = newVal; }
     bool ExcludeAssembled() const { return m_excludeAssembled; }
@@ -101,9 +115,12 @@ public:
 
     virtual DWORD ThreadProc();
 
+    static float CalcPbAvailability(unsigned int dimensionid, unsigned int pbid, unsigned int toonid, bool excludeassembled);
+
 private:
     PatternMatchView* m_pOwner;
     int m_index;
+    unsigned int m_dimensionid;
     unsigned int m_toon;
     bool m_term;
     bool m_excludeAssembled;
@@ -154,9 +171,7 @@ public:
     PbList& PbListRef() { return m_pblist; }
     Mutex& PbListMutex() { return m_pblistMutex; }
 
-    void SetFilterSettings(unsigned int toonid, float availfilter, bool excludeAssembled);
-
-    static float CalcPbAvailability(unsigned int pbid, unsigned int toonid = 0, bool excludeAssembled = false);
+    void SetFilterSettings(unsigned int dimensionid, unsigned int toonid, float availfilter, bool excludeAssembled);
 
 protected:
     enum {
@@ -184,6 +199,7 @@ protected:
 private:
     PbList m_pblist;
 
+    unsigned int m_dimensionid;
     float m_availfilter;
     unsigned int m_toonid;
 
