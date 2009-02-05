@@ -695,7 +695,9 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 
 				if (fromContainerId == 0)
 				{
+#ifdef DEBUG
 					OutputDebugString(_T("From container not found!"));
+#endif
 			 		return; //we dont have the value cached, either a bug or ia was started after the bp was opened. Or unknown from type
 				}
 
@@ -763,7 +765,7 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 				<< _T(" AND parent = ") << fromContainerId
 				<< _T(" AND slot = ") << itemOp.fromItemSlotId();
 
-				OutputDebugString(sqlUpd.str().c_str());
+				//OutputDebugString(sqlUpd.str().c_str());
 				g_DBManager.Exec(sqlUpd.str());
 
 				{
@@ -772,7 +774,7 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 					<< _T(" AND parent = ") << removedItemContainerId
 					<< _T(" AND slot = ") << removedItemSlotId;//itemId().High();
 
-					OutputDebugString(sql.str().c_str());
+					//OutputDebugString(sql.str().c_str());
 					g_DBManager.Exec(sql.str());
 				}
 				g_DBManager.Commit();
@@ -803,7 +805,7 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 
 					g_DBManager.Exec(sql.str());
 				}
-				OutputDebugString(itemOp.print().c_str());
+				//OutputDebugString(itemOp.print().c_str());
 				g_DBManager.Commit();
 				g_DBManager.unLock();
 
@@ -838,12 +840,13 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 				return;
 			}
 			else
-
 			{
+#ifdef DEBUG
 				std::tstringstream sql;
 				sql << _T("Unknown client operation Id:") <<std::hex << opId;
 				OutputDebugString(sql.str().c_str());
 				OutputDebugString(itemOp.print().c_str());
+#endif
 				return;
 			}
 		}
@@ -1002,7 +1005,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 					<< _T(" AND slot = ") << realSlotId;
 					
 					g_DBManager.Exec(sql.str());
-					OutputDebugString(sql.str().c_str());
+					//OutputDebugString(sql.str().c_str());
 				}
 
 				return;
@@ -1079,7 +1082,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 							<< _T(" AND slot = ") << item.partnerFromItemSlotId()
 							<< _T(" AND owner = ") << item.charid();
 						g_DBManager.Exec(sql.str());
-						OutputDebugString(sql.str().c_str());
+						//OutputDebugString(sql.str().c_str());
 
 						g_DBManager.Commit();
 						g_DBManager.unLock();
@@ -1093,10 +1096,12 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
 					if (item.partnerFromType() != 0x6e)
 					{
+#ifdef DEBUG
 						OutputDebugString(_T("Unexpected parter from type!"));
 						OutputDebugString(_T("Unexpected parter from type!"));
 						OutputDebugString(_T("Unexpected parter from type!"));
 						OutputDebugString(item.print().c_str());
+#endif
 						return;
 					}
 
@@ -1120,14 +1125,14 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 						item.charid());
 
 
-					{
+				/*	{
 						std::tstringstream logS;
 						logS << _T("~INSERT (") << item.itemid().Low() << _T("/") << item.ql() << _T("/") << item.stack()
 							<< _T(") WHERE parent = ") << otherTradeContainer
 							<< _T(" AND slot = ") << slotId
 							<< _T(" AND owner = ") << item.charid();
 						OutputDebugString(logS.str().c_str());
-					}
+					}*/
 
 					g_DBManager.Commit();
 					g_DBManager.unLock();
@@ -1200,6 +1205,9 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 		{
 			Native::AOTradeTransaction item((AO::TradeTransaction*)msg.start(), true);
 
+			if (item.targetId() != item.charid())//skip messages not for me.
+				return;
+
 #ifdef DEBUG
 			OutputDebugString(item.print().c_str());
 #endif
@@ -1266,13 +1274,15 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 						<< _T(" AND slot = ") << i
 						<< _T(" AND owner = ") << item.charid();
 						g_DBManager.Exec(sqlMoveBack.str());
-						OutputDebugString(sqlMoveBack.str().c_str());
+						//OutputDebugString(sqlMoveBack.str().c_str());
 					}
 
 					//delete trade partner added items:
 					std::tstringstream sql;
 					sql << _T("DELETE FROM tItems WHERE parent = ") << otherTradeContainer
 						<< _T(" AND owner = ") << item.charid();
+
+					//TODO: What when this is a known player shop? Maybe we should duplicate the items instead from 
 
 					g_DBManager.Exec(sql.str());
 					//OutputDebugString(sql.str().c_str());
@@ -1288,54 +1298,268 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 				break;
 				case 0x04:
 				{
-					g_DBManager.lock();
-		            g_DBManager.Begin();
-					//commit/server accept: (bye-bye stuff!)
-
-					std::tstringstream sqlEmptyBackpacks;
-					sqlEmptyBackpacks << _T("DELETE FROM tItems WHERE owner = ") << item.charid()
-						<< _T(" AND parent in (SELECT children from tItems WHERE parent = ") << shopContainer
-						<< _T(" AND children > 0 AND owner = ") << item.charid() << _T(")");
-					g_DBManager.Exec(sqlEmptyBackpacks.str());
-
-					std::tstringstream sql;
-					sql << _T("DELETE FROM tItems WHERE parent = ") << shopContainer
-						<< _T(" AND owner = ") << item.charid();
-					g_DBManager.Exec(sql.str());
-
-					//OutputDebugString(sql.str().c_str());
-
-
-					//grab the new stuff!
-					unsigned int shopCapacity = 35;
-
-					for (unsigned int i=0;i<=shopCapacity;i++) //or is it the other direction?
+					if (item.fromId().High() == item.charid())
 					{
-						unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), AO::INV_TOONINV);
-						
-						std::tstringstream sqlGrabStuff;
+						g_DBManager.lock();
+						g_DBManager.Begin();
+						//commit/server accept: (bye-bye stuff!)
 
-						sqlGrabStuff << _T("UPDATE tItems SET parent = 2")
-						<< _T(", slot = ") << nextFreeInvSlot
-						<< _T(" WHERE parent = ") << otherTradeContainer
-						<< _T(" AND slot = ") << i
-						<< _T(" AND owner = ") << item.charid();
-						g_DBManager.Exec(sqlGrabStuff.str());
-					//	OutputDebugString(sqlGrabStuff.str().c_str());
+						std::tstringstream sqlEmptyBackpacks;
+						sqlEmptyBackpacks << _T("DELETE FROM tItems WHERE owner = ") << item.charid()
+							<< _T(" AND parent in (SELECT children from tItems WHERE parent = ") << shopContainer
+							<< _T(" AND children > 0 AND owner = ") << item.charid() << _T(")");
+						g_DBManager.Exec(sqlEmptyBackpacks.str());
+
+						std::tstringstream sql;
+						sql << _T("DELETE FROM tItems WHERE parent = ") << shopContainer
+							<< _T(" AND owner = ") << item.charid();
+						g_DBManager.Exec(sql.str());
+
+						//OutputDebugString(sql.str().c_str());
+
+
+						//grab the new stuff!
+						unsigned int shopCapacity = 35;
+
+						for (unsigned int i=0;i<=shopCapacity;i++) //or is it the other direction?
+						{
+							unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), AO::INV_TOONINV);
+							
+							std::tstringstream sqlGrabStuff;
+
+							sqlGrabStuff << _T("UPDATE tItems SET parent = 2")
+							<< _T(", slot = ") << nextFreeInvSlot
+							<< _T(" WHERE parent = ") << otherTradeContainer
+							<< _T(" AND slot = ") << i
+							<< _T(" AND owner = ") << item.charid();
+							g_DBManager.Exec(sqlGrabStuff.str());
+						//	OutputDebugString(sqlGrabStuff.str().c_str());
+						}
+
+
+						g_DBManager.Commit();
+						g_DBManager.unLock();
 					}
+					else if (item.fromId().Low() == 0xC790)//51088)//fromType+fromTempContId+fromSlotId = charId
+					{
+						//accept from playershop:
+						OutputDebugString(_T("accept from a playershop:!"));
+						//move stuff from otherTradeContainer = AO::INV_TRADEPARTNER to my inv.
+						//move stuff from shopContainer = AO::INV_TRADE to AO:SHOP
+
+						//TODO: We should duplicate items from playershop to trade window on op 5/6,
+						// and move them to inv from playershop and delete them one place.
+
+						/*[6628] AOTradeTransaction:MsgId 36284f6e CharId 2568996070 Target 2568996070 
+						[6628] unknown2 1 
+						[6628] operationId 4 
+						[6628] fromType c790 
+						[6628] fromContainerTempId 1b3e 
+						[6628] fromItemSlotId fbf6 
+						[6628] fromId [51088|457112566] 
+						*/
+						//from a playershop. item.fromId().High() contains the shop id.
+						unsigned int owner = g_DBManager.getShopOwner(item.fromId().High());
+
+						if (owner != 0)
+						{
+							//from a known shop!
+							g_DBManager.lock();
+							g_DBManager.Begin();
+
+							//grab the new stuff from the shop!
+							//first, remove it from the shop, then move the stuff from the otherTradeContainer to inv
+							{
+								std::tstringstream sqlRemoveFromShop;
+								//we must duplicate it since we cant detect trade in the cancel message. (where we wipe otherTradeContainer) 
+	
+								sqlRemoveFromShop << _T("DELETE FROM tItems WHERE parent = ") << AO::INV_PLAYERSHOP
+									<< _T(" AND slot IN (SELECT slot from tItems WHERE parent = ") << otherTradeContainer
+									<< _T("              AND owner = ") << item.charid() << _T(")")
+									<< _T(" AND owner = ") << owner;
+
+								g_DBManager.Exec(sqlRemoveFromShop.str());
+
+								//OutputDebugString(sqlRemoveFromShop.str().c_str());
+							}
 
 
-					g_DBManager.Commit();
-					g_DBManager.unLock();
+							unsigned int shopCapacity = 35;
+
+							for (unsigned int i=0;i<=shopCapacity;i++) //or is it the other direction?
+							{
+							//	unsigned int otherTradeContainer = AO::INV_TRADEPARTNER;
+								unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), AO::INV_TOONINV);
+								//unsigned int nextFreeInvSlot = item.fromItemSlotId(); //we keep the slotId!
+								{
+									std::tstringstream sqlGetTheStuff;
+									//we must duplicate it since we cant detect trade in the cancel message. (where we wipe otherTradeContainer) 
+		
+									sqlGetTheStuff << _T("UPDATE tItems SET parent = ") << AO::INV_TOONINV
+										<< _T(", slot = ") << nextFreeInvSlot
+										<< _T(", owner = ") << item.charid()
+										<< _T(" WHERE parent = ") << otherTradeContainer
+										<< _T(" AND slot = ") << i
+										<< _T(" AND owner = ") << owner;
+
+									g_DBManager.Exec(sqlGetTheStuff.str());
+
+									//OutputDebugString(sqlGetTheStuff.str().c_str());
+								}
+							}
+
+							//put the stuff I added into the shop!
+
+							for (unsigned int i=0;i<=shopCapacity;i++) //or is it the other direction?
+							{
+							//	unsigned int otherTradeContainer = AO::INV_TRADEPARTNER;
+								unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), AO::INV_PLAYERSHOP);
+								//unsigned int nextFreeInvSlot = item.fromItemSlotId(); //we keep the slotId!
+								{
+									std::tstringstream sqlMoveStuffToShop;
+									//we must duplicate it since we cant detect trade in the cancel message. (where we wipe otherTradeContainer) 
+		
+									sqlMoveStuffToShop << _T("UPDATE tItems SET parent = ") << AO::INV_PLAYERSHOP
+										<< _T(", slot = ") << nextFreeInvSlot
+										<< _T(", owner = ") << owner
+										<< _T(" WHERE parent = ") << shopContainer
+										<< _T(" AND slot = ") << i
+										<< _T(" AND owner = ") << item.charid();
+
+									g_DBManager.Exec(sqlMoveStuffToShop.str());
+
+									//OutputDebugString(sqlMoveStuffToShop.str().c_str());
+								}
+							}
+
+
+							g_DBManager.Commit();
+							g_DBManager.unLock();
+						}
+						else
+						{
+							//Unknown shop. Bye-bye stuff!
+							g_DBManager.lock();
+							g_DBManager.Begin();
+							std::tstringstream sql;
+							sql << _T("DELETE FROM tItems WHERE parent = ") << shopContainer //<< _T(" or parent = ") << otherTradeContainer
+								<< _T(" AND owner = ") << item.charid();
+							g_DBManager.Exec(sql.str());
+							g_DBManager.Commit();
+							g_DBManager.unLock();
+
+#ifdef DEBUG
+							OutputDebugString(_T("Accept from an unknown playershop, not supported (we need to save the items)"));
+#endif
+							//TODO:
+							//we could potentially add dummy items for each item to save slotId order in inv?
+							//from an unknown player shop. We should have stored this (or do we get any other spawn msg)
+						}
+					}
+					else
+					{
+						OutputDebugString(_T("unknown trade accept target!"));
+						OutputDebugString(item.print().c_str());
+					}
 				}
 				break;
 				case 0x05:
 				{
 					//add item to trade window
 
+					//TODO : Add/remove/commit/cancel with stuff from inv/bp to player shop trade window
+
 					//fromId contains the owner
 					
-					if (item.fromId().High() != item.charid())
+					if (item.fromId().High() == item.charid())
+					{
+						unsigned int fromContainerId = GetFromContainerId(item.charid(), item.fromType(), item.fromContainerTempId());
+
+						g_DBManager.lock();
+						g_DBManager.Begin();
+
+						unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), shopContainer);
+						
+						{
+							std::tstringstream sql;
+
+							sql << _T("UPDATE tItems SET parent = ") << shopContainer
+								<< _T(", slot = ") << nextFreeInvSlot
+								<< _T(" WHERE parent = ") << fromContainerId
+								<< _T(" AND slot = ") << item.fromItemSlotId()
+								<< _T(" AND owner = ") << item.fromId().High(); //TODO: remove from other monitored char with fromId?
+
+							g_DBManager.Exec(sql.str());
+
+							//OutputDebugString(sql.str().c_str());
+						}
+
+						g_DBManager.Commit();
+						g_DBManager.unLock();
+					}
+					else if (item.fromType() == 0x6b && item.fromId().Low() == 0xC790)//51088)
+					{
+						//This is TODO! Do the same for op 0x6 (remove from trade)
+						// This is for removing. fromItemSlotId is the original slot in the playershop, 
+						// so set this to be the new slotId! we keep this.
+
+						//TODO: when accepting, check that stuff is moved correctly!
+
+						/*[6628] AOTradeTransaction:MsgId 36284f6e CharId 2568996070 Target 457098300 
+						[6628] unknown2 1 
+						[6628] operationId 6 
+						[6628] fromType 6b 
+						[6628] fromContainerTempId 76 
+						[6628] fromItemSlotId 7 
+						[6628] fromId [51088|457098300] */
+
+						//from a playershop. item.fromId().High() contains the shop id.
+						unsigned int owner = g_DBManager.getShopOwner(item.fromId().High());
+
+						if (owner != 0)
+						{
+							//from a known shop!
+							g_DBManager.lock();
+							g_DBManager.Begin();
+
+						//	unsigned int otherTradeContainer = AO::INV_TRADEPARTNER;
+						//	unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), otherTradeContainer);
+							//unsigned int nextFreeInvSlot = item.fromItemSlotId(); //we keep the slotId!
+							{
+								std::tstringstream sqlDuplicate;
+								//we must duplicate it since we cant detect trade in the cancel message. (where we wipe otherTradeContainer) 
+								sqlDuplicate << _T("INSERT INTO tItems (keylow, keyhigh, ql, stack, parent, slot, children, owner)")
+									<< _T(" SELECT keylow, keyhigh, ql, stack, ") << otherTradeContainer 
+									<< _T(" , slot, children, ") << item.charid()
+									<< _T(" FROM tItems WHERE owner = ") << owner
+									<< _T(" AND parent = ") << AO::INV_PLAYERSHOP
+									<< _T(" AND slot = ") << item.fromItemSlotId();
+
+							/*	sql << _T("UPDATE tItems SET parent = ") << AO::INV_TRADEPARTNER
+									<< _T(", slot = ") << nextFreeInvSlot
+									<< _T(" WHERE parent = ") << AO::INV_PLAYERSHOP
+									<< _T(" AND slot = ") << item.fromItemSlotId()
+									<< _T(" AND owner = ") << owner;*/
+
+								g_DBManager.Exec(sqlDuplicate.str());
+
+								//OutputDebugString(sql.str().c_str());
+							}
+
+							g_DBManager.Commit();
+							g_DBManager.unLock();
+						}
+						else
+						{
+#ifdef DEBUG
+							OutputDebugString(_T("trade with an unknown playershop, not supported (we need to save the items)"));
+#endif
+							//TODO:
+							//from an unknown player shop. We should have stored this (or do we get any other spawn msg)
+						}
+
+					}
+					else
 					{
 #ifdef DEBUG
 						OutputDebugString(_T("Added by the other part"));
@@ -1343,60 +1567,90 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 #endif
 						return;
 					}
-
-					unsigned int fromContainerId = GetFromContainerId(item.charid(), item.fromType(), item.fromContainerTempId());
-
-					g_DBManager.lock();
-		            g_DBManager.Begin();
-
-					unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), shopContainer);
-					
-					{
-						std::tstringstream sql;
-
-						sql << _T("UPDATE tItems SET parent = ") << shopContainer
-							<< _T(", slot = ") << nextFreeInvSlot
-							<< _T(" WHERE parent = ") << fromContainerId
-							<< _T(" AND slot = ") << item.fromItemSlotId()
-							<< _T(" AND owner = ") << item.fromId().High(); //TODO: remove from other monitored char with fromId?
-
-						g_DBManager.Exec(sql.str());
-
-						//OutputDebugString(sql.str().c_str());
-					}
-
-					g_DBManager.Commit();
-					g_DBManager.unLock();
 				}
 				break;
 				case 0x06:
 				{
 					//remove item from trade window
 
-					if (item.fromId().High() != item.charid())
+					if (item.fromId().High() == item.charid())
+					{
+						g_DBManager.lock();
+						g_DBManager.Begin();
+
+						//an item I had added to a trade.
+
+						unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), AO::INV_TOONINV);
+
+						std::tstringstream sql;
+						sql << _T("UPDATE tItems SET parent = 2, slot = ") << nextFreeInvSlot
+							<< _T(" WHERE parent = ") << shopContainer
+							<< _T(" AND slot = ") << item.fromItemSlotId()
+							<< _T(" AND owner = ") << item.charid();
+						g_DBManager.Exec(sql.str());
+						//OutputDebugString(sql.str().c_str());
+
+						g_DBManager.Commit();
+						g_DBManager.unLock();
+					}
+					else if (item.fromType() == 0x6b && item.fromId().Low() == 0xC790)//51088)
+					{
+						//remove from playershop trade (currently in playershop item)
+
+						/*[6628] AOTradeTransaction:MsgId 36284f6e CharId 2568996070 Target 457098300 
+						[6628] unknown2 1 
+						[6628] operationId 6 
+						[6628] fromType 6b 
+						[6628] fromContainerTempId 76 
+						[6628] fromItemSlotId 7 
+						[6628] fromId [51088|457098300] */
+					//	unsigned int owner = g_DBManager.getShopOwner(item.fromId().High());
+
+					//	if (owner != 0) //not needed when removing items, since we work with duplicates copied to current player otherTradeContainer
+						{
+							//from a known shop!
+							g_DBManager.lock();
+							g_DBManager.Begin();
+
+						//	unsigned int otherTradeContainer = AO::INV_TRADEPARTNER;
+						//	unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), otherTradeContainer);
+							//unsigned int nextFreeInvSlot = item.fromItemSlotId(); //we keep the slotId!
+							{
+								std::tstringstream sqlRemove;
+								//we delete it since we duplicate it in the 0x5 operation!
+
+								sqlRemove << _T("DELETE FROM tItems WHERE parent = ") << otherTradeContainer
+									<< _T(" AND slot = ") << item.fromItemSlotId()
+									<< _T(" AND owner = ") << item.charid();
+
+								/*sql << _T("UPDATE tItems SET parent = ") << AO::INV_PLAYERSHOP
+									<< _T(", slot = ") << nextFreeInvSlot
+									<< _T(" WHERE parent = ") << AO::INV_TRADEPARTNER
+									<< _T(" AND slot = ") << item.fromItemSlotId()
+									<< _T(" AND owner = ") << owner;*/
+
+								g_DBManager.Exec(sqlRemove.str());
+
+								//OutputDebugString(sql.str().c_str());
+							}
+
+							g_DBManager.Commit();
+							g_DBManager.unLock();
+						}
+/*						else
+						{	
+#ifdef DEBUG
+							OutputDebugString(_T("trade with an unknown playershop, not supported (we need to save the items)"));
+#endif
+						}*/
+					}
+					else
 					{
 						//OutputDebugString(_T("Removed by the other part"));
 						//handled by Native::AOPartnerTradeItem
 						return;
 					}
 
-					g_DBManager.lock();
-		            g_DBManager.Begin();
-
-					//if (item.fromId) //who added this item??
-
-					unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), AO::INV_TOONINV);
-
-					std::tstringstream sql;
-					sql << _T("UPDATE tItems SET parent = 2, slot = ") << nextFreeInvSlot
-						<< _T(" WHERE parent = ") << shopContainer
-						<< _T(" AND slot = ") << item.fromItemSlotId()
-						<< _T(" AND owner = ") << item.charid();
-					g_DBManager.Exec(sql.str());
-					//OutputDebugString(sql.str().c_str());
-
-					g_DBManager.Commit();
-					g_DBManager.unLock();
 				}
 				break;
 				case 0x08:
