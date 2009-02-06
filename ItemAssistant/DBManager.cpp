@@ -480,12 +480,6 @@ unsigned int DBManager::findFirstItemOfSameType(unsigned int charId, unsigned in
 unsigned int DBManager::getShopOwner(unsigned int shopid)
 {
 
-	//TODO: TEMP!!!!!
-	if (shopid==457070474)
-		return 2568996070;
-
-
-
 
     assert(shopid != 0);
 
