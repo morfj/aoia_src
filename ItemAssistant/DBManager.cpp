@@ -320,6 +320,30 @@ void DBManager::setToonShopId(unsigned int charid, unsigned int shopid)
 }
 
 
+unsigned int DBManager::getToonShopId(unsigned int charid) const
+{
+    assert(charid != 0);
+
+    unsigned int result = 0;
+
+    SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR("SELECT shopid FROM tToons WHERE charid = " << charid));
+    if (pT != NULL && pT->Rows())
+    {
+        try
+        {
+            result = boost::lexical_cast<unsigned int>(pT->Data(0,0));
+        }
+        catch (boost::bad_lexical_cast &/*e*/)
+        {
+            // Wierd.. lets debug!
+            assert(false);
+        }
+    }
+
+    return result;
+}
+
+
 void DBManager::setToonDimension(unsigned int charid, unsigned int dimensionid)
 {
     assert(charid != 0);

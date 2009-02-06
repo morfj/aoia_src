@@ -49,6 +49,9 @@ public:
     /// Records the specified shop ID for the character.
     void setToonShopId(unsigned int charid, unsigned int shopid);
 
+    /// Retrieves the recorded shop ID for the specified character.
+    unsigned int getToonShopId(unsigned int charid) const;
+
     /// Retrieves the recorded (if any) character ID associated with the specified shop ID.
     unsigned int getShopOwner(unsigned int shopid);
 
