@@ -23,4 +23,32 @@ private:
     bool m_enabled;
 };
 
+
+#ifdef DEBUG
+
+#define TRACE(streamdef) \
+{ \
+    std::tstring msg = (((std::tostringstream&)(std::tostringstream().flush() << streamdef)).str()); \
+    msg += _T("\n"); \
+    OutputDebugString(msg.c_str()); \
+}
+
+#define LOG(streamdef) \
+{ \
+    std::tstring msg = (((std::tostringstream&)(std::tostringstream().flush() << streamdef)).str()); \
+    Logger::instance().log(msg); \
+    msg += _T("\n"); \
+    OutputDebugString(msg.c_str()); \
+}
+
+#else
+
+#define TRACE(message) \
+    void(void);
+
+#define LOG(message) \
+    Logger::instance().log(message);
+
+#endif
+
 #endif // LOGGER_H
