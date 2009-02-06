@@ -2213,6 +2213,8 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
     case AO::MSG_FULLSYNC:
         {
             Native::AOEquip equip((AO::Equip*)msg.start(), true);
+            LOG(_T("MSG_FULLSYNC target=") << equip.targetId());
+
             g_DBManager.lock();
             g_DBManager.Begin();
             {
@@ -2224,9 +2226,6 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
             ServicesSingleton::Instance()->ClearTempContainerIdCache(equip.charid());
 
-#ifdef DEBUG
-            OutputDebugString(_T("FullSync"));
-#endif
             // Register items
             for (unsigned int i = 0; i < equip.numitems(); i++)
             {
@@ -2263,6 +2262,8 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
             // Make sure this is the message for the currently playing toon (and not other mobs in vicinity).
             if (msg.characterId() == msg.entityId())
             {
+                LOG(_T("MSG_MOB_SYNC"));
+
                 AO::MobInfo* pMobInfo = (AO::MobInfo*)msg.start();
                 std::string name(&(pMobInfo->characterName.str), pMobInfo->characterName.strLen - 1);
 
@@ -2280,12 +2281,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
     case AO::MSG_SHOP_INFO:
         {
             AOPlayerShopInfo shop(msg.start(), msg.size());
-
-#ifdef DEBUG
-			std::tstringstream tmp;
-            tmp << _T("MSG_SHOP_INFO ") << shop.characterId() << " owner=" << shop.ownerId() << " ID=" << shop.shopId() << "\n";
-            OutputDebugString(tmp.str().c_str());
-#endif
+            LOG(_T("MSG_SHOP_INFO target=") << shop.characterId() << _T(" owner=") << shop.ownerId() << _T(" shop=") << shop.shopId());
 
             if (shop.shopId() != 0 && shop.ownerId() != 0)
             {
@@ -2300,13 +2296,8 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
     case AO::MSG_SHOP_ITEMS:
         {
             AOPlayerShopContent shop(msg.start(), msg.size());
+            LOG(_T("MSG_SHOP_ITEMS target=") << shop.characterId() << _T(" shop=") << shop.shopid());
 
-#ifdef DEBUG
-            
-			std::tstringstream tmp;
-            tmp << _T("MSG_SHOP_ITEMS ") << shop.characterId() << " ID=" << shop.shopid();
-            OutputDebugString(tmp.str().c_str());
-#endif
             // This message should only update the shops for already registered shop IDs, and then use the character 
             // ID of who-ever that shop is registered to. This will allow you to update all your toons shops without 
             // logging them in. (You only need to visit the shop with one of them.)
@@ -2315,10 +2306,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
             if (owner == 0)
             {
-#ifdef DEBUG
- 
-            OutputDebugString(_T("Shop owner not found."));
-#endif
+                LOG(_T("Shop owner not found."));
 			}
 			else
             {
