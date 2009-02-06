@@ -294,11 +294,15 @@ void DBManager::setToonName(unsigned int charid, std::tstring const& newName)
 {
     g_DBManager.Begin();
 
+    boost::format sql("INSERT INTO tToons (charid, charname) VALUES (%1%, '%2%')");
+    sql % charid % to_ascii_copy(newName);
+
+    if (!g_DBManager.Exec(sql.str()))
     {
-        g_DBManager.Exec(STREAM2STR("DELETE FROM tToons WHERE charid = " << charid));
-    }
-    {
-        g_DBManager.Exec(STREAM2STR("INSERT INTO tToons (charid, charname) VALUES (" << charid << ", '" << newName.c_str() << "')"));
+        // Insert failed, so update existing record instead.
+        sql = boost::format("UPDATE OR IGNORE tToons SET charname='%1%' WHERE charid=%2%");
+        sql % to_ascii_copy(newName) % charid;
+        g_DBManager.Exec(sql.str());
     }
 
     g_DBManager.Commit();
@@ -309,13 +313,12 @@ void DBManager::setToonShopId(unsigned int charid, unsigned int shopid)
 {
     assert(charid != 0);
     assert(shopid != 0);
-    
-    std::ostringstream sql;
-    sql << "UPDATE OR IGNORE tToons SET shopid=" << shopid << " WHERE charid=" << charid;
+
+    boost::format sql("UPDATE OR IGNORE tToons SET shopid=%1% WHERE charid=%2%");
+    sql % shopid % charid;
 
     g_DBManager.Begin();
     g_DBManager.Exec(sql.str());
-	OutputDebugString(from_ascii_copy(sql.str()).c_str());
     g_DBManager.Commit();
 }
 
