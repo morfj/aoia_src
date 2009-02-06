@@ -2281,21 +2281,18 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
         {
             AOPlayerShopInfo shop(msg.start(), msg.size());
 
-
 #ifdef DEBUG
-            
 			std::tstringstream tmp;
-            tmp << _T("MSG_SHOP_INFO ") << shop.characterId()  << " owner=" << shop.ownerId() << " ID=" << shop.shopId();
+            tmp << _T("MSG_SHOP_INFO ") << shop.characterId() << " owner=" << shop.ownerId() << " ID=" << shop.shopId() << "\n";
             OutputDebugString(tmp.str().c_str());
 #endif
 
             if (shop.shopId() != 0 && shop.ownerId() != 0)
             {
-				if (shop.characterId() == shop.ownerId())
-				{
-					OutputDebugString(_T("Storing shop owner."));
-					g_DBManager.setToonShopId(shop.ownerId(), shop.shopId());
-				}
+                // As long as the shop and owner IDs are > 0 we record them.
+                // setToonShopId will not create new toon entries in the DB, 
+                // so its safe to just dump all the shop IDs to it.
+				g_DBManager.setToonShopId(shop.ownerId(), shop.shopId());
             }
         }
         break;
