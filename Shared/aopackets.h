@@ -303,11 +303,12 @@ namespace AO {
 		INV_BANK		= 1,
 		INV_TOONINV		= 2,
 		INV_PLAYERSHOP	= 3,
-		INV_TRADE		= 4,
-		INV_TRADEPARTNER= 5,
+		INV_TRADE		= 4,//The stuff I put on the table in a trade
+		INV_TRADEPARTNER= 5,//The stuff a tradepartner adds to a trade.
 		INV_OVERFLOW	= 6,
 		INV_HOTSWAPTEMP	= 7,//used by IA when hotswapping as temp storage.
-		INV_OTHER_PLAYERSHOP= 8,
+		INV_OTHER_PLAYERSHOP= 8, //Current playershop in trade.
+		//remember to update MSG_FULLSYNC to clear the inv you want cleared on zone.
 	};
 
 	enum CharacterActionIds

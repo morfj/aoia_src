@@ -2171,7 +2171,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
             {
                 // Remove old contents from DB (inventory, trade, remote trade and overflow win.
                 std::tstringstream sql;
-                sql << _T("DELETE FROM tItems WHERE (parent = 2 or parent >= 4 and parent <= 6) AND owner = ") << equip.charid();
+                sql << _T("DELETE FROM tItems WHERE (parent = 2 or parent >= 4 and parent <= 8) AND owner = ") << equip.charid();
                 g_DBManager.Exec(sql.str());
             }
 
