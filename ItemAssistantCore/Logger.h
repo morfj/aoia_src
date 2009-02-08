@@ -44,7 +44,7 @@ private:
 #else
 
 #define TRACE(streamdef) \
-    void(void);
+    __noop;
 
 #define LOG(streamdef) \
 { \

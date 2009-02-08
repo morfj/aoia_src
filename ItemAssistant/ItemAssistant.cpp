@@ -41,13 +41,13 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
     try
     {
-	    if (!App::Instance()->init( lpCmdLine )) {
-	        return 0;
-	    }
-	
-	    nRet = App::Instance()->run(lpCmdLine, nCmdShow);
-	
-	    App::Instance()->destroy();
+        if (!App::Instance()->init( lpCmdLine )) {
+            return 0;
+        }
+
+        nRet = App::Instance()->run(lpCmdLine, nCmdShow);
+
+        App::Instance()->destroy();
     }
     catch (std::exception& e)
     {
