@@ -732,57 +732,13 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 			}
 			else if (opId == AO::CHAR_ACTION_JOINSTACKS)
 			{
-			//	OutputDebugString(itemOp.print().c_str());
-
-				//user joined two stacks!
-				//itemHigh is the container id and slot id of the other item (gets deleted)
-				//itemLow is the fromType of the other item
-				
-				unsigned short removedItemContType	 = itemOp.itemId().Low() & 0xff;
-				unsigned short removedItemContTempId = itemOp.itemId().High() >> 16;
-				unsigned short removedItemSlotId	 = itemOp.itemId().High() & 0xff;
-	
-				unsigned int removedItemContainerId	 = GetFromContainerId(msg.characterId(), removedItemContType, removedItemContTempId);
-
-				unsigned int fromContainerId = GetFromContainerId(msg.characterId(), itemOp.fromType(), itemOp.fromContainerTempId());
-
-				g_DBManager.lock();
-				g_DBManager.Begin();
-				
-				if (fromContainerId == 0)
-				{
-					OutputDebugString(_T("From container not found!"));
-			 		return; //we dont have the value cached, either a bug or ia was started after the bp was opened. Or unknown from type
-				}
-
-				std::tstringstream sqlUpd;
-				sqlUpd << _T("UPDATE tItems SET stack = ")
-				 << _T(" (stack + (SELECT tItems2.stack FROM tItems tItems2 WHERE")
-				 << _T(" tItems2.owner = ") << msg.characterId() 
-				 << _T(" AND tItems2.parent = ") << removedItemContainerId
-				 << _T(" AND tItems2.slot = ") << removedItemSlotId << _T("))") 
-				<< _T(" WHERE owner = ") << msg.characterId() 
-				<< _T(" AND parent = ") << fromContainerId
-				<< _T(" AND slot = ") << itemOp.fromItemSlotId();
-
-				//OutputDebugString(sqlUpd.str().c_str());
-				g_DBManager.Exec(sqlUpd.str());
-
-				{
-					std::tstringstream sql;
-					sql << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
-					<< _T(" AND parent = ") << removedItemContainerId
-					<< _T(" AND slot = ") << removedItemSlotId;//itemId().High();
-
-					//OutputDebugString(sql.str().c_str());
-					g_DBManager.Exec(sql.str());
-				}
-				g_DBManager.Commit();
-				g_DBManager.unLock();
+				return;//handled on server message!
 			}
 			else if (opId == AO::CHAR_ACTION_DELETEITEM)
 			{
 				//user deleted an item
+				//handled on server side aswell (without keylow/high).
+
 				g_DBManager.lock();
 				g_DBManager.Begin();
 				unsigned int fromContainerId = GetFromContainerId(msg.characterId(), itemOp.fromType(), itemOp.fromContainerTempId());
@@ -805,7 +761,7 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 
 					g_DBManager.Exec(sql.str());
 				}
-				//OutputDebugString(itemOp.print().c_str());
+				OutputDebugString(itemOp.print().c_str());
 				g_DBManager.Commit();
 				g_DBManager.unLock();
 
@@ -942,14 +898,18 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
     {
 	case AO::MSG_CHAR_OPERATION: //0x5e477770
 		{
-
+			
 			Native::AOCharacterAction charOp((AO::CharacterAction*)msg.start(), true);
 
+			if (charOp.targetId() != charOp.charid())//skip messages not for me.
+				return;
+
+OutputDebugString(charOp.print().c_str());
 
 			unsigned int opId = charOp.operationId();
 	
 			//TODO: switch statement
-			if (opId == 0x70) //delete (user or tradeskill)
+			if (opId == AO::CHAR_ACTION_DELETEITEM) //delete (user or tradeskill)
 			{
 				//user deleted an item
 				g_DBManager.lock();
@@ -978,7 +938,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 				g_DBManager.unLock();
 
 			}
-			if (opId == 0x2f)
+			else if (opId == AO::CHAR_ACTION_DELETE_TEMP_ITEM)
 			{
 
 #ifdef DEBUG
@@ -1010,6 +970,109 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
 				return;
 			}
+			else if (opId == AO::CHAR_ACTION_JOINSTACKS)
+			{/*
+[9352] from Server: CHAR_ACTION_JOINSTACKS
+[9352] AOCharacterAction:MsgId 5e477770 CharId 2568996070 Target 2568996070 
+[9352] operationId  0x35 
+[9352] unknown3  0x0 
+[9352] fromType  0x68 
+[9352] fromContainerTempId 0 
+[9352] fromItemSlotId 58 
+[9352] itemId [104|90] */
+
+				//TODO: Move from client code to here!
+#ifdef DEBUG
+				OutputDebugString(_T("from Server: CHAR_ACTION_JOINSTACKS"));
+				OutputDebugString(charOp.print().c_str());
+#endif;
+				//	OutputDebugString(itemOp.print().c_str());
+
+				//user joined two stacks!
+				//itemHigh is the container id and slot id of the other item (gets deleted)
+				//itemLow is the fromType of the other item
+				
+				unsigned short removedItemContType	 = charOp.itemId().Low() & 0xff;
+				unsigned short removedItemContTempId = charOp.itemId().High() >> 16;
+				unsigned short removedItemSlotId	 = charOp.itemId().High() & 0xff;
+	
+				unsigned int removedItemContainerId	 = GetFromContainerId(charOp.charid(), removedItemContType, removedItemContTempId);
+
+				unsigned int fromContainerId = GetFromContainerId(charOp.charid(), charOp.fromType(), charOp.fromContainerTempId());
+
+				g_DBManager.lock();
+				g_DBManager.Begin();
+				
+				if (fromContainerId == 0)
+				{
+					OutputDebugString(_T("From container not found!"));
+			 		return; //we dont have the value cached, either a bug or ia was started after the bp was opened. Or unknown from type
+				}
+
+				std::tstringstream sqlUpd;
+				sqlUpd << _T("UPDATE tItems SET stack = ")
+				 << _T(" (stack + (SELECT tItems2.stack FROM tItems tItems2 WHERE")
+				 << _T(" tItems2.owner = ") << charOp.charid()
+				 << _T(" AND tItems2.parent = ") << removedItemContainerId
+				 << _T(" AND tItems2.slot = ") << removedItemSlotId << _T("))") 
+				<< _T(" WHERE owner = ") << charOp.charid() 
+				<< _T(" AND parent = ") << fromContainerId
+				<< _T(" AND slot = ") << charOp.fromItemSlotId();
+
+				//OutputDebugString(sqlUpd.str().c_str());
+				g_DBManager.Exec(sqlUpd.str());
+
+				{
+					std::tstringstream sql;
+					sql << _T("DELETE FROM tItems WHERE owner = ") << charOp.charid() 
+					<< _T(" AND parent = ") << removedItemContainerId
+					<< _T(" AND slot = ") << removedItemSlotId;//itemId().High();
+
+					//OutputDebugString(sql.str().c_str());
+					g_DBManager.Exec(sql.str());
+				}
+				g_DBManager.Commit();
+				g_DBManager.unLock();
+
+			}
+#ifdef DEBUG
+			else if (opId == AO::CHAR_ACTION_RUN_NANO) 
+			{
+				//when you run a nano, this one fires
+				return;
+			}
+			else if (opId == AO::CHAR_ACTION_RUN_PERK) 
+				//0x69  from = 0c350+ a char Id = ?
+			{
+				//When you hit a perk, this one fires
+				return;
+			}
+			else if (opId == AO::CHAR_ACTION_UNKNOWN1) //0x69  from = 0c350+ a char Id
+			{
+				//occationally, this one
+				return;
+			}
+			else if (opId == AO::CHAR_ACTION_TRADESKILL)
+			{
+				//tradeskill. do nothing. we will get delete/trade operations for all.
+			}
+			else if (opId == AO::CHAR_ACTION_LOGOFF1 ||opId == AO::CHAR_ACTION_LOGOFF2) 
+			{
+				//All zeroes, when you log off
+				return;
+			}
+			else if (opId == 0x57 || opId == AO::CHAR_ACTION_SNEAK )
+			{ 
+				return;
+			}
+			else //if (opId == AO::CHAR_ACTION_JOINSTACKS)
+			{
+
+				OutputDebugString(_T("from Server: Unknown CHAR_ACTION: (check if SPLITSTACKS CAN BE DETECTED"));
+				OutputDebugString(charOp.print().c_str());
+
+			}
+#endif;
 		}
 		break;
 		//TODO: Trades with backpacks
