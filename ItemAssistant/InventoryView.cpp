@@ -13,23 +13,6 @@ using namespace WTL;
 using namespace aoia;
 
 
-enum ColumnID
-{
-    COL_NAME,
-    COL_QL,
-    //COL_KEYLOW,
-    //COL_KEYHIGH,
-    COL_STACK,
-    COL_CHARACTER,
-    //COL_SLOT,
-    //COL_VALUE,
-    COL_CONTAINER,
-
-    // this should be last always
-    COL_COUNT
-};
-
-
 InventoryView::InventoryView()
     : m_sortDesc(false)
     , m_sortColumn(0)
@@ -675,44 +658,40 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
     {
 	case AO::MSG_CHAR_OPERATION: //0x5e477770
 		{
+            LOG(_T("MSG_CHAR_OPERATION"));
 
 			Native::AOCharacterAction itemOp((AO::CharacterAction*)msg.start(), false);
 
 			unsigned int opId = itemOp.operationId();
 
-			
-
-			//TODO: switch statement
+            //TODO: switch statement
 			if (opId == AO::CHAR_ACTION_SPLITSTACK)
 			{
+                LOG(_T("CHAR_ACTION_SPLITSTACK"));
+
 				//split! itemHigh is the count of the new item. this gets a new slotId
 				//the new item gets the count of the existing.
 				//the one with 
 
-				g_DBManager.lock();
+                g_DBManager.lock();
 				g_DBManager.Begin();
 				unsigned int fromContainerId = GetFromContainerId(msg.characterId(), itemOp.fromType(), itemOp.fromContainerTempId());
 
 				if (fromContainerId == 0)
 				{
-#ifdef DEBUG
-					OutputDebugString(_T("From container not found!"));
-#endif
+                    TRACE(_T("From container not found!"));
 			 		return; //we dont have the value cached, either a bug or ia was started after the bp was opened. Or unknown from type
 				}
 
 				unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(msg.characterId(), fromContainerId);
 
 				std::tstringstream sqlInsert;
-
 				sqlInsert << _T("INSERT INTO tItems (keylow, keyhigh, ql, stack, parent, slot, children, owner)")
 				<< _T(" SELECT keylow, keyhigh, ql, ") << itemOp.itemId().High()
 				<< _T(", parent, ") << nextFreeInvSlot << _T(", children, owner FROM tItems")
 				<< _T(" WHERE owner = ") << msg.characterId() 
 				<< _T(" AND parent = ") << fromContainerId
 				<< _T(" AND slot = ") << itemOp.fromItemSlotId();
-
-			//	OutputDebugString(sqlInsert.str().c_str());
 				g_DBManager.Exec(sqlInsert.str());
 
 				{
@@ -721,9 +700,6 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 					<< _T(" WHERE owner = ") << msg.characterId() 
 					<< _T(" AND parent = ") << fromContainerId
 					<< _T(" AND slot = ") << itemOp.fromItemSlotId();
-
-				//	OutputDebugString(sql.str().c_str());
-
 					g_DBManager.Exec(sql.str());
 				}
 				g_DBManager.Commit();
@@ -732,10 +708,12 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 			}
 			else if (opId == AO::CHAR_ACTION_JOINSTACKS)
 			{
+                LOG(_T("CHAR_ACTION_JOINSTACKS"));
 				return;//handled on server message!
 			}
 			else if (opId == AO::CHAR_ACTION_DELETEITEM)
 			{
+                LOG(_T("CHAR_ACTION_DELETEITEM"));
 				//user deleted an item
 				//handled on server side aswell (without keylow/high).
 
@@ -745,10 +723,9 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 
 				if (fromContainerId == 0)
 				{
-					OutputDebugString(_T("From container not found!"));
+					TRACE(_T("From container not found!"));
 			 		return; //we dont have the value cached, either a bug or ia was started after the bp was opened. Or unknown from type
 				}
-
 
 				//user deleted an item!
 				{
@@ -758,51 +735,52 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 					<< _T(" AND keylow = ") << itemOp.itemId().Low()
 					<< _T(" AND keyhigh = ") << itemOp.itemId().High()
 					<< _T(" AND slot = ") << itemOp.fromItemSlotId();
-
 					g_DBManager.Exec(sql.str());
 				}
-				OutputDebugString(itemOp.print().c_str());
+				TRACE(itemOp.print());
 				g_DBManager.Commit();
 				g_DBManager.unLock();
 
 			}
 			else if (opId == AO::CHAR_ACTION_RUN_NANO) 
 			{
+                LOG(_T("CHAR_ACTION_RUN_NANO"));
 				//when you run a nano, this one fires
 				return;
 			}
 			else if (opId == AO::CHAR_ACTION_RUN_PERK) 
 				//0x69  from = 0c350+ a char Id = ?
 			{
+                LOG(_T("CHAR_ACTION_RUN_PERK"));
 				//When you hit a perk, this one fires
 				return;
 			}
 			else if (opId == AO::CHAR_ACTION_UNKNOWN1) //0x69  from = 0c350+ a char Id
 			{
+                LOG(_T("CHAR_ACTION_UNKNOWN1"));
 				//occationally, this one
 				return;
 			}
 			else if (opId == AO::CHAR_ACTION_TRADESKILL)
 			{
+                LOG(_T("CHAR_ACTION_TRADESKILL"));
 				//tradeskill. do nothing. we will get delete/trade operations for all.
 			}
 			else if (opId == AO::CHAR_ACTION_LOGOFF1 ||opId == AO::CHAR_ACTION_LOGOFF2) 
 			{
+                LOG(_T("CHAR_ACTION_LOGOFF"));
 				//All zeroes, when you log off
 				return;
 			}
 			else if (opId == 0x57 || opId == AO::CHAR_ACTION_SNEAK )
 			{ 
+                LOG(_T("CHAR_ACTION_SNEAK"));
 				return;
 			}
 			else
 			{
-#ifdef DEBUG
-				std::tstringstream sql;
-				sql << _T("Unknown client operation Id:") <<std::hex << opId;
-				OutputDebugString(sql.str().c_str());
-				OutputDebugString(itemOp.print().c_str());
-#endif
+				LOG(_T("Unknown client operation Id: ") << std::hex << opId);
+                LOG(itemOp.print());
 				return;
 			}
 		}
@@ -810,24 +788,21 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 
 	case 0x1b: //zone
 		{
-			
 		}
 		break;
 
 	case AO::MSG_OPENBACKPACK:// 0x52526858://1196653092:
 		{
-
+            LOG(_T("MSG_OPENBACKPACK"));
 			return;//handled on server msg. 
 			//Since the server msg is only sent once, we might want to update tempId here, but it shouldnt be needeed.
 		//	Native::AOOpenBackpackOperation moveOp((AO::OpenBackpackOperation*)msg.start());
-
-		//	OutputDebugString(moveOp.print().c_str());
-			
 		}
 		break;	
 		
 	case AO::MSG_ITEM_MOVE: //0x47537a24://1196653092:
 		{
+			LOG(_T("MSG_ITEM_MOVE"));
 			//we handle this on the server message.
 			return;
 		}
@@ -842,8 +817,9 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 unsigned int InventoryView::GetFromContainerId(unsigned int charId, unsigned short fromType, unsigned short fromSlotId)
 {
     if (fromType == 0x006b) //backpack. fromSlotId contains a temp container id.
-		return ServicesSingleton::Instance()->GetContainerId(charId, fromSlotId);
-
+    {
+        return ServicesSingleton::Instance()->GetContainerId(charId, fromSlotId);
+    }
 	else if (fromType == 0x0068//inv
 			|| fromType == 0x0065  //utils, hud, ncu, weap pane
 			|| fromType == 0x0073  //social pande
@@ -858,35 +834,32 @@ unsigned int InventoryView::GetFromContainerId(unsigned int charId, unsigned sho
 	}
 	else if (fromType == 0x006f)//trade window
 	{
-		OutputDebugString(_T("Move from trade remote party ignored"));
+		TRACE(_T("Move from trade remote party ignored"));
 		return 0;
 	}
 	else if (fromType == 0xc767)//shop inventory
 	{
-		OutputDebugString(_T("Move from shop inventory ignored"));//Handled in ItemBought message.
+		TRACE(_T("Move from shop inventory ignored"));//Handled in ItemBought message.
 		return 0;
 	}
 	else if (fromType == 0xc790)//51088 player shop inventory
 	{
-		OutputDebugString(_T("Move from player shop inventory ignored"));//Not handled currently!
+		TRACE(_T("Move from player shop inventory ignored"));//Not handled currently!
 		return 0;
 	}
 	else if (fromType == 0x006c)//shop/trade window.. could be remote or local. If needed, add an owner charId to compare with to func.
 	{
-		OutputDebugString(_T("Move from trade win"));
+		TRACE(_T("Move from trade win"));
 		return AO::INV_TRADE;
 	}
 	else if (fromType == 0x006e)//overflow or tradeskill temp window
 	{
-		OutputDebugString(_T("Move from overflow"));
+		TRACE(_T("Move from overflow"));
 		return AO::INV_OVERFLOW;
 	}
 	else
 	{
-		std::tstringstream tmp;
-		tmp << _T("TODO: UNKNOWN FROM TYPE ") << std::hex << fromType;
-
-		OutputDebugString(tmp.str().c_str());
+		TRACE(_T("TODO: UNKNOWN FROM TYPE ") << std::hex << fromType);
 		return 2; //we assume inventory o.O
 	}
 }
@@ -898,19 +871,23 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
     {
 	case AO::MSG_CHAR_OPERATION: //0x5e477770
 		{
-			
-			Native::AOCharacterAction charOp((AO::CharacterAction*)msg.start(), true);
+            LOG(_T("MSG_CHAR_OPERATION"));
+
+            Native::AOCharacterAction charOp((AO::CharacterAction*)msg.start(), true);
 
 			if (charOp.targetId() != charOp.charid())//skip messages not for me.
-				return;
-
-OutputDebugString(charOp.print().c_str());
+            {
+                return;
+            }
+            TRACE(charOp.print());
 
 			unsigned int opId = charOp.operationId();
-	
-			//TODO: switch statement
+
+            //TODO: switch statement
 			if (opId == AO::CHAR_ACTION_DELETEITEM) //delete (user or tradeskill)
 			{
+                LOG(_T("CHAR_ACTION_DELETEITEM"));
+
 				//user deleted an item
 				g_DBManager.lock();
 				g_DBManager.Begin();
@@ -918,7 +895,7 @@ OutputDebugString(charOp.print().c_str());
 
 				if (fromContainerId == 0)
 				{
-					OutputDebugString(_T("From container not found!"));
+					TRACE(_T("From container not found!"));
 			 		return; //we dont have the value cached, either a bug or ia was started after the bp was opened. Or unknown from type
 				}
 
@@ -940,10 +917,8 @@ OutputDebugString(charOp.print().c_str());
 			}
 			else if (opId == AO::CHAR_ACTION_DELETE_TEMP_ITEM)
 			{
-
-#ifdef DEBUG
-			OutputDebugString(charOp.print().c_str());
-#endif
+                LOG(_T("CHAR_ACTION_DELETE_TEMP_ITEM"));
+			    TRACE(charOp.print());
 
 				//A quest item (key or use-item) gets deleted, only temp id sent in here.
 				//we got this id from a MSG_SPAWN_REWARD before a full sync or when item was spawned
@@ -952,9 +927,7 @@ OutputDebugString(charOp.print().c_str());
 
 				unsigned int fromContainerId = AO::INV_TOONINV;
 				unsigned int charId = charOp.charid();
-
 				unsigned int itemTempId = (charOp.fromContainerTempId() << 16) + charOp.fromItemSlotId();
-
 				unsigned int realSlotId = ServicesSingleton::Instance()->GetItemSlotId(charId, itemTempId);
 
 				if (realSlotId > 0)
@@ -971,7 +944,9 @@ OutputDebugString(charOp.print().c_str());
 				return;
 			}
 			else if (opId == AO::CHAR_ACTION_JOINSTACKS)
-			{/*
+			{
+                LOG(_T("CHAR_ACTION_JOINSTACKS"));
+/*
 [9352] from Server: CHAR_ACTION_JOINSTACKS
 [9352] AOCharacterAction:MsgId 5e477770 CharId 2568996070 Target 2568996070 
 [9352] operationId  0x35 
@@ -979,14 +954,10 @@ OutputDebugString(charOp.print().c_str());
 [9352] fromType  0x68 
 [9352] fromContainerTempId 0 
 [9352] fromItemSlotId 58 
-[9352] itemId [104|90] */
+[9352] itemId [104|90]
+*/
 
-				//TODO: Move from client code to here!
-#ifdef DEBUG
-				OutputDebugString(_T("from Server: CHAR_ACTION_JOINSTACKS"));
-				OutputDebugString(charOp.print().c_str());
-#endif;
-				//	OutputDebugString(itemOp.print().c_str());
+                TRACE(charOp.print());
 
 				//user joined two stacks!
 				//itemHigh is the container id and slot id of the other item (gets deleted)
@@ -995,9 +966,7 @@ OutputDebugString(charOp.print().c_str());
 				unsigned short removedItemContType	 = charOp.itemId().Low() & 0xff;
 				unsigned short removedItemContTempId = charOp.itemId().High() >> 16;
 				unsigned short removedItemSlotId	 = charOp.itemId().High() & 0xff;
-	
 				unsigned int removedItemContainerId	 = GetFromContainerId(charOp.charid(), removedItemContType, removedItemContTempId);
-
 				unsigned int fromContainerId = GetFromContainerId(charOp.charid(), charOp.fromType(), charOp.fromContainerTempId());
 
 				g_DBManager.lock();
@@ -1005,32 +974,32 @@ OutputDebugString(charOp.print().c_str());
 				
 				if (fromContainerId == 0)
 				{
-					OutputDebugString(_T("From container not found!"));
+					TRACE(_T("From container not found!"));
 			 		return; //we dont have the value cached, either a bug or ia was started after the bp was opened. Or unknown from type
 				}
 
-				std::tstringstream sqlUpd;
-				sqlUpd << _T("UPDATE tItems SET stack = ")
-				 << _T(" (stack + (SELECT tItems2.stack FROM tItems tItems2 WHERE")
-				 << _T(" tItems2.owner = ") << charOp.charid()
-				 << _T(" AND tItems2.parent = ") << removedItemContainerId
-				 << _T(" AND tItems2.slot = ") << removedItemSlotId << _T("))") 
-				<< _T(" WHERE owner = ") << charOp.charid() 
-				<< _T(" AND parent = ") << fromContainerId
-				<< _T(" AND slot = ") << charOp.fromItemSlotId();
+                std::tstringstream sqlUpd;
+                sqlUpd << _T("UPDATE tItems SET stack = ")
+                    << _T(" (stack + (SELECT tItems2.stack FROM tItems tItems2 WHERE")
+                    << _T(" tItems2.owner = ") << charOp.charid()
+                    << _T(" AND tItems2.parent = ") << removedItemContainerId
+                    << _T(" AND tItems2.slot = ") << removedItemSlotId << _T("))") 
+                    << _T(" WHERE owner = ") << charOp.charid()
+                    << _T(" AND parent = ") << fromContainerId
+                    << _T(" AND slot = ") << charOp.fromItemSlotId();
 
-				//OutputDebugString(sqlUpd.str().c_str());
-				g_DBManager.Exec(sqlUpd.str());
+                //OutputDebugString(sqlUpd.str().c_str());
+                g_DBManager.Exec(sqlUpd.str());
 
-				{
-					std::tstringstream sql;
-					sql << _T("DELETE FROM tItems WHERE owner = ") << charOp.charid() 
-					<< _T(" AND parent = ") << removedItemContainerId
-					<< _T(" AND slot = ") << removedItemSlotId;//itemId().High();
+                {
+                    std::tstringstream sql;
+                    sql << _T("DELETE FROM tItems WHERE owner = ") << charOp.charid() 
+                        << _T(" AND parent = ") << removedItemContainerId
+                        << _T(" AND slot = ") << removedItemSlotId;//itemId().High();
 
-					//OutputDebugString(sql.str().c_str());
-					g_DBManager.Exec(sql.str());
-				}
+                    //OutputDebugString(sql.str().c_str());
+                    g_DBManager.Exec(sql.str());
+                }
 				g_DBManager.Commit();
 				g_DBManager.unLock();
 
@@ -1068,9 +1037,8 @@ OutputDebugString(charOp.print().c_str());
 			else //if (opId == AO::CHAR_ACTION_JOINSTACKS)
 			{
 
-				OutputDebugString(_T("from Server: Unknown CHAR_ACTION: (check if SPLITSTACKS CAN BE DETECTED"));
-				OutputDebugString(charOp.print().c_str());
-
+				LOG(_T("From Server: Unknown CHAR_ACTION: (check if SPLITSTACKS CAN BE DETECTED"));
+				TRACE(charOp.print());
 			}
 #endif;
 		}
@@ -1085,6 +1053,8 @@ OutputDebugString(charOp.print().c_str());
 		//TODO: item depletion (ammo, use stims etc (last stim important))
 	case AO::MSG_PARTNER_TRADE://0x35505644
 		{
+            LOG(_T("MSG_PARTNER_TRADE"));
+
 			//when trade partner adds/removes items to trade window
 			Native::AOPartnerTradeItem item((AO::PartnerTradeItem*)msg.start());
 
@@ -1102,14 +1072,12 @@ OutputDebugString(charOp.print().c_str());
 				else
 				{
 					//OutputDebugString(_T("Unknown trade operation id:"));
-					OutputDebugString(item.print().c_str());
+					TRACE(item.print());
 				}
 #endif
-			
-				
-				if (opId == 0x55) //trade partner adds an item
-				{
 
+                if (opId == 0x55) //trade partner adds an item
+				{
 					unsigned int otherTradeContainer = AO::INV_TRADEPARTNER;
 					g_DBManager.lock();
 					g_DBManager.Begin();
@@ -1160,10 +1128,8 @@ OutputDebugString(charOp.print().c_str());
 					if (item.partnerFromType() != 0x6e)
 					{
 #ifdef DEBUG
-						OutputDebugString(_T("Unexpected parter from type!"));
-						OutputDebugString(_T("Unexpected parter from type!"));
-						OutputDebugString(_T("Unexpected parter from type!"));
-						OutputDebugString(item.print().c_str());
+						TRACE(_T("Unexpected partner from type!"));
+						TRACE(item.print());
 #endif
 						return;
 					}
@@ -1187,8 +1153,7 @@ OutputDebugString(charOp.print().c_str());
 						0,
 						item.charid());
 
-
-				/*	{
+                /*	{
 						std::tstringstream logS;
 						logS << _T("~INSERT (") << item.itemid().Low() << _T("/") << item.ql() << _T("/") << item.stack()
 							<< _T(") WHERE parent = ") << otherTradeContainer
@@ -1225,9 +1190,9 @@ OutputDebugString(charOp.print().c_str());
 						<< _T(" AND (flags & 4196368))");//FLAG_USE_EMPTY_DESTRUCT+FLAG_HAS_ENERGY+FLAG_TURN_ON_USE
 
 					g_DBManager.Exec(sqlDeplete.str());
-	#ifdef DEBUG
-					OutputDebugString(sqlDeplete.str().c_str());
-	#endif
+#ifdef DEBUG
+                    TRACE(sqlDeplete.str());
+#endif
 					////2048 == ItemFlag::FLAG_USE_EMPTY_DESTRUCT
 					//SELECT * from tblAO WHERE (flags & 2048) order by name
 					//OR FLAG_HAS_ENERGY         = 0x00400000,
@@ -1249,16 +1214,13 @@ OutputDebugString(charOp.print().c_str());
 					<< _T(" AND keylow IN (SELECT aoid FROM tblao WHERE aoid = ") << item.itemid().Low() 
 					<< _T(" AND (flags & 4196368))");//FLAG_USE_EMPTY_DESTRUCT+FLAG_HAS_ENERGY+FLAG_TURN_ON_USE
 
-
-					g_DBManager.Exec(sqlDelete.str());
-	#ifdef DEBUG
-					OutputDebugString(sqlDelete.str().c_str());
-	#endif
+                    g_DBManager.Exec(sqlDelete.str());
+#ifdef DEBUG
+                    TRACE(sqlDelete.str());
+#endif
 
 					g_DBManager.Commit();
 					g_DBManager.unLock();
-					
-			
 				}
 			}
 
@@ -1266,13 +1228,17 @@ OutputDebugString(charOp.print().c_str());
 		break;
 	case AO::MSG_SHOP_TRANSACTION: //0x36284f6e 
 		{
+            LOG(_T("MSG_SHOP_TRANSACTION"));
+
 			Native::AOTradeTransaction item((AO::TradeTransaction*)msg.start(), true);
 
 			if (item.targetId() != item.charid())//skip messages not for me.
-				return;
+            {
+                return;
+            }
 
 #ifdef DEBUG
-			OutputDebugString(item.print().c_str());
+			TRACE(item.print());
 #endif
 
 			unsigned int shopContainer = AO::INV_TRADE;
@@ -1364,7 +1330,7 @@ OutputDebugString(charOp.print().c_str());
 					if (item.fromId().Low() == 0xC790)//51088)//fromType+fromTempContId+fromSlotId = charId
 					{
 						//accept from playershop:
-						OutputDebugString(_T("accept from a playershop:!"));
+						TRACE(_T("accept from a playershop:!"));
 
 						// We duplicate items from playershop to other trade as they are moved out of shop
 						// and move from to inv and delete the original when comitting. or delete the dupe when aborting.
@@ -1595,10 +1561,8 @@ OutputDebugString(charOp.print().c_str());
 					}
 					else
 					{
-#ifdef DEBUG
-						OutputDebugString(_T("Added by the other part"));
+						TRACE(_T("Added by the other part"));
 						//handled by Native::AOPartnerTradeItem
-#endif
 						return;
 					}
 				}
@@ -1736,9 +1700,7 @@ OutputDebugString(charOp.print().c_str());
 				break;
 				default:
 				{
-					std::tstringstream warning;
-					warning << _T("Unknown trade operation: ") << std::hex << item.operationId();
-					OutputDebugString(warning.str().c_str());
+					LOG(_T("Unknown trade operation: ") << std::hex << item.operationId());
 					return;
 				}
 				break;
@@ -1749,9 +1711,11 @@ OutputDebugString(charOp.print().c_str());
 		break;
 	case AO::MSG_ITEM_BOUGHT: //0x052e2f0c: 
 		{
+            LOG(_T("MSG_ITEM_BOUGHT"));
+
 			Native::AOBoughtItemFromShop item((AO::BoughtItemFromShop*)msg.start(), true);
 
-			OutputDebugString(item.print().c_str());
+			TRACE(item.print());
 
 			g_DBManager.lock();
             g_DBManager.Begin();
@@ -1775,14 +1739,13 @@ OutputDebugString(charOp.print().c_str());
 		break;
 	case AO::MSG_SPAWN_REWARD:
 		{
+            LOG(_T("MSG_SPAWN_REWARD"));
+
 			Native::AOBackpack bp((AO::Backpack*)msg.start(), true);
 
 			if (bp.owner().High() == msg.characterId())
             {
-#ifdef DEBUG
-				OutputDebugString(_T("MSG_SPAWN_REWARD"));
-				OutputDebugString(bp.print().c_str());
-#endif
+				TRACE(bp.print());
 				
 				if (bp.operationId() == 0x01)
 				{
@@ -1791,13 +1754,12 @@ OutputDebugString(charOp.print().c_str());
 					//stored in bp.target().High() in this msg.
 					//also contains inv slot id. (plus keylow/ql/stack/flags)
 					//when mission deleted, this id is sent in a MSG_CHAR_OPERATION/op 0x2f
-					OutputDebugString(_T("updating!"));
+					TRACE(_T("updating!"));
 					ServicesSingleton::Instance()->UpdateTempItemId(bp.charid(), bp.targetId(), bp.invSlot());
 				}
 				else if (bp.operationId() == 0x71) //I got an mission item
 				{
 					unsigned int containerId = bp.targetId();
-
 					unsigned int newParent = AO::INV_OVERFLOW;
 
 					g_DBManager.lock();
@@ -1806,7 +1768,9 @@ OutputDebugString(charOp.print().c_str());
 					//find a free spot:
 					unsigned int slotId = bp.invSlot();
 					if (slotId >= 0x6f)
-						slotId = g_DBManager.findNextAvailableContainerSlot(msg.characterId(), newParent);
+                    {
+                        slotId = g_DBManager.findNextAvailableContainerSlot(msg.characterId(), newParent);
+                    }
 
 					// Add item
 					g_DBManager.insertItem(
@@ -1820,7 +1784,7 @@ OutputDebugString(charOp.print().c_str());
 						0,
 						msg.characterId());
 
-					OutputDebugString(_T("updating!"));
+					TRACE(_T("updating!"));
 
 					//this will be moved to the next inv slot in the next msg.
 					unsigned int invSlotId = bp.invSlot();
@@ -1834,10 +1798,7 @@ OutputDebugString(charOp.print().c_str());
 				}
 				else
 				{
-					OutputDebugString(_T("UNKNOWN MSG_SPAWN_REWARD operation Id!"));
-					OutputDebugString(_T("UNKNOWN MSG_SPAWN_REWARD operation Id!"));
-					OutputDebugString(_T("UNKNOWN MSG_SPAWN_REWARD operation Id!"));
-					OutputDebugString(_T("UNKNOWN MSG_SPAWN_REWARD operation Id!"));
+                    TRACE(_T("UNKNOWN MSG_SPAWN_REWARD operation Id: ") << std::hex << bp.operationId());
 				}
 			}
 		}
@@ -1845,45 +1806,45 @@ OutputDebugString(charOp.print().c_str());
 
 	case AO::MSG_ITEM_MOVE: //0x47537A24:// what about 0x52526858:
 		{
+            LOG(_T("MSG_ITEM_MOVE"));
 
 	//	The ItemMoved is identical to the client send version except the header is server type.
 			Native::AOItemMoved moveOp((AO::ItemMoved*)msg.start(), true);
-#ifdef DEBUG
-			OutputDebugString(moveOp.print().c_str());
-#endif
+			TRACE(moveOp.print());
 
 			unsigned int fromContainerId = GetFromContainerId(moveOp.charid(), moveOp.fromType(), moveOp.fromContainerTempId());
-
 			unsigned int newParent;
-			
 			unsigned int toType = moveOp.toContainer().Low();
 
 			if (fromContainerId == AO::INV_OVERFLOW)
-				newParent = AO::INV_TOONINV; //toType seems to be 0x006e sometimes (tradeskill) when moving from overflow
+            {
+                newParent = AO::INV_TOONINV; //toType seems to be 0x006e sometimes (tradeskill) when moving from overflow
+            }
 			else if (toType == 0xc749) //to backpack
-				newParent = moveOp.toContainer().High();
+            {
+                newParent = moveOp.toContainer().High();
+            }
 			else if (toType == 0xdead)
-				newParent = AO::INV_BANK;
+            {
+                newParent = AO::INV_BANK;
+            }
 			else if (toType == 0xc350)
-				newParent = AO::INV_TOONINV; 
+            {
+                newParent = AO::INV_TOONINV; 
+            }
 			else if (toType == 0x006e) //to overflow
-				newParent = AO::INV_OVERFLOW;
+            {
+                newParent = AO::INV_OVERFLOW;
+            }
 			else
 			{
-#ifdef DEBUG
-				std::tstringstream tmp;
-				tmp << _T("TODO: MOVE/UNKNOWN TO TYPE ") << std::hex << toType;
-				OutputDebugString(tmp.str().c_str());
-#endif
+				TRACE(_T("TODO: MOVE/UNKNOWN TO TYPE ") << std::hex << toType);
 				return;
 			}
 
-					
-
-			if (fromContainerId == 0)
+            if (fromContainerId == 0)
 			{
-				OutputDebugString(_T("FromContainerId not found in cache "));
-
+				TRACE(_T("FromContainerId not found in cache "));
 			 	return; //we dont have the value cached, either a bug or ia was started after the bp was opened.
 			}
 
@@ -1898,8 +1859,7 @@ OutputDebugString(charOp.print().c_str());
 					//if anything there, we must hotswap!
 					//we move anything that was there to a temp hotswap inv, move the new item, then move the other back.
 
-
-					g_DBManager.lock();
+                    g_DBManager.lock();
 					g_DBManager.Begin();
 					{
 						std::tstringstream sqlMoveToTemp;
@@ -1909,7 +1869,7 @@ OutputDebugString(charOp.print().c_str());
 						<< _T(" AND slot = ") << newSlot
 						<< _T(" AND owner = ") << moveOp.charid();
 
-						OutputDebugString(sqlMoveToTemp.str().c_str());
+						TRACE(sqlMoveToTemp.str());
 						g_DBManager.Exec(sqlMoveToTemp.str());
 					}
 					{
@@ -1920,7 +1880,7 @@ OutputDebugString(charOp.print().c_str());
 						<< _T(" AND slot = ") << moveOp.fromItemSlotId()
 						<< _T(" AND owner = ") << moveOp.charid();
 
-						OutputDebugString(sqlMoveNewItem.str().c_str());
+						TRACE(sqlMoveNewItem.str());
 						g_DBManager.Exec(sqlMoveNewItem.str());
 					}
 					{
@@ -1930,14 +1890,13 @@ OutputDebugString(charOp.print().c_str());
 						<< _T(" AND slot = ") << moveOp.fromItemSlotId()
 						<< _T(" AND owner = ") << moveOp.charid();
 
-						OutputDebugString(sqlMoveFromTemp.str().c_str());
+						TRACE(sqlMoveFromTemp.str());
 						g_DBManager.Exec(sqlMoveFromTemp.str());
 					}
 
 					g_DBManager.Commit();
 					g_DBManager.unLock();
 					return;
-
 				}
 				else if (newSlot >= 0x6f)
 				{
@@ -1955,9 +1914,7 @@ OutputDebugString(charOp.print().c_str());
 
 						if (newSlotId > 0)
 						{
-	#ifdef DEBUG
-							OutputDebugString(_T("Stack join from move operation"));
-	#endif
+							TRACE(_T("Stack join from move operation"));
 
 							g_DBManager.lock();
 							g_DBManager.Begin();
@@ -1999,28 +1956,29 @@ OutputDebugString(charOp.print().c_str());
             g_DBManager.Begin();
 
 			if (newSlot >= 0x6f || newSlot == 0x00)
-				newSlot = g_DBManager.findNextAvailableContainerSlot(moveOp.charid(), newParent);
+            {
+                newSlot = g_DBManager.findNextAvailableContainerSlot(moveOp.charid(), newParent);
+            }
 			
             std::tstringstream sql;
-	
 			sql << _T("UPDATE tItems SET parent = ") << newParent
 				<< _T(", slot = ") << newSlot
 			    << _T(" WHERE parent = ") << fromContainerId
 				<< _T(" AND slot = ") << moveOp.fromItemSlotId()
 				<< _T(" AND owner = ") << moveOp.charid();
 
-			OutputDebugString(sql.str().c_str());
-
+			TRACE(sql.str());
             g_DBManager.Exec(sql.str());
 
 			g_DBManager.Commit();
             g_DBManager.unLock();
-        
 		}
 		break;
 
     case AO::MSG_BANK:
         {
+            LOG(_T("MSG_BANK"));
+
             Native::AOBank bank((AO::Bank*)msg.start(), true);
             g_DBManager.lock();
             g_DBManager.Begin();
@@ -2050,21 +2008,15 @@ OutputDebugString(charOp.print().c_str());
 
     case AO::MSG_BACKPACK:
         {
+            LOG(_T("MSG_BACKPACK"));
             Native::AOBackpack bp((AO::Backpack*)msg.start(), true);
-
-
 
             if (bp.owner().High() == msg.characterId())
             {
-				#ifdef DEBUG
-						OutputDebugString(_T("MSG_BACKPACK"));
-						OutputDebugString(bp.print().c_str());
-				#endif
-
+				TRACE(bp.print());
 				if (bp.operationId() == 0x65) //I bought a backpack (I think)
 				{
 					unsigned int containerId = bp.targetId();
-
 					unsigned int newParent = AO::INV_TOONINV;
 
 					g_DBManager.lock();
@@ -2074,7 +2026,6 @@ OutputDebugString(charOp.print().c_str());
 					unsigned int slotId = bp.invSlot();
 					if (slotId >= 0x6f)
 						slotId = g_DBManager.findNextAvailableContainerSlot(msg.characterId(), newParent);
-	
 					{
 						// Remove old ref to backpack:
 						std::tstringstream sql;
@@ -2095,15 +2046,9 @@ OutputDebugString(charOp.print().c_str());
 						containerId,
 						msg.characterId());
 
-	#ifdef DEBUG
-					{
-						// Log
-						std::tstringstream sql;
-						sql << _T("BP:") << bp.keyLow() << _T("FL:\t") << bp.flags();
-						OutputDebugString(sql.str().c_str());
-					}
-	#endif
-					g_DBManager.Commit();
+                    TRACE(_T("BP: ") << bp.keyLow() << _T(" FL: ") << bp.flags());
+
+                    g_DBManager.Commit();
 					g_DBManager.unLock();
 				}
 				/*else if (bp.operationId() == 0x01) //backpack refresh
@@ -2144,19 +2089,17 @@ OutputDebugString(charOp.print().c_str());
 
     case AO::MSG_CONTAINER:
         {
-			//Happens when overflow opens, loot container opens or I get a new container from a trade.
-            Native::AOContainer bp((AO::Header*)msg.start());
+            LOG(_T("MSG_CONTAINER"));
 
-#ifdef DEBUG
-            OutputDebugString(_T("MSG_CONTAINER"));
-            OutputDebugString(bp.print().c_str());
-#endif
+            //Happens when overflow opens, loot container opens or I get a new container from a trade.
+            Native::AOContainer bp((AO::Header*)msg.start());
+            TRACE(bp.print());
 
 			unsigned int containerId = bp.containerid().High();
 
 			if (bp.tempContainerId() == 0x006e && bp.containerid().Low() == 0xc350)
 			{
-				OutputDebugString(_T("Overflow container msg"));
+				TRACE(_T("Overflow container msg"));
 				containerId = AO::INV_OVERFLOW;
 			}
 
