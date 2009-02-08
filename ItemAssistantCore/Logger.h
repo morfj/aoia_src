@@ -43,11 +43,14 @@ private:
 
 #else
 
-#define TRACE(message) \
+#define TRACE(streamdef) \
     void(void);
 
-#define LOG(message) \
-    Logger::instance().log(message);
+#define LOG(streamdef) \
+{ \
+    std::tstring msg = (((std::tostringstream&)(std::tostringstream().flush() << streamdef)).str()); \
+    Logger::instance().log(msg); \
+}
 
 #endif
 
