@@ -23,12 +23,14 @@ have contributed either directly or indirectly include:
     * morb, gnarf   - clicksaver rocks and showed me the technique that made 
                       it all possible.
     * RobotJunk     - Multi-thread patch for the hook dll and Client-to-Server 
-                      message hooking.
+                      message hooking as well as all the item-transfer message 
+                      decoding.
+    * Gremlin       - For being a guinea pig.
     * Everyone else that has provided feedback and done testing.
 
 Change Log:
 ===========
-Version 0.9.2                                       Release Date: ??/1/2009
+Version 0.9.2                                       Release Date: 14/2/2009
     * Enhanced the player-shop monitor to refresh the view when something 
       changes on disc. Cleaned up file system monitoring.
     * Added more logging to make it easier to submit bug reports.
@@ -41,7 +43,8 @@ Version 0.9.2                                       Release Date: ??/1/2009
       compounds from Alappa based on what they will turn into once 
       tradeskilled.
     * Experiemental: Added support for recording a toons dimension ID.
-    
+    * Fixed a bug with recording playershop IDs.
+
 Version 0.9.1                                       Release Date: 25/10/2008
     * Added experimental tracking of player-shop contents.
     * Updated the help menu a bit.
