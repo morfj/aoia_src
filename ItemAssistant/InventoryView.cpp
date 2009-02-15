@@ -871,7 +871,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
     {
 	case AO::MSG_CHAR_OPERATION: //0x5e477770
 		{
-            LOG(_T("MSG_CHAR_OPERATION"));
+        //    LOG(_T("MSG_CHAR_OPERATION"));
 
             Native::AOCharacterAction charOp((AO::CharacterAction*)msg.start(), true);
 
@@ -879,7 +879,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
             {
                 return;
             }
-            TRACE(charOp.print());
+           // TRACE(charOp.print());
 
 			unsigned int opId = charOp.operationId();
 
@@ -1016,7 +1016,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 				//When you hit a perk, this one fires
 				return;
 			}
-			else if (opId == AO::CHAR_ACTION_UNKNOWN1) //0x69  from = 0c350+ a char Id
+			else if (opId == AO::CHAR_ACTION_UNKNOWN1 || opId == AO::CHAR_ACTION_UNKNOWN2 )
 			{
 				//occationally, this one
 				return;
@@ -1025,16 +1025,16 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 			{
 				//tradeskill. do nothing. we will get delete/trade operations for all.
 			}
-			else if (opId == AO::CHAR_ACTION_LOGOFF1 ||opId == AO::CHAR_ACTION_LOGOFF2) 
+			else if (opId == AO::CHAR_ACTION_LOGOFF1 ||opId == AO::CHAR_ACTION_LOGOFF2 || opId == AO::CHAR_ACTION_ZONE) 
 			{
 				//All zeroes, when you log off
 				return;
 			}
-			else if (opId == 0x57 || opId == AO::CHAR_ACTION_SNEAK )
+			else if (opId == AO::CHAR_ACTION_STAND || opId == AO::CHAR_ACTION_SNEAK  )
 			{ 
 				return;
 			}
-			else //if (opId == AO::CHAR_ACTION_JOINSTACKS)
+			else
 			{
 
 				LOG(_T("From Server: Unknown CHAR_ACTION: (check if SPLITSTACKS CAN BE DETECTED"));

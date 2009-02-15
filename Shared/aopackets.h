@@ -313,16 +313,24 @@ namespace AO {
 
 	enum CharacterActionIds
 	{
+		CHAR_ACTION_RUN_NANO	= 0x13,
+
+		CHAR_ACTION_DELETE_TEMP_ITEM  = 0x2f,
+
 		CHAR_ACTION_SPLITSTACK	= 0x34,
 		CHAR_ACTION_JOINSTACKS	= 0x35,
 		CHAR_ACTION_DELETEITEM	= 0x70,
 		CHAR_ACTION_PLAYERSHOP	= 0xb4,
 
-		CHAR_ACTION_DELETE_TEMP_ITEM  = 0x2f,
+		CHAR_ACTION_UKNOWN3		= 0xce,//item.high contains a number
 
-		CHAR_ACTION_RUN_NANO	= 0x13,
+		
+
+		
 		CHAR_ACTION_RUN_PERK	= 0xB3,
+		CHAR_ACTION_NANO_RAN	= 0x6b,//itemId contains 1/nanoitemid
 		CHAR_ACTION_UNKNOWN1	= 0x69,
+		CHAR_ACTION_UNKNOWN2    = 0x62,//unknown, something to do with other players I think
 		CHAR_ACTION_TRADESKILL	= 0x51,
 		CHAR_ACTION_LOGOFF1		= 0xd2,
 		CHAR_ACTION_LOGOFF2		= 0x78,
@@ -338,7 +346,7 @@ namespace AO {
 		CHAR_ACTION_JUMP		= 0x92,
 		CHAR_ACTION_MOVED		= 0x89,
 		CHAR_ACTION_STAND		= 0x57,
-		CHAR_ACTION_OTHERTOON   = 0x62,//unknown, something to do with other players I think
+		
 
 		//0xdd = add/remove from Tradeskill window
 		//opId == 0x80 => use an elevator
