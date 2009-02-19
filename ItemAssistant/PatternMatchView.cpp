@@ -717,7 +717,7 @@ LRESULT WebView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
     // Get an IWebBrowser2 interface on the control and navigate to a page.
     m_pWB2 = punkCtrl;
     if (m_pWB2) {
-        m_pWB2->Navigate(CComBSTR(STREAM2STR("http://frellu.net/ia/help/patterns.php?version=" << g_versionNumber).c_str()), &v, &v, &v, &v);
+        m_pWB2->Navigate(CComBSTR(STREAM2STR("http://ia-help.frellu.net/?topic=patternmatcher&version=" << g_versionNumber).c_str()), &v, &v, &v, &v);
     }
 
     return 0;
