@@ -276,8 +276,10 @@ static std::map<unsigned short, unsigned char> s_effectkeys = map_list_of
     (0xeb,   2) //
     (0xec,   1) // ??: PlayfieldNano-Self <AOID>
     (0xed,   1) // ??: SolveQuest-Self <quest-id>
-    (0xee,   2) // ??: KnockBack-Self <unknown, unknown> / KnockBack-Target?
+    (0xee,   3) // ??: KnockBack-Self <unknown, unknown, unknown> / KnockBack-Target?
     (0xef,   0) // 17.10.0: ??
+    (0xf0,   0) // 18.0.0 : ?? AOID = 278587
+    (0xf4,   1) // 18.0.0 : ?? AOID = 280162
     ;
 
 AOItemParser::AOItemParser(char* pBuffer, unsigned int bufSize)
