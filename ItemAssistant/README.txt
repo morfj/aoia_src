@@ -30,7 +30,7 @@ have contributed either directly or indirectly include:
 
 Change Log:
 ===========
-Version 0.9.2                                       Release Date: 14/2/2009
+Version 0.9.2                                       Release Date: 20/2/2009
     * Enhanced the player-shop monitor to refresh the view when something 
       changes on disc. Cleaned up file system monitoring.
     * Added more logging to make it easier to submit bug reports.
