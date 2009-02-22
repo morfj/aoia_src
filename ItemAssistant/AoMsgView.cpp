@@ -190,6 +190,12 @@ void AoMsgView::OnAOServerMessage(AOMessageBase &msg)
         return;
     }
 
+	//TEMP for easy debugging
+	if (msg.entityId() != msg.characterId())
+	{
+		return;
+	}
+
     msgString.Format(_T("0x%08x"), msgid);
     sizeStr.Format(_T("%d"), msg.size());
 

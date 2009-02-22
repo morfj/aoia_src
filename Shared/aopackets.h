@@ -145,6 +145,28 @@ namespace AO {
 		unsigned short	zeroes2; //00 00
 	};
 
+	struct GiveToNPC
+	{
+		Header header;
+		unsigned char	unknown1;//00
+		unsigned short	operationId;//02??
+		AoObjectId		npcID;//??
+		unsigned int	direction;//00 00 00 00 if giving, 00 00 00 01 if removing an item
+		unsigned int	unknown3;//00 00 00 00
+		unsigned int	unknown4;//00 00 00 00
+		InvItemId		invItemGiven;
+	};
+
+	struct EndNPCTrade
+	{
+		Header header;
+		unsigned char	unknown1;//00
+		unsigned short	operationId;//02??
+		AoObjectId		npcID;//??
+		unsigned int	operation;//00 00 00 00 if closing, 00 00 00 01 if accepting
+		unsigned int	unknown2;//00 00 00 00
+	};
+
 	struct ServerCharacterAction
 	{
 		//MSG_CHAR_OPERATION
@@ -326,7 +348,8 @@ namespace AO {
 
 		
 
-		
+		CHAR_ACTION_LE_PROC1	= 0xB1,
+		CHAR_ACTION_LE_PROC2	= 0x50,
 		CHAR_ACTION_RUN_PERK	= 0xB3,
 		CHAR_ACTION_NANO_RAN	= 0x6b,//itemId contains 1/nanoitemid
 		CHAR_ACTION_UNKNOWN1	= 0x69,
@@ -344,7 +367,7 @@ namespace AO {
 		CHAR_ACTION_ZONED		= 0xb5,//after all xb4 messages.
 		CHAR_ACTION_UNABLE_SKILL_LOCKED	= 0x84,
 		CHAR_ACTION_JUMP		= 0x92,
-		CHAR_ACTION_MOVED		= 0x89,
+		CHAR_ACTION_MOVED		= 0x89,//sidestep
 		CHAR_ACTION_STAND		= 0x57,
 		
 
@@ -385,6 +408,13 @@ namespace AO {
 		MSG_SHOW_TEXT	 =	0x206b4b73, //from server when showing yellow text (like "You succesfully combined.../XXX is already fully loaded")
 		MSG_SPAWN_REWARD =  0x3b11256f,
 		//MSG_DELETE_MISH??=	0x212c487a 
+		//MSG_NPC_CHATLINE = 0x5d70532a
+		//MSG_NPC_CHATCHOICES = 0x55704d31
+		//MSG_NPC_TRACE_CANCEL = 0x2d212407
+		MSG_GIVE_TO_NPC	=	0x3a1b2c0c,//give or remove from npc trade win
+		MSG_ACCEPT_NPC_TRADE = 0x2d212407,//From server when accepting trade, contains items npc didnt want..
+		MSG_END_NPC_TRADE = 0x55682b24,//From client when ending trade, contains accept or cancel
+
 		/*
 		followed by a move slotId0 from overflow each!
 		spiked food sack: (id 0187C4)

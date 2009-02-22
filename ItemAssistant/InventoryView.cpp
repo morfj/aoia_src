@@ -656,6 +656,112 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 {
     switch(msg.messageId())
     {
+	case AO::MSG_GIVE_TO_NPC:
+		{
+			LOG(_T("MSG_GIVE_TO_NPC"));
+			Native::AOGiveToNPC npAction((AO::GiveToNPC*)msg.start(), false);
+
+			TRACE(npAction.print());
+
+			//if (npAction.fromId().High() == npAction.charid())
+			{
+
+				unsigned int fromContainerId = GetFromContainerId(msg.characterId(), npAction.fromType(), npAction.fromContainerTempId());
+
+				unsigned int toContainer = AO::INV_TRADE;
+
+				if (npAction.direction() == 1)
+				{
+					toContainer = AO::INV_TOONINV;
+					assert(fromContainerId == AO::INV_TRADE);
+				}
+
+
+				g_DBManager.lock();
+				g_DBManager.Begin();
+
+				unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(npAction.charid(), toContainer);
+				
+				{
+					std::tstringstream sql;
+
+					sql << _T("UPDATE tItems SET parent = ") << toContainer
+						<< _T(", slot = ") << nextFreeInvSlot
+						<< _T(" WHERE parent = ") << fromContainerId
+						<< _T(" AND slot = ") << npAction.fromItemSlotId()
+						<< _T(" AND owner = ") << msg.characterId(); //TODO: remove from other monitored char with fromId?
+
+					g_DBManager.Exec(sql.str());
+
+					//OutputDebugString(sql.str().c_str());
+				}
+
+				g_DBManager.Commit();
+				g_DBManager.unLock();
+			}
+
+		}
+		break;
+		case AO::MSG_END_NPC_TRADE:
+		{
+			LOG(_T("MSG_END_NPC_TRADE"));
+			Native::AOEndNPCTrade npAction((AO::EndNPCTrade*)msg.start(), false);
+
+			TRACE(npAction.print());
+
+			//if (npAction.fromId().High() == npAction.charid())
+			{
+
+				if (npAction.operation() != 01) //01 is close
+				{
+					if (npAction.operation() != 00) //00 is accept, handle on server message with more data.
+					{
+						TRACE(_T("Unknown MSG_END_NPC_TRADE Operation"));
+					}
+
+					return;
+				}
+
+				//move stuff back!
+				unsigned int shopCapacity = 35;
+				unsigned int newParent = AO::INV_TOONINV;
+				unsigned int shopContainer = AO::INV_TRADE;
+
+				g_DBManager.lock();
+	            g_DBManager.Begin();
+
+				for (unsigned int i=0;i<=shopCapacity;i++) //or is it the other direction?
+				{
+					unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(msg.characterId(), newParent);
+
+					if (nextFreeInvSlot >= 94)
+					{
+						//if full, move to overflow. 
+						//This seems to crash with a MSG_CONTAINER on overflow before this,
+						//even if overflow already open.
+						//if we dont break here, we get duplicate items in IA.
+						break;
+						// We cant do this since it will dupe items in overflow:
+						//newParent = AO::INV_OVERFLOW;
+						//nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), AO::INV_OVERFLOW);
+					}
+
+					std::tstringstream sqlMoveBack;
+					//move stuff back
+					sqlMoveBack << _T("UPDATE tItems SET parent = ") << newParent
+					<< _T(", slot = ") << nextFreeInvSlot
+					<< _T(" WHERE parent = ") << shopContainer
+					<< _T(" AND slot = ") << i
+					<< _T(" AND owner = ") << msg.characterId();
+					g_DBManager.Exec(sqlMoveBack.str());
+				}
+
+				g_DBManager.Commit();
+				g_DBManager.unLock();
+			}
+
+		}
+		break;
 	case AO::MSG_CHAR_OPERATION: //0x5e477770
 		{
             LOG(_T("MSG_CHAR_OPERATION"));
@@ -1005,12 +1111,12 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
 			}
 #ifdef DEBUG
-			else if (opId == AO::CHAR_ACTION_RUN_NANO) 
+			else if (opId == AO::CHAR_ACTION_RUN_NANO || opId == AO::CHAR_ACTION_NANO_RAN) 
 			{
 				//when you run a nano, this one fires
 				return;
 			}
-			else if (opId == AO::CHAR_ACTION_RUN_PERK) 
+			else if (opId == AO::CHAR_ACTION_RUN_PERK || opId == AO::CHAR_ACTION_SKILL_AVAIL) 
 				//0x69  from = 0c350+ a char Id = ?
 			{
 				//When you hit a perk, this one fires
@@ -1030,7 +1136,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 				//All zeroes, when you log off
 				return;
 			}
-			else if (opId == AO::CHAR_ACTION_STAND || opId == AO::CHAR_ACTION_SNEAK  )
+			else if (opId == AO::CHAR_ACTION_STAND || opId == AO::CHAR_ACTION_SNEAK  || opId == AO::CHAR_ACTION_MOVED || opId == AO::CHAR_ACTION_JUMP)
 			{ 
 				return;
 			}

@@ -216,6 +216,72 @@ namespace Native {
         AO::CharacterAction* m_pDelOp;
 	};
 
+	class AOGiveToNPC : public AOMessageHeader
+	{
+		public:
+        AOGiveToNPC(AO::GiveToNPC* pNPCOp, bool isFromServer) : AOMessageHeader(&(pNPCOp->header), isFromServer), m_pNPCOp(pNPCOp) { }
+
+		unsigned short operationId() const { return _byteswap_ushort(m_pNPCOp->operationId); }
+		unsigned char unknown1() const { return m_pNPCOp->unknown1; }
+
+		ObjectId npcid() const { return ObjectId(m_pNPCOp->npcID); }
+
+		unsigned int direction() const { return _byteswap_ulong(m_pNPCOp->direction); }
+		unsigned int unknown3() const { return _byteswap_ulong(m_pNPCOp->unknown3); }
+		unsigned int unknown4() const { return _byteswap_ulong(m_pNPCOp->unknown4); }
+
+		unsigned short fromType() const { return _byteswap_ushort(m_pNPCOp->invItemGiven.type); }
+		unsigned short fromContainerTempId() const { return _byteswap_ushort(m_pNPCOp->invItemGiven.containerTempId); }
+		unsigned short fromItemSlotId() const { return _byteswap_ushort(m_pNPCOp->invItemGiven.itemSlotId); }
+
+		std::tstring print() const {
+            std::tstringstream out;
+            out << "AOGiveToNPC:" << printHeader()
+				<< "operationId\t 0x" << std::hex << operationId() << "\r\n"
+				<< "npcid\t " << npcid().print() << "\r\n"
+				<< "unknown1\t 0x"<< std::hex << unknown1() << "\r\n"
+				<< "direction\t 0x"<< std::hex << direction() << "\r\n"
+				<< "unknown3\t 0x"<< std::hex << unknown3() << "\r\n"
+				<< "unknown4\t 0x"<< std::hex << unknown4() << "\r\n"
+                << "fromType\t 0x"<< std::hex << fromType() << "\r\n"
+                << "fromContainerTempId\t" << fromContainerTempId() << "\r\n"
+                << "fromItemSlotId\t" << fromItemSlotId() << "\r\n";
+		
+            return out.str();
+		}
+
+    protected:
+        AO::GiveToNPC* m_pNPCOp;
+	};
+
+	class AOEndNPCTrade : public AOMessageHeader
+	{
+		public:
+        AOEndNPCTrade(AO::EndNPCTrade* pNPCOp, bool isFromServer) : AOMessageHeader(&(pNPCOp->header), isFromServer), m_pNPCOp(pNPCOp) { }
+
+		unsigned short operationId() const { return _byteswap_ushort(m_pNPCOp->operationId); }
+		unsigned char unknown1() const { return m_pNPCOp->unknown1; }
+
+		ObjectId npcid() const { return ObjectId(m_pNPCOp->npcID); }
+
+		unsigned int operation() const { return _byteswap_ulong(m_pNPCOp->operation); }
+		unsigned int unknown2() const { return _byteswap_ulong(m_pNPCOp->unknown2); }
+
+		std::tstring print() const {
+            std::tstringstream out;
+            out << "AOEndNPCTrade:" << printHeader()
+				<< "operationId\t 0x" << std::hex << operationId() << "\r\n"
+				<< "npcid\t " << npcid().print() << "\r\n"
+				<< "unknown1\t 0x"<< std::hex << unknown1() << " unknown2\t 0x"<< std::hex << unknown2() << "\r\n"
+				<< "operation\t 0x"<< std::hex << operation() << "\r\n";
+		
+            return out.str();
+		}
+
+    protected:
+        AO::EndNPCTrade* m_pNPCOp;
+	};
+
 	/*class AOMoveOperation : public AOClientMessageHeader
 	{
 		public:

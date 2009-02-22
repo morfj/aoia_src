@@ -499,6 +499,7 @@ AOItemParser::AOItemParser(char* pBuffer, unsigned int bufSize)
                         NEXT(fkey);
                     }
                     if((fkey & 0xcf00) != 0xcf00) {
+						//debugf(DEBUG_VERBOSE, "In body, got key 0x%x\n", key);
                         assert(false);
                         return;
                     }
