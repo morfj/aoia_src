@@ -57,6 +57,7 @@ private:
     int m_lastQueryChar;
     int m_lastQueryQlMin;
     int m_lastQueryQlMax;
+    unsigned int m_lastQueryDimension;
 };
 
 #endif // FINDPANEL_H

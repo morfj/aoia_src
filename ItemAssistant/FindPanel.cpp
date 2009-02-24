@@ -7,6 +7,7 @@ FindView::FindView()
     : m_lastQueryChar(-1)
     , m_lastQueryQlMin(-1)
     , m_lastQueryQlMax(-1)
+    , m_lastQueryDimension(0)
     , m_pParent(NULL)
 {
 }
@@ -30,6 +31,7 @@ LRESULT FindView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
     {
         cb.SetCurSel(0);
         updateCharList(cb.GetItemData(0));
+        m_lastQueryDimension = cb.GetItemData(0);
     }
 
     DlgResize_Init(false, true, WS_CLIPCHILDREN);
@@ -75,7 +77,6 @@ LRESULT FindView::onDimensionFocus(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 LRESULT FindView::onDimensionSelection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
     CComboBox cb = GetDlgItem(IDC_DIMENSION_COMBO);
-
     unsigned int dimension_id = 0;
     int item = -1;
     if ((item = cb.GetCurSel()) != CB_ERR)
@@ -83,8 +84,18 @@ LRESULT FindView::onDimensionSelection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
         dimension_id = (unsigned int)cb.GetItemData(item);
     }
 
-    updateCharList(dimension_id);
-    UpdateFindQuery();
+    if (dimension_id != m_lastQueryDimension)
+    {
+        updateCharList(dimension_id);
+
+        CComboBox toon_combo = GetDlgItem(IDC_CHARCOMBO);
+        if (toon_combo.GetCount() > 0)
+        {
+            toon_combo.SetCurSel(0);
+        }
+
+        UpdateFindQuery();
+    }
 
     return 0;
 }
@@ -167,13 +178,18 @@ void FindView::UpdateFindQuery()
         // Go with the default value
     }
 
-    if ( text.size() > 2
-        && ( m_lastQueryText != text || m_lastQueryChar != charid || m_lastQueryQlMin != minql || m_lastQueryQlMax != maxql ) )
+    if (text.size() > 2
+        && ( m_lastQueryText != text
+            || m_lastQueryChar != charid 
+            || m_lastQueryQlMin != minql 
+            || m_lastQueryQlMax != maxql 
+            || m_lastQueryDimension != dimension_id))
     {
         m_lastQueryText = text;
         m_lastQueryChar = charid;
         m_lastQueryQlMin = minql;
         m_lastQueryQlMax = maxql;
+        m_lastQueryDimension = dimension_id;
         std::tstringstream sql;
 
         if (charid > 0) {
