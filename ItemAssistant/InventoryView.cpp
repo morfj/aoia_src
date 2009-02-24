@@ -878,9 +878,14 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 				//All zeroes, when you log off
 				return;
 			}
-			else if (opId == 0x57 || opId == AO::CHAR_ACTION_SNEAK )
+			else if (opId == AO::CHAR_ACTION_SNEAK )
 			{ 
                 LOG(_T("CHAR_ACTION_SNEAK"));
+				return;
+			}
+			else if (opId == AO::CHAR_ACTION_STAND )
+			{ 
+                LOG(_T("CHAR_ACTION_STAND"));
 				return;
 			}
 			else
@@ -975,6 +980,81 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 {
     switch(msg.messageId())
     {
+	case AO::MSG_ACCEPT_NPC_TRADE:
+		{
+			Native::AONPCTradeAccept npcAccept((AO::NPCTradeAcceptBase*)msg.start(), true);
+
+			if (npcAccept.targetId() != npcAccept.charid())//skip messages not for me.
+            {
+                return;
+            }
+
+			TRACE(npcAccept.print());
+
+			
+
+
+			//move rejected stuff back to inv:
+			unsigned int count = npcAccept.itemCount();
+			unsigned int newParent = AO::INV_TOONINV;
+			unsigned int shopContainer = AO::INV_TRADE;
+
+			g_DBManager.lock();
+            g_DBManager.Begin();
+
+			for (unsigned int i=0;i<=count;i++) //or is it the other direction?
+			{
+				TRACE(npcAccept.rejectedItem(i).print());
+
+				unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(msg.characterId(), newParent);
+
+				if (nextFreeInvSlot >= 94)
+				{
+					//if full, move to overflow. 
+					//This seems to crash with a MSG_CONTAINER on overflow before this,
+					//even if overflow already open.
+					//if we dont break here, we get duplicate items in IA.
+					break;
+					// We cant do this since it will dupe items in overflow:
+					//newParent = AO::INV_OVERFLOW;
+					//nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), AO::INV_OVERFLOW);
+				}
+
+				std::tstringstream sqlMoveBack;
+				//move stuff back
+				//Todo: Move only the first one found to preserve order in case 2 of same ql are
+				//returned with other stuff in between.??
+
+				sqlMoveBack << _T("UPDATE tItems SET parent = ") << newParent
+				<< _T(", slot = ") << nextFreeInvSlot
+				<< _T(" WHERE parent = ") << shopContainer
+				<< _T(" AND keylow = ") << npcAccept.rejectedItem(i).itemId().Low()
+				<< _T(" AND keyhigh = ") << npcAccept.rejectedItem(i).itemId().High()
+				<< _T(" AND ql = ") << npcAccept.rejectedItem(i).ql()
+				<< _T(" AND owner = ") << msg.characterId();
+				g_DBManager.Exec(sqlMoveBack.str());
+			}
+
+			//and delete the stuff I gave away:
+			{
+				std::tstringstream sqlGiveAwayStuff;
+				//move stuff back
+				//Todo: Move only the first one found to preserve order in case 2 of same ql are
+				//returned with other stuff in between.??
+
+				sqlGiveAwayStuff << _T("DELETE FROM tItems WHERE owner = ") << npcAccept.charid() 
+					<< _T(" AND parent = ") << shopContainer;
+
+				g_DBManager.Exec(sqlGiveAwayStuff.str());
+			}
+
+			g_DBManager.Commit();
+			g_DBManager.unLock();
+
+
+		}
+		break;
+
 	case AO::MSG_CHAR_OPERATION: //0x5e477770
 		{
         //    LOG(_T("MSG_CHAR_OPERATION"));

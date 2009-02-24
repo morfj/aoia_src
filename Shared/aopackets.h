@@ -167,6 +167,30 @@ namespace AO {
 		unsigned int	unknown2;//00 00 00 00
 	};
 
+
+	struct NPCTradeAcceptBase
+	{
+		Header header;
+		unsigned char	unknown1;//00
+		unsigned short	operationId;//02??
+		AoObjectId		npcID;//??
+		unsigned int	itemCount;
+	};
+
+	struct NPCTradeRejectedItem
+	{
+		AoObjectId		itemid;
+		unsigned int	ql;
+		unsigned int	unknown1;//49 96 02 d2
+	};
+
+	struct NPCTradeAcceptEnd
+	{
+		unsigned int	unknown1;//00 00 00 00
+	};
+
+
+
 	struct ServerCharacterAction
 	{
 		//MSG_CHAR_OPERATION

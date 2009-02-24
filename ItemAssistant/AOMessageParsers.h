@@ -282,6 +282,61 @@ namespace Native {
         AO::EndNPCTrade* m_pNPCOp;
 	};
 
+	class AONPCTradeRejectedItem
+	{
+		public:
+			AONPCTradeRejectedItem(AO::NPCTradeRejectedItem* pRejItem): m_pNPCRejItem(pRejItem) { }
+
+			unsigned int ql() const { return _byteswap_ulong(m_pNPCRejItem->ql); }
+			unsigned int unknown1() const { return _byteswap_ulong(m_pNPCRejItem->unknown1); }
+			ObjectId itemId() const { return ObjectId(m_pNPCRejItem->itemid); }
+
+			std::tstring print() const {
+				std::tstringstream out;
+				out << "AONPCTradeRejectedItem:" << itemId().print()
+					<< "unknown1\t 0x" << std::hex << unknown1() << "\r\n"
+					<< "ql\t " << ql() << "\r\n";
+			
+				return out.str();
+			}
+
+	protected:
+		AO::NPCTradeRejectedItem* m_pNPCRejItem;
+	};
+
+	class AONPCTradeAccept : public AOMessageHeader
+	{
+		public:
+        AONPCTradeAccept(AO::NPCTradeAcceptBase* pNPCOp, bool isFromServer) : AOMessageHeader(&(pNPCOp->header), isFromServer), m_pNPCOp(pNPCOp) { }
+
+
+		unsigned short operationId() const { return _byteswap_ushort(m_pNPCOp->operationId); }
+		unsigned char unknown1() const { return m_pNPCOp->unknown1; }
+		ObjectId npcid() const { return ObjectId(m_pNPCOp->npcID); }
+		unsigned int itemCount() const { return _byteswap_ulong(m_pNPCOp->itemCount); }
+
+
+		AONPCTradeRejectedItem rejectedItem(int index) const { return AONPCTradeRejectedItem((AO::NPCTradeRejectedItem*)(((char*)m_pNPCOp)+sizeof(AO::NPCTradeAcceptBase)+sizeof(AO::NPCTradeRejectedItem)*index)); }
+	//	AOItem item(int index) const { return AOItem((AO::ContItem*)(((char*)m_pBank)+sizeof(AO::Bank)+sizeof(AO::ContItem)*index)); }
+
+
+		std::tstring print() const {
+            std::tstringstream out;
+            out << "AONPCTradeAccept:" << printHeader()
+				<< "operationId\t 0x" << std::hex << operationId() << "\r\n"
+				<< "npcid\t " << npcid().print() << "\r\n"
+				<< "unknown1\t 0x"<< std::hex << unknown1() << "\r\n"
+				<< "itemCount\t "<< std::dec << itemCount() << "\r\n";
+		
+            return out.str();
+		}
+
+    protected:
+        AO::NPCTradeAcceptBase* m_pNPCOp;
+	};
+
+	
+
 	/*class AOMoveOperation : public AOClientMessageHeader
 	{
 		public:
