@@ -4,10 +4,10 @@
 
 
 FindView::FindView()
-: m_lastQueryChar(-1)
-, m_lastQueryQlMin(-1)
-, m_lastQueryQlMax(-1)
-, m_pParent(NULL)
+    : m_lastQueryChar(-1)
+    , m_lastQueryQlMin(-1)
+    , m_lastQueryQlMax(-1)
+    , m_pParent(NULL)
 {
 }
 
@@ -21,6 +21,16 @@ void FindView::SetParent(InventoryView* parent)
 LRESULT FindView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
     this->SetWindowText(_T("Find View"));
+
+    updateDimensionList();
+
+    CComboBox cb = GetDlgItem(IDC_DIMENSION_COMBO);
+
+    if (cb.GetCount() > 0)
+    {
+        cb.SetCurSel(0);
+        updateCharList(cb.GetItemData(0));
+    }
 
     DlgResize_Init(false, true, WS_CLIPCHILDREN);
     return 0;
@@ -40,48 +50,41 @@ BOOL FindView::PreTranslateMsg(MSG* pMsg)
 }
 
 
-LRESULT FindView::OnCbnBuildCharcombo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT FindView::onDimensionFocus(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
     KillTimer(1);
 
-    CComboBox cb = GetDlgItem(IDC_CHARCOMBO);
-
+    WTL::CComboBox cb = GetDlgItem(IDC_DIMENSION_COMBO);
     int oldselection = cb.GetCurSel();
 
-    cb.ResetContent();
-    int item = cb.AddString(_T("-"));
-    cb.SetItemData(item, 0);
-
-    g_DBManager.lock();
-    SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT DISTINCT owner FROM tItems"));
-    g_DBManager.unLock();
-
-    if (pT != NULL)
-    {
-        for (unsigned int i = 0; i < pT->Rows(); i++)
-        {
-            unsigned int id = boost::lexical_cast<unsigned int>(pT->Data(i,0));
-
-            g_DBManager.lock();
-            std::tstring name = g_DBManager.getToonName(id);
-            g_DBManager.unLock();
-
-            if (name.empty())
-            {
-                name = from_ascii_copy(pT->Data()[pT->Columns()*i]);
-            }
-
-            if ((item = cb.AddString(name.c_str())) != CB_ERR)
-            {
-                cb.SetItemData(item, id);
-            }
-        }
-    }
+    updateDimensionList();
 
     if (oldselection >= 0)
     {
         cb.SetCurSel(oldselection);
     }
+    else if (oldselection == -1)
+    {
+        cb.SetCurSel(0);
+    }
+
+    return 0;
+}
+
+
+LRESULT FindView::onDimensionSelection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+    CComboBox cb = GetDlgItem(IDC_DIMENSION_COMBO);
+
+    unsigned int dimension_id = 0;
+    int item = -1;
+    if ((item = cb.GetCurSel()) != CB_ERR)
+    {
+        dimension_id = (unsigned int)cb.GetItemData(item);
+    }
+
+    updateCharList(dimension_id);
+    UpdateFindQuery();
 
     return 0;
 }
@@ -116,16 +119,25 @@ void FindView::UpdateFindQuery()
 {
     KillTimer(1);
 
+    int item = -1;
     CComboBox cb = GetDlgItem(IDC_CHARCOMBO);
+    CComboBox dimension_combo = GetDlgItem(IDC_DIMENSION_COMBO);
     CEdit eb = GetDlgItem(IDC_ITEMTEXT);
     CEdit qlmin = GetDlgItem(IDC_QLMIN);
     CEdit qlmax = GetDlgItem(IDC_QLMAX);
 
     unsigned int charid = 0;
-    int item = -1;
+    item = -1;
     if ((item = cb.GetCurSel()) != CB_ERR)
     {
         charid = (unsigned int)cb.GetItemData(item);
+    }
+
+    unsigned int dimension_id = 0;
+    item = -1;
+    if ((item = dimension_combo.GetCurSel()) != CB_ERR)
+    {
+        dimension_id = (unsigned int)dimension_combo.GetItemData(item);
     }
 
     TCHAR buffer[MAX_PATH];
@@ -167,6 +179,10 @@ void FindView::UpdateFindQuery()
         if (charid > 0) {
             sql << _T("I.owner = ") << charid << _T(" AND ");
         }
+        else
+        {
+            sql << _T("T.dimensionid = ") << dimension_id << _T(" AND ");
+        }
         if (minql > -1) {
             sql << _T("I.ql >= ") << minql << _T(" AND ");
         }
@@ -177,5 +193,92 @@ void FindView::UpdateFindQuery()
         sql << _T("keylow IN (SELECT aoid FROM aodb.tblAO WHERE name LIKE \"%") << text << _T("%\")");
 
         m_pParent->UpdateListView(sql.str());
+    }
+}
+
+
+void FindView::updateCharList(unsigned int dimension_id)
+{
+    CComboBox cb = GetDlgItem(IDC_CHARCOMBO);
+
+    cb.ResetContent();
+    int item = cb.AddString(_T("-"));
+    cb.SetItemData(item, 0);
+
+    boost::format sql("SELECT DISTINCT owner FROM tItems I JOIN tToons T ON I.owner = T.charid WHERE dimensionid = %1%");
+    sql % dimension_id;
+
+    g_DBManager.lock();
+    SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());
+    g_DBManager.unLock();
+
+    if (pT != NULL)
+    {
+        for (unsigned int i = 0; i < pT->Rows(); i++)
+        {
+            unsigned int id = boost::lexical_cast<unsigned int>(pT->Data(i,0));
+
+            g_DBManager.lock();
+            std::tstring name = g_DBManager.getToonName(id);
+            g_DBManager.unLock();
+
+            if (name.empty())
+            {
+                name = from_ascii_copy(pT->Data()[pT->Columns()*i]);
+            }
+
+            if ((item = cb.AddString(name.c_str())) != CB_ERR)
+            {
+                cb.SetItemData(item, id);
+            }
+        }
+    }
+}
+
+
+void FindView::updateDimensionList()
+{
+    int item = -1;
+
+    CComboBox cb = GetDlgItem(IDC_DIMENSION_COMBO);
+    cb.ResetContent();
+
+    std::map<unsigned int, std::tstring> dimensionNames;
+    g_DBManager.lock();
+    g_DBManager.getDimensions(dimensionNames);
+    SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT DISTINCT dimensionid FROM tToons"));
+    g_DBManager.unLock();
+
+    // Add named dimensions.
+    for (std::map<unsigned int, std::tstring>::iterator it = dimensionNames.begin(); it != dimensionNames.end(); ++it)
+    {
+        if ((item = cb.AddString(it->second.c_str())) != CB_ERR)
+        {
+            cb.SetItemData(item, it->first);
+        }
+    }
+
+    // Add un-named dimensions.
+    for (unsigned int i = 0; i < pT->Rows(); ++i)
+    {
+        unsigned int dimId = boost::lexical_cast<unsigned int>(pT->Data(i, 0));
+        std::tstring dimName;
+        if (dimensionNames.find(dimId) != dimensionNames.end())
+        {
+            continue;   // Skip named ones.
+        }
+        else 
+        {
+            dimName = _T("Unknown Dimension");
+            if (dimId > 0)
+            {
+                dimName += STREAM2STR(" (0x" << std::hex << dimId << ")");
+            }
+        }
+
+        if ((item = cb.AddString(dimName.c_str())) != CB_ERR)
+        {
+            cb.SetItemData(item, dimId);
+        }
     }
 }

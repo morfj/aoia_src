@@ -23,27 +23,33 @@ public:
         COMMAND_HANDLER(IDC_ITEMTEXT, EN_CHANGE, OnEnChangeItemtext)
         COMMAND_HANDLER(IDC_QLMIN, EN_CHANGE, OnEnChangeItemtext)
         COMMAND_HANDLER(IDC_QLMAX, EN_CHANGE, OnEnChangeItemtext)
+        COMMAND_HANDLER(IDC_DIMENSION_COMBO, CBN_SELCHANGE, onDimensionSelection)
+        COMMAND_HANDLER(IDC_DIMENSION_COMBO, CBN_SETFOCUS, onDimensionFocus)
         COMMAND_HANDLER(IDC_CHARCOMBO, CBN_SELCHANGE, OnCbnSelChangeCharcombo)
-        COMMAND_HANDLER(IDC_CHARCOMBO, CBN_SETFOCUS, OnCbnBuildCharcombo)
         CHAIN_MSG_MAP(CDialogResize<FindView>)
         DEFAULT_REFLECTION_HANDLER()
     END_MSG_MAP()
 
     BEGIN_DLGRESIZE_MAP(FindView)
         DLGRESIZE_CONTROL(IDC_ITEMTEXT, DLSZ_SIZE_X)
+        DLGRESIZE_CONTROL(IDC_STATIC_DIMENSION, DLSZ_MOVE_X)
+        DLGRESIZE_CONTROL(IDC_DIMENSION_COMBO, DLSZ_MOVE_X)
         DLGRESIZE_CONTROL(IDC_STATIC_TOON, DLSZ_MOVE_X)
         DLGRESIZE_CONTROL(IDC_CHARCOMBO, DLSZ_MOVE_X)
     END_DLGRESIZE_MAP()
 
     LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
     LRESULT OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-    LRESULT OnCbnBuildCharcombo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+    LRESULT onDimensionFocus(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+    LRESULT onDimensionSelection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnEnChangeItemtext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnCbnSelChangeCharcombo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnTimer(UINT wParam, TIMERPROC lParam);
 
 protected:
     virtual void UpdateFindQuery();
+    void updateCharList(unsigned int dimension_id);
+    void updateDimensionList();
 
 private:
     InventoryView* m_pParent;

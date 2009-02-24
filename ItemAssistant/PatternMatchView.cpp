@@ -491,7 +491,7 @@ LRESULT FilterView::OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 
 void FilterView::updateDimensionList()
 {
-    WTL::CComboBox cb = GetDlgItem(IDC_DIMENSIONCOMBO);
+    WTL::CComboBox cb = GetDlgItem(IDC_DIMENSION_COMBO);
 
     int oldselection = cb.GetCurSel();
     int item = 0;
@@ -598,7 +598,7 @@ void FilterView::SetProgress(unsigned short percent)
 
 void FilterView::UpdateFilterSettings()
 {
-    WTL::CComboBox dimCb = GetDlgItem(IDC_DIMENSIONCOMBO);
+    WTL::CComboBox dimCb = GetDlgItem(IDC_DIMENSION_COMBO);
     unsigned int dimensionid = (unsigned int) dimCb.GetItemData(dimCb.GetCurSel());
 
     unsigned int toonid = 0;
