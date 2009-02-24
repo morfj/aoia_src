@@ -37,17 +37,21 @@ namespace SQLite {
     }
 
 
-    TablePtr Db::ExecTable(std::tstring const& sql) const
+    TablePtr Db::ExecTable(std::wstring const& sql) const
+    {
+        return ExecTable(to_utf8_copy(sql));
+    }
+
+
+    TablePtr Db::ExecTable(std::string const& sql) const
     {
         TablePtr pRes;
         char **result;
         int nrow;
         int ncol;
 
-        std::string sql_utf8 = to_utf8_copy(sql);
-
         int retval = sqlite3_get_table(m_pDb, 
-            sql_utf8.c_str(), 
+            sql.c_str(), 
             &result,          /* Result written to a char *[]  that this points to */
             &nrow,            /* Number of result rows written here */
             &ncol,            /* Number of result columns written here */

@@ -77,7 +77,8 @@ namespace SQLite {
         bool Exec(std::wstring const& sql) const;
         bool Exec(std::string const& sql) const;
 
-        TablePtr ExecTable(std::tstring const& sql) const;
+        TablePtr ExecTable(std::wstring const& sql) const;
+        TablePtr ExecTable(std::string const& sql) const;
 
         void Begin() const;
         void Commit() const;
