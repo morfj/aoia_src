@@ -24,6 +24,7 @@ public:
         //NOTIFY_CODE_HANDLER_EX(LVN_ITEMCHANGING, onListItemChanging)
         NOTIFY_CODE_HANDLER_EX(LVN_ITEMCHANGED, onListItemChanged)
         NOTIFY_CODE_HANDLER_EX(LVN_ODSTATECHANGED, onListItemStateChanged)
+        NOTIFY_CODE_HANDLER_EX(LVN_COLUMNCLICK, onColumnClick)
         CHAIN_MSG_MAP(inherited)
         CHAIN_MSG_MAP(WTL::CDialogResize<IdentifyView>)
         REFLECT_NOTIFICATIONS()
@@ -48,6 +49,7 @@ protected:
     //LRESULT onListItemChanging(LPNMHDR lParam);
     LRESULT onListItemChanged(LPNMHDR lParam);
     LRESULT onListItemStateChanged(LPNMHDR lParam);
+    LRESULT onColumnClick(LPNMHDR lParam);
 
     struct Identifyable
     {
@@ -62,6 +64,8 @@ private:
     aoia::IdentifyListDataModelPtr m_identifyListModel;
     aoia::DataGridControlPtr m_identifyList;
     aoia::DataGridControlPtr m_datagrid;
+    int m_sortColumn;
+    bool m_sortAscending;
 };
 
 #endif // IDENTIFYVIEW_H

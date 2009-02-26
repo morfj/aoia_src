@@ -14,6 +14,8 @@ using namespace aoia;
 IdentifyView::IdentifyView()
     : m_datagrid(new DataGridControl())
     , m_identifyList(new DataGridControl())
+    , m_sortColumn(-1)
+    , m_sortAscending(true)
 {
 }
 
@@ -131,6 +133,27 @@ LRESULT IdentifyView::onListItemStateChanged(LPNMHDR lParam)
             m_datagrid->autosizeColumnsUseData();
         }
     }
+
+    return 0;
+}
+
+
+LRESULT IdentifyView::onColumnClick(LPNMHDR lParam)
+{
+    LPNMLISTVIEW pnmv = (LPNMLISTVIEW) lParam;
+
+    if (m_sortColumn != pnmv->iSubItem)
+    {
+        m_sortColumn = pnmv->iSubItem;
+        m_sortAscending = true;
+    }
+    else
+    {
+        m_sortAscending = !m_sortAscending;
+    }
+
+    ItemListDataModelPtr data_model = boost::shared_static_cast<ItemListDataModel>(m_datagrid->getModel());
+    data_model->sortData(m_sortColumn, m_sortAscending);
 
     return 0;
 }
