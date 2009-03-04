@@ -279,6 +279,7 @@ static std::map<unsigned short, unsigned char> s_effectkeys = map_list_of
     (0xee,   3) // ??: KnockBack-Self <unknown, unknown, unknown> / KnockBack-Target?
     (0xef,   0) // 17.10.0: ??
     (0xf0,   0) // 18.0.0 : ?? AOID = 278587
+    (0xf2,   0) // 18.0.1 : ??
     (0xf4,   1) // 18.0.0 : ?? AOID = 280162
     ;
 
