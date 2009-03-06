@@ -30,6 +30,11 @@ have contributed either directly or indirectly include:
 
 Change Log:
 ===========
+Version 0.9.3										Release Date: ??/?/2009
+	* Added support for NPC trade-in quest rewards in the item tracking.
+    * Now parsing the 18.0.1 database correctly.
+	* Bug Fix: Identify view will now sort (right hand side list).
+
 Version 0.9.2                                       Release Date: 20/2/2009
     * Enhanced the player-shop monitor to refresh the view when something 
       changes on disc. Cleaned up file system monitoring.
