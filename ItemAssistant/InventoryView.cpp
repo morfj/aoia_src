@@ -1002,7 +1002,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 			g_DBManager.lock();
             g_DBManager.Begin();
 
-			for (unsigned int i=0;i<=count;i++) //or is it the other direction?
+			for (unsigned int i=0;i<count;i++) //or is it the other direction?
 			{
 				TRACE(npcAccept.rejectedItem(i).print());
 
