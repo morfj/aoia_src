@@ -500,6 +500,7 @@ AOItemParser::AOItemParser(char* pBuffer, unsigned int bufSize)
                         NEXT(fkey);
                     }
                     if((fkey & 0xcf00) != 0xcf00) {
+                        LOG("While parsing item " << this->aoid << ": Unknown functionkey " << fkey << " found.");
 						//debugf(DEBUG_VERBOSE, "In body, got key 0x%x\n", key);
                         assert(false);
                         return;

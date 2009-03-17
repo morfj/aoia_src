@@ -21,6 +21,7 @@ int _tmain(int argc, _TCHAR* argv[])
     std::string input;
     std::string output;
     bool doPostProcess;
+    bool doForce; 
 
     // Declare the supported options.
     bpo::options_description desc("Allowed options");
@@ -28,7 +29,8 @@ int _tmain(int argc, _TCHAR* argv[])
         ("help,h", "produce help message")
         ("input,i", bpo::value<std::string>(&input), "Specify the input AODB file.")
         ("output,o", bpo::value<std::string>(&output), "Specify the output SQLite file.")
-        ("postprocess,p", bpo::value<bool>(&doPostProcess)->default_value(false), "Specify if postprocessing should be done or not.");
+        ("postprocess,p", bpo::value<bool>(&doPostProcess)->default_value(false), "Specify if postprocessing should be done or not.")
+        ("force,f", bpo::value<bool>(&doForce)->default_value(false), "Force overwriting the output file if it exists.")
         ;
 
     bpo::variables_map vm;
@@ -51,8 +53,11 @@ int _tmain(int argc, _TCHAR* argv[])
         return 3;
     }
     if (bfs::exists(output)) {
-        std::cerr << "Output file already exists.";
-        return 3;
+        if (!doForce) {
+            std::cerr << "Output file already exists.";
+            return 3;
+        }
+        bfs::remove(output);
     }
 
     if (!RippIt(input, output, doPostProcess)) {

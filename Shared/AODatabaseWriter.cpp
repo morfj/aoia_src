@@ -20,6 +20,27 @@ const std::string c_scheme_sql =
     "   [icon] INTEGER  NULL"
     "   );"
 
+    "CREATE TABLE tblItemReqs ("
+    "   [aoid] INTEGER NOT NULL,"
+    "   [sequence] INTEGER,"
+    "   [type] INTEGER,"
+    "   [attribute] INTEGER,"
+    "   [value] INTEGER,"
+    "   [operator] INTEGER,"
+    "   [op_modifier] INTEGER"
+    "   );"
+
+    "CREATE TABLE tblItemEffects ("
+    "   [aoid] INTEGER NOT NULL,"
+    "   [hook] INTEGER,"
+    "   [type] INTEGER,"
+    "   [hits] INTEGER,"
+    "   [delay] INTEGER,"
+    "   [target] INTEGER,"
+    "   [value] INTEGER,"
+    "   [text] TEXT"
+    "   );"
+
     "CREATE TABLE [tblPocketBoss] ("
     "   [pbid] INTEGER  NOT NULL PRIMARY KEY,"
     "   [ql] INTEGER  NOT NULL,"
@@ -39,7 +60,7 @@ const std::string c_scheme_sql =
     "   [purpose] TEXT"
     "   );"
 
-    "CREATE VIEW vSchemeVersion AS SELECT '2' AS Version ; "
+    "CREATE VIEW vSchemeVersion AS SELECT '3' AS Version ; "
 
     ;
 
@@ -70,7 +91,7 @@ const std::vector<std::string> c_datatransformation_sql = list_of
     ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247718, 247693, 247694, '(Weapon Upgrade) Fling Shot, Aimed Shot')")
     ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247720, 247695, 247696, '(Weapon Upgrade) Burst, Fling Shot, Full Auto')")
     ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (254804, 247765, 254805, '(Org City) High QL Buildings')")
-    // tblIdentify - Alaapaa
+    // tblIdentify - Alappa
     ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269800, 168432, 168432, '(Bracer Gem) HP/ NR/ Nano')")
     ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269811, 168473, 168473, '(Bracer Gem) HP/ add Melee Dmg/ %-Reflect/Reflect-Dmg')")
     ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269812, 168553, 168553, '(Bracer Gem) HP/ add Fire Dmg/ %-Reflect/Reflect-Dmg')")
@@ -146,6 +167,61 @@ void AODatabaseWriter::WriteItem(boost::shared_ptr<ao_item> item)
         << item->props << ", "
         << item->icon << ")";
 
+    m_db.Exec(from_ascii_copy(sql.str()));
+
+    // Loop through all the requirements for an item/nano and write them to the DB.
+    for (std::list<ao_item_req>::iterator it = item->reqs.begin(); it != item->reqs.end(); ++it)
+    {
+        writeRequirement(item->aoid, *it);
+    }
+
+    // Loop through all the effects for an item/nano and write them to the DB.
+    for (std::list<ao_item_effect>::iterator it = item->effs.begin(); it != item->effs.end(); ++it)
+    {
+        writeEffect(item->aoid, *it);
+    }
+}
+
+
+void AODatabaseWriter::writeRequirement(unsigned int aoid, ao_item_req const& req)
+{
+    std::ostringstream sql;
+    sql << "INSERT INTO tblItemReqs (aoid, sequence, type, attribute, value, operator, op_modifier) VALUES ("
+        << aoid << ", "
+        << req.id << ", "
+        << req.type << ", "
+        << req.attribute << ", "
+        << req.count << ", "
+        << req.op << ", "
+        << req.opmod << ")";
+    m_db.Exec(from_ascii_copy(sql.str()));
+}
+
+
+void AODatabaseWriter::writeEffect(unsigned int aoid, ao_item_effect const& eff)
+{
+    // HACK 1: Only dump the first value from the vector for now.
+    unsigned int value = 0;
+    if (!eff.values.empty())
+    {
+        value = *eff.values.begin();
+    }
+
+    // Escape ' symbols in the text.
+    std::string text = eff.text;
+    boost::algorithm::replace_all(text, "'", "''");
+
+    // HACK 2: We skip altogether the requirements associated with an effect for now.
+    std::ostringstream sql;
+    sql << "INSERT INTO tblItemEffects (aoid, hook, type, hits, delay, target, value, text) VALUES ("
+        << aoid << ", "
+        << eff.hook << ", "
+        << eff.type << ", "
+        << eff.hits << ", "
+        << eff.delay << ", "
+        << eff.target << ", "
+        << value << ", "
+        << "'" << eff.text << "')";
     m_db.Exec(from_ascii_copy(sql.str()));
 }
 

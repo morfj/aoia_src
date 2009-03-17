@@ -19,6 +19,10 @@ public:
     void AbortWrite();
     void PostProcessData();
 
+protected:
+    void writeRequirement(unsigned int aoid, ao_item_req const& req);
+    void writeEffect(unsigned int aoid, ao_item_effect const& eff);
+
 private:
     SQLite::Db m_db;
 };
