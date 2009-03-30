@@ -33,6 +33,8 @@ Change Log:
 Version 0.9.3										Release Date: ??/?/2009
 	* Added support for NPC trade-in quest rewards in the item tracking.
     * Now parsing the 18.0.1 database correctly.
+    * Find panel now filters on dimension as well.
+	* Added support for Xyphos.com for item stats/links.
 	* Bug Fix: Identify view will now sort (right hand side list).
 
 Version 0.9.2                                       Release Date: 20/2/2009
