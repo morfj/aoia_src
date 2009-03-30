@@ -227,6 +227,16 @@ LRESULT InventoryView::OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND 
         scriptOutput = true;
         break;
 
+    case ID_COPY_XYPHOS_ITEMREF:
+        server = SERVER_XYPHOS;
+        format = FORMAT_HTML;
+        break;
+
+    case ID_COPY_XYPHOS_ITEMREF_VBB:
+        server = SERVER_XYPHOS;
+        format = FORMAT_VBB;
+        break;
+
     default:
         assert(false);  // Unknown command ID?
         break;
@@ -374,6 +384,9 @@ LRESULT InventoryView::OnShowItemRef(WORD FromAccelerator, WORD CommandId, HWND 
     else if (CommandId == ID_VIEW_ITEMSTATS_JAYDEE) {
         ATL::AtlLoadString(IDS_JAYDEE_ITEMREF_URL, buffer, 1024);
     }
+    else if (CommandId == ID_VIEW_ITEMSTATS_XYPHOS) {
+        ATL::AtlLoadString(IDS_XYPHOS_ITEMREF_URL, buffer, 1024);
+    }
     else {
         assert(false); // Looks like you forgot to add a section to load the proper url for your command.
     }
@@ -403,6 +416,10 @@ LRESULT InventoryView::OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND 
     ItemServer server = SERVER_AUNO;
     if (CommandId == ID_EXPORTTOCSV_JAYDEE) {
         server = SERVER_JAYDEE;
+    }
+    else if (CommandId == ID_EXPORTTOCSV_XYPHOS)
+    {
+        server = SERVER_XYPHOS;
     }
 
     std::tstring itemTemplate = _T("%lowid%,%hiid%,%ql%,\"%itemname%\",%itemlocation%,");
@@ -2591,6 +2608,13 @@ std::tstring InventoryView::GetServerItemURLTemplate( ItemServer server )
             retval = std::tstring(buffer);
         }
         break;
+
+    case SERVER_XYPHOS:
+        {
+            TCHAR buffer[1024];
+            ATL::AtlLoadString(IDS_XYPHOS_ITEMREF_URL, buffer, 1024);
+            retval = std::tstring(buffer);
+        }
     }
 
     return retval;

@@ -86,11 +86,13 @@ BEGIN
         BEGIN
             MENUITEM "Auno",                        ID_COPY_AUNO_ITEMREF
             MENUITEM "AO Mainframe",                ID_COPY_JAYDEE_ITEMREF
+            MENUITEM "Xyphos",                      ID_COPY_XYPHOS_ITEMREF
         END
         POPUP "Copy Items VBB Links"
         BEGIN
             MENUITEM "Auno",                        ID_COPY_AUNO_ITEMREF_VBB
             MENUITEM "AO Mainframe",                ID_COPY_JAYDEE_ITEMREF_VBB
+            MENUITEM "Xyphos",                      ID_COPY_XYPHOS_ITEMREF_VBB
         END
         MENUITEM SEPARATOR
         MENUITEM "Export Items to AO Script",   ID_COPY_AO_ITEMREF
@@ -98,6 +100,7 @@ BEGIN
         BEGIN
             MENUITEM "Auno",                        ID_EXPORTTOCSV_AUNO
             MENUITEM "AO Mainframe",                ID_EXPORTTOCSV_JAYDEE
+            MENUITEM "Xyphos",                      ID_EXPORTTOCSV_XYPHOS
         END
     END
 END
@@ -163,17 +166,20 @@ BEGIN
         BEGIN
             MENUITEM "Auno",                        ID_VIEW_ITEMSTATS_AUNO
             MENUITEM "AO Mainframe",                ID_VIEW_ITEMSTATS_JAYDEE
+            MENUITEM "Xyphos",                      ID_VIEW_ITEMSTATS_XYPHOS
         END
         MENUITEM SEPARATOR
         POPUP "Copy Item HTML Link"
         BEGIN
             MENUITEM "Auno",                        ID_COPY_AUNO_ITEMREF
             MENUITEM "AO Mainframe",                ID_COPY_JAYDEE_ITEMREF
+            MENUITEM "Xyphos",                      ID_COPY_XYPHOS_ITEMREF
         END
         POPUP "Copy Item VBB Link"
         BEGIN
             MENUITEM "Auno",                        ID_COPY_AUNO_ITEMREF_VBB
             MENUITEM "AO Mainframe",                ID_COPY_JAYDEE_ITEMREF_VBB
+            MENUITEM "Xyphos",                      ID_COPYITEMVBBLINK_XYPHOS
         END
         MENUITEM SEPARATOR
         MENUITEM "Export Item to AO Script",    ID_COPY_AO_ITEMREF
@@ -181,6 +187,7 @@ BEGIN
         BEGIN
             MENUITEM "Auno",                        ID_EXPORTTOCSV_AUNO
             MENUITEM "AO Mainframe",                ID_EXPORTTOCSV_JAYDEE
+            MENUITEM "Xyphos",                      ID_EXPORTTOCSV_XYPHOS
         END
         MENUITEM SEPARATOR
         MENUITEM "Sell Item at AO Market",      ID_SELL_ITEM_AOMARKET
@@ -462,6 +469,7 @@ BEGIN
     IDS_AUNO_ITEMREF_URL    "http://auno.org/ao/db.php?id=%lowid%&ql=%ql%"
     IDS_JAYDEE_ITEMREF_URL  "http://aomainframe.net/showitem.asp?LowID=%lowid%&HiID=%hiid%&QL=%ql%"
     IDS_AO_ITEMREF_URL      "itemref://%lowid%/%hiid%/%ql%"
+    IDS_XYPHOS_ITEMREF_URL  "http://www.xyphos.com/aodb.php?id=%lowid%"
 END
 
 STRINGTABLE 

@@ -38,6 +38,7 @@
 #define IDB_PATTERNMATCH_VIEW           148
 #define IDB_PLAYERSHOP_VIEW             149
 #define IDR_ITEM_POPUP_MULTISEL         150
+#define IDS_XYPHOS_ITEMREF_URL          151
 #define IDC_EDIT2                       1001
 #define IDC_LIST1                       1002
 #define IDC_EDIT1                       1003
@@ -114,6 +115,14 @@
 #define ID_EXPORTTOCSV_JAYDEE           32823
 #define ID_HELP_SUPPORTFORUM            32825
 #define ID_HELP_CHECKFORUPDATES         32826
+#define ID_COPYITEMHTMLLINK_XYPHOS      32827
+#define ID_COPYITEMVBBLINK_XYPHOS       32828
+#define ID_COPY_XYPHOS_ITEMREF_VBB      32829
+#define ID_COPY_XYPHOS_ITEMREF          32830
+#define ID_EXPORTITEMTOCSVFILE_XYPHOS   32831
+#define ID_EXPORTTOCSV_XYPHOS           32832
+#define ID_VIEWITEMSTATS_XYPHOS         32833
+#define ID_VIEW_ITEMSTATS_XYPHOS        32834
 #define ATL_IDS_IDLEMESSAGE             0xE001
 #define ID_FILE_NEW                     0xE100
 #define ID_FILE_OPEN                    0xE101
@@ -217,8 +226,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        151
-#define _APS_NEXT_COMMAND_VALUE         32827
+#define _APS_NEXT_RESOURCE_VALUE        152
+#define _APS_NEXT_COMMAND_VALUE         32835
 #define _APS_NEXT_CONTROL_VALUE         1043
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
