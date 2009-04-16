@@ -4,7 +4,6 @@
 #include <boost/algorithm/string.hpp>
 #include <ItemAssistantCore/Logger.h>
 
-
 using namespace boost::algorithm;
 using namespace boost::assign;
 
@@ -60,8 +59,6 @@ const std::string c_scheme_sql =
     "   [purpose] TEXT"
     "   );"
 
-    "CREATE VIEW vSchemeVersion AS SELECT '3' AS Version ; "
-
     ;
 
 
@@ -112,6 +109,7 @@ AODatabaseWriter::AODatabaseWriter(std::string const& filename)
 {
     m_db.Init(from_ascii_copy(filename));
     m_db.Exec(from_ascii_copy(c_scheme_sql));
+    m_db.Exec(STREAM2STR(_T("CREATE VIEW vSchemeVersion AS SELECT '") << CURRENT_AODB_VERSION << _T("' AS Version")));
 }
 
 

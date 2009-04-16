@@ -7,6 +7,9 @@
 #include <Shared/AODB.h>
 
 
+#define CURRENT_AODB_VERSION 3
+
+
 class AODatabaseWriter
 {
 public:
