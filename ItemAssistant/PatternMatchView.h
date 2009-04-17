@@ -1,59 +1,16 @@
-#pragma once
+#ifndef PATTERNMATCHVIEW
+#define PATTERNMATCHVIEW
 
-
-#include "shared/aopackets.h"
-#include "shared/Thread.h"
-#include "shared/Mutex.h"
-#include <PluginSDK/ItemAssistView.h>
+#include "FilterPanel.h"
 #include "resource.h"
+#include "shared/Mutex.h"
+#include "shared/Thread.h"
+#include "shared/aopackets.h"
+#include <PluginSDK/ItemAssistView.h>
 
 
+// Forward declarations
 class PatternMatchView;
-
-
-class FilterView
-    :	public CDialogImpl<FilterView>
-{
-public:
-    enum { IDD = IDD_PATTERN_MATCHER };
-
-    FilterView() : m_pParent(NULL) { }
-
-    void SetParent(PatternMatchView* parent);
-    BOOL PreTranslateMsg(MSG* pMsg);
-    void SetProgress(unsigned short percent);
-    void updateDimensionList();
-    void UpdateToonList();
-
-    BEGIN_MSG_MAP(FilterView)
-        MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
-        MESSAGE_HANDLER(WM_FORWARDMSG, OnForwardMsg)
-        COMMAND_HANDLER(IDC_SHOW_ALL, BN_CLICKED, OnBnClickedShowAll)
-        COMMAND_HANDLER(IDC_SHOW_PARTIALS, BN_CLICKED, OnBnClickedShowPartials)
-        COMMAND_HANDLER(IDC_COMPLETABLE, BN_CLICKED, OnBnClickedCompletable)
-        COMMAND_HANDLER(IDC_DIMENSION_COMBO, CBN_SELCHANGE, onDimensionComboSelection)
-        COMMAND_HANDLER(IDC_CHARCOMBO, CBN_SELCHANGE, OnCbnSelchangeCharcombo)
-        COMMAND_HANDLER(IDC_EXCLUDE_ASSEMBLED, BN_CLICKED, OnExcludeAssembledPatternsClicked)
-        DEFAULT_REFLECTION_HANDLER()
-    END_MSG_MAP()
-
-    LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-    LRESULT OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-
-protected:
-    void UpdateFilterSettings();
-
-    LRESULT onDimensionComboSelection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-    LRESULT OnCbnSelchangeCharcombo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-    LRESULT OnBnClickedShowAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-    LRESULT OnBnClickedShowPartials(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-    LRESULT OnBnClickedCompletable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-    LRESULT OnExcludeAssembledPatternsClicked(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-
-private:
-    PatternMatchView* m_pParent;
-    std::tstring m_basequery;
-};
 
 
 class WebView
@@ -171,8 +128,6 @@ public:
     PbList& PbListRef() { return m_pblist; }
     Mutex& PbListMutex() { return m_pblistMutex; }
 
-    void SetFilterSettings(unsigned int dimensionid, unsigned int toonid, float availfilter, bool excludeAssembled);
-
 protected:
     enum {
         AVAIL_TIMER = 1
@@ -196,6 +151,8 @@ protected:
     void AddRow(unsigned int rowid, std::vector<std::tstring> &data);
     void UpdateRow(unsigned int rowid, std::vector<std::tstring> &data);
 
+    void onFilterSettingsChanged();
+
 private:
     PbList m_pblist;
 
@@ -207,9 +164,14 @@ private:
     int   m_sortColumn;
 
     CListViewCtrl     m_listview;
-    FilterView        m_filterview;
     WebView           m_webview;
     CAccelerator      m_accelerators;
     AvailCalcThread   m_availCalc;
     Mutex             m_pblistMutex;
+
+    PatternMatcher::FilterPanel m_filterPanel;
+    PatternMatcher::FilterPanel::Connection m_filterConnection;
 };
+
+
+#endif // PATTERNMATCHVIEW

@@ -7,7 +7,7 @@
 #include <sstream>
 #include <map>
 #include <boost/algorithm/string.hpp>
-
+#include <boost/bind.hpp>
 
 
 PatternMatchView::PatternMatchView(void)
@@ -32,9 +32,9 @@ LRESULT PatternMatchView::OnCreate(LPCREATESTRUCT createStruct)
 
     m_listview.Create(m_hWnd, rcDefault, NULL, style | LVS_REPORT | LVS_SINGLESEL, WS_EX_CLIENTEDGE);
 
-    m_filterview.SetParent(this);
-    m_filterview.Create(m_hWnd);
-    m_filterview.ShowWindow(SW_SHOWNOACTIVATE);
+    m_filterConnection = m_filterPanel.connectSettingsChanged(boost::bind(&PatternMatchView::onFilterSettingsChanged, this));
+    m_filterPanel.Create(m_hWnd);
+    m_filterPanel.ShowWindow(SW_SHOWNOACTIVATE);
 
     m_webview.SetParent(this);
     m_webview.Create(m_hWnd);
@@ -102,6 +102,8 @@ void PatternMatchView::OnDestroy()
     // Stop the bloddy worker thread while we still can count ourselves as a window.
     m_availCalc.StopPlease();
     m_availCalc.End();
+
+    m_filterPanel.disconnect(m_filterConnection);
 }
 
 
@@ -128,10 +130,14 @@ void PatternMatchView::SetBossAvail(unsigned int pbid, float avail)
 }
 
 
-void PatternMatchView::SetFilterSettings(unsigned int dimensionid, unsigned int toonid, float availfilter, bool excludeAssembled)
+void PatternMatchView::onFilterSettingsChanged()
 {
+    unsigned int dimensionid = m_filterPanel.getDimensionId();
+    unsigned int charid = m_filterPanel.getCharId();
+    bool excludeAssembled = m_filterPanel.getExcludeAssembled();
+
     if (dimensionid != m_availCalc.getDimensionId() ||
-        toonid != m_availCalc.Toon() || 
+        charid != m_availCalc.Toon() || 
         excludeAssembled != m_availCalc.ExcludeAssembled())
     {
         SetBossAvail(0, -1.0f);
@@ -149,14 +155,14 @@ void PatternMatchView::SetFilterSettings(unsigned int dimensionid, unsigned int 
 
         // Restart thread
         m_availCalc.setDimensionId(dimensionid);
-        m_availCalc.SetToon(toonid);
+        m_availCalc.SetToon(charid);
         m_availCalc.SetExcludeAssembled(excludeAssembled);
         m_availCalc.Begin();
     }
 
     m_dimensionid = dimensionid;
-    m_toonid = toonid;
-    m_availfilter = availfilter;
+    m_toonid = charid;
+    m_availfilter = m_filterPanel.getAvailFilter();
 
     UpdatePbListView();
 }
@@ -240,7 +246,7 @@ void PatternMatchView::UpdatePbListView(unsigned int pbid)
 
 void PatternMatchView::UpdateFilterProgress(unsigned short percent)
 {
-    m_filterview.SetProgress(percent);
+    m_filterPanel.setProgress(percent);
 }
 
 
@@ -297,7 +303,7 @@ void PatternMatchView::OnActive(bool doActivation)
 {
     if (doActivation)
     {
-        m_filterview.UpdateToonList();
+        m_filterPanel.updateCharList();
 
         // Start up the calc thread
         m_availCalc.Begin();
@@ -406,13 +412,13 @@ void PatternMatchView::UpdateLayout(CSize newSize)
     int left = 0;
     int top = 0;
 
-    if (::IsWindowVisible(m_filterview))
+    if (::IsWindowVisible(m_filterPanel))
     {
         RECT fvRect;
-        m_filterview.GetWindowRect(&fvRect);
+        m_filterPanel.GetWindowRect(&fvRect);
         int width = fvRect.right - fvRect.left;
         int height = fvRect.bottom - fvRect.top;
-        ::SetWindowPos(m_filterview, 0, 0, 0, width, height, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_DEFERERASE | SWP_NOSENDCHANGING);
+        ::SetWindowPos(m_filterPanel, 0, 0, 0, width, height, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_DEFERERASE | SWP_NOSENDCHANGING);
         left += width;
         top += height;
     }
@@ -428,7 +434,7 @@ bool PatternMatchView::PreTranslateMsg(MSG* pMsg)
     {
         return true;
     }
-    if (m_filterview.PreTranslateMsg(pMsg))
+    if (m_filterPanel.PreTranslateMsg(pMsg))
     {
         return true;
     }
@@ -457,240 +463,9 @@ int PatternMatchView::CompareStr(LPARAM param1, LPARAM param2, LPARAM sort)
 }
 
 
-
-
-
-/* FILTER VIEW IMPLEMENTATION */
-
-
-LRESULT FilterView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
-{
-    SetWindowText(_T("Filter View"));
-
-    updateDimensionList();
-    UpdateToonList();
-
-    CheckDlgButton(IDC_SHOW_ALL, 1);
-
-    WTL::CProgressBarCtrl progressbar = GetDlgItem(IDC_PROGRESS);
-    progressbar.SetRange(0, 100);
-    progressbar.SetPos(0);
-
-    UpdateFilterSettings();
-
-    return 0;
-}
-
-
-LRESULT FilterView::OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
-{
-    LPMSG pMsg = (LPMSG)lParam;
-    return this->PreTranslateMsg(pMsg);
-}
-
-
-void FilterView::updateDimensionList()
-{
-    WTL::CComboBox cb = GetDlgItem(IDC_DIMENSION_COMBO);
-
-    int oldselection = cb.GetCurSel();
-    int item = 0;
-
-    cb.ResetContent();
-
-    std::map<unsigned int, std::tstring> dimensionNames;
-    g_DBManager.lock();
-    g_DBManager.getDimensions(dimensionNames);
-    SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT DISTINCT dimensionid FROM tToons"));
-    g_DBManager.unLock();
-
-    // Add named dimensions.
-    for (std::map<unsigned int, std::tstring>::iterator it = dimensionNames.begin(); it != dimensionNames.end(); ++it)
-    {
-        if ((item = cb.AddString(it->second.c_str())) != CB_ERR)
-        {
-            cb.SetItemData(item, it->first);
-        }
-    }
-
-    // Add un-named dimensions.
-    for (unsigned int i = 0; i < pT->Rows(); ++i)
-    {
-        unsigned int dimId = boost::lexical_cast<unsigned int>(pT->Data(i, 0));
-        std::tstring dimName;
-        if (dimensionNames.find(dimId) != dimensionNames.end())
-        {
-            continue;   // Skip named ones.
-        }
-        else 
-        {
-            dimName = _T("Unknown Dimension");
-            if (dimId > 0)
-            {
-                dimName += STREAM2STR(" (0x" << std::hex << dimId << ")");
-            }
-        }
-
-        if ((item = cb.AddString(dimName.c_str())) != CB_ERR)
-        {
-            cb.SetItemData(item, dimId);
-        }
-    }
-
-    if (oldselection >= 0)
-    {
-        cb.SetCurSel(oldselection);
-    }
-    else if (oldselection == -1)
-    {
-        cb.SetCurSel(0);
-    }
-}
-
-
-void FilterView::UpdateToonList()
-{
-    WTL::CComboBox cb = GetDlgItem(IDC_CHARCOMBO);
-
-    int oldselection = cb.GetCurSel();
-
-    cb.ResetContent();
-    int item = cb.AddString(_T("-"));
-    cb.SetItemData(item, 0);
-    cb.SetCurSel(0);
-    cb.SetMinVisible(9);
-
-    g_DBManager.lock();
-    SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT DISTINCT owner FROM tItems"));
-
-    if (pT != NULL)
-    {
-        for (unsigned int i = 0; i < pT->Rows(); i++)
-        {
-            unsigned int id = boost::lexical_cast<unsigned int>(pT->Data(i,0));
-
-            std::tstring name = g_DBManager.getToonName(id);
-            if (name.empty())
-            {
-                name = from_ascii_copy(pT->Data()[pT->Columns()*i]);
-            }
-
-            if ((item = cb.AddString(name.c_str())) != CB_ERR)
-            {
-                cb.SetItemData(item, id);
-            }
-        }
-    }
-    g_DBManager.unLock();
-
-    if (oldselection >= 0) {
-        cb.SetCurSel(oldselection);
-    }
-}
-
-
-void FilterView::SetProgress(unsigned short percent)
-{
-    WTL::CProgressBarCtrl progressbar = GetDlgItem(IDC_PROGRESS);
-    progressbar.SetPos(percent);
-}
-
-
-void FilterView::UpdateFilterSettings()
-{
-    WTL::CComboBox dimCb = GetDlgItem(IDC_DIMENSION_COMBO);
-    unsigned int dimensionid = (unsigned int) dimCb.GetItemData(dimCb.GetCurSel());
-
-    unsigned int toonid = 0;
-
-    WTL::CComboBox tooncb = GetDlgItem(IDC_CHARCOMBO);
-    if (tooncb.GetCurSel() > 0)
-    {
-        toonid = (unsigned int)tooncb.GetItemData(tooncb.GetCurSel());
-    }
-
-    float availfilter = -1.0f;
-
-    if (IsDlgButtonChecked(IDC_SHOW_ALL))
-    {
-        availfilter = -1.0f;
-    }
-    else if (IsDlgButtonChecked(IDC_SHOW_PARTIALS))
-    {
-        availfilter = 0.25f;
-    }
-    else if (IsDlgButtonChecked(IDC_COMPLETABLE))
-    {
-        availfilter = 1.0f;
-    }
-
-    bool excludeAssembled = false;
-
-    if (IsDlgButtonChecked(IDC_EXCLUDE_ASSEMBLED)) {
-        excludeAssembled = true;
-    }
-
-    m_pParent->SetFilterSettings(dimensionid, toonid, availfilter, excludeAssembled);
-}
-
-
-void FilterView::SetParent(PatternMatchView* parent)
-{
-    m_pParent = parent;
-}
-
-
-BOOL FilterView::PreTranslateMsg(MSG* pMsg)
-{
-    return IsDialogMessage(pMsg);
-}
-
-
-LRESULT FilterView::onDimensionComboSelection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-{
-    UpdateFilterSettings();
-    return 0;
-}
-
-
-LRESULT FilterView::OnCbnSelchangeCharcombo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-{
-    UpdateFilterSettings();
-    return 0;
-}
-
-
-LRESULT FilterView::OnBnClickedShowAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-{
-    UpdateFilterSettings();
-    return 0;
-}
-
-
-LRESULT FilterView::OnBnClickedShowPartials(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-{
-    UpdateFilterSettings();
-    return 0;
-}
-
-
-LRESULT FilterView::OnBnClickedCompletable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-{
-    UpdateFilterSettings();
-    return 0;
-}
-
-
-LRESULT FilterView::OnExcludeAssembledPatternsClicked(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-{
-    UpdateFilterSettings();
-    return 0;
-}
-
-
-
-
-/* WEB VIEW IMPLEMENTATION */
+/*************************************************/
+/** Web View                                    **/
+/*************************************************/
 
 
 LRESULT WebView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)

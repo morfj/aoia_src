@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="ItemAssistant"
 	ProjectGUID="{93E190D1-3E5B-4B19-BE87-5A820D7A8B14}"
 	RootNamespace="ItemAssistant"
@@ -222,6 +222,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FilterPanel.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\FindPanel.cpp"
 				>
 			</File>
@@ -357,6 +361,10 @@
 			</File>
 			<File
 				RelativePath=".\DBManager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FilterPanel.h"
 				>
 			</File>
 			<File
