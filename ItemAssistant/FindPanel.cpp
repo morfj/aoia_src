@@ -221,7 +221,7 @@ void FindView::updateCharList(unsigned int dimension_id)
     int item = cb.AddString(_T("-"));
     cb.SetItemData(item, 0);
 
-    boost::format sql("SELECT DISTINCT owner FROM tItems I JOIN tToons T ON I.owner = T.charid WHERE dimensionid = %1%");
+    boost::format sql("SELECT DISTINCT owner FROM tItems I JOIN tToons T ON I.owner = T.charid WHERE dimensionid = %1% ORDER BY T.charname");
     sql % dimension_id;
 
     g_DBManager.lock();
