@@ -35,7 +35,9 @@ Version 0.9.3										Release Date: ??/?/2009
     * Now parsing the 18.0.1 database correctly.
     * Find panel now filters on dimension as well.
 	* Added support for Xyphos.com for item stats/links.
+	* The report in the Pattern Matcher now links to the loot table for the boss.
 	* Bug Fix: Identify view will now sort (right hand side list).
+	* Bug Fix: Toonlist in the find-panel and pattern-matcher should now be sorted.
 
 Version 0.9.2                                       Release Date: 20/2/2009
     * Enhanced the player-shop monitor to refresh the view when something 
