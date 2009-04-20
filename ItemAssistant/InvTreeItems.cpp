@@ -313,6 +313,8 @@ unsigned int CharacterTreeViewItem::AppendMenuCmd(HMENU hMenu, unsigned int firs
 {
     m_commands[firstID] = SqlTreeViewItemBase::CMD_DELETE;
     AppendMenu(hMenu, MF_STRING, firstID++, _T("Delete Toon"));
+    m_commands[firstID] = SqlTreeViewItemBase::CMD_EXPORT;
+    AppendMenu(hMenu, MF_STRING, firstID++, _T("Export Items..."));
     return firstID;
 }
 
@@ -350,6 +352,15 @@ bool CharacterTreeViewItem::HandleMenuCmd(unsigned int commandID, WTL::CTreeItem
                 g_DBManager.unLock();
             }
             break;
+
+        case SqlTreeViewItemBase::CMD_EXPORT:
+            {
+                std::tstringstream str;
+                str << _T("owner = ") << m_charid;
+                m_pOwner->exportToCSV(str.str());
+            }
+            break;
+
         default:
             break;
         }

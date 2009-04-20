@@ -8,6 +8,8 @@
 #include <ShellAPI.h>
 #include <ItemAssistantCore/AOManager.h>
 #include "ItemListDataModel.h"
+#include "ServerSelectorDialog.h"
+
 
 using namespace WTL;
 using namespace aoia;
@@ -2558,6 +2560,105 @@ void InventoryView::UpdateListView(std::tstring const& where)
     m_datagrid->autosizeColumnsUseData();
 
     OnSelectionChanged();
+}
+
+
+// Exports all items matching the where statement.
+void InventoryView::exportToCSV(std::tstring const& where)
+{
+    ItemListDataModelPtr data(new ItemListDataModel(where, m_sortColumn, !m_sortDesc));
+
+    // Ask the user which server to use for item URLs
+    ServerSelectorDialog dlg;
+    if (dlg.DoModal(m_hWnd) != IDOK)
+    {
+        return;
+    }
+
+    std::tstring itemURLTemplate;
+    switch (dlg.getChoice())
+    {
+    case 1:
+        itemURLTemplate = GetServerItemURLTemplate(SERVER_AUNO);
+        break;
+    case 2:
+        itemURLTemplate = GetServerItemURLTemplate(SERVER_JAYDEE);
+        break;
+    case 3:
+        itemURLTemplate = GetServerItemURLTemplate(SERVER_XYPHOS);
+        break;
+    }
+
+    // Ask the user for a name for the CSV file
+    std::tstring filename = BrowseForOutputFile(GetTopLevelWindow(), _T("Select Name of Output File"), _T("CSV Files (Comma-Separated Values)\0*.csv\0\0"), _T("csv"));
+    if (filename.empty()) {
+        return;
+    }
+
+    // Output to the selected CSV file.
+#ifdef UNICODE
+    std::wofstream ofs(filename.c_str());
+#else
+    std::ofstream ofs(filename.c_str());
+#endif  // UNICODE
+
+    if (!ofs.is_open()) {
+        return;
+    }
+
+    std::tstring separator = _T("\n");
+
+    // Write the column headers
+    for (unsigned int column_index = 0; column_index < data->getColumnCount(); ++column_index)
+    {
+        if (column_index > 0)
+        {
+            ofs << _T(",");
+        }
+        ofs << data->getColumnName(column_index);
+    }
+    ofs << _T(",LowID,HighID,Link") << separator;
+
+    // Write one row for each item to export.
+    g_DBManager.lock();
+    for (unsigned int row_index = 0; row_index < data->getItemCount(); ++row_index)
+    {
+        if (row_index > 0) {
+            ofs << separator;
+        }
+
+        // Dump all the columns from the datamodel.
+        for (unsigned int column_index = 0; column_index < data->getColumnCount(); ++column_index)
+        {
+            if (column_index > 0) {
+                ofs << _T(",");
+            }
+            std::tstring cell_value = data->getItemProperty(row_index, column_index);
+            if (cell_value.find(_T(",")) != std::tstring::npos)
+            {
+                // If the value of the cell contains a comma, we need to encapsulate the text in " symbols.
+                ofs << _T("\"") << cell_value << _T("\"");
+            }
+            else 
+            {
+                ofs << cell_value;
+            }
+        }
+
+        OwnedItemInfoPtr pItemInfo = g_DBManager.getOwnedItemInfo(data->getItemIndex(row_index));
+
+        // Append columns with high-id and low-id
+        ofs << _T(",") << pItemInfo->itemloid << _T(",") << pItemInfo->itemhiid;
+
+        // Append a column with the item URL
+        std::tstring itemURL = itemURLTemplate;
+        boost::replace_all(itemURL, _T("%lowid%"), pItemInfo->itemloid);
+        boost::replace_all(itemURL, _T("%hiid%"), pItemInfo->itemhiid);
+        boost::replace_all(itemURL, _T("%ql%"), pItemInfo->itemql);
+
+        ofs << _T(",") << itemURL;
+    }
+    g_DBManager.unLock();
 }
 
 

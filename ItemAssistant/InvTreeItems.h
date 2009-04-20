@@ -26,6 +26,7 @@ protected:
    enum InternalCommand {
       CMD_EDIT = 1,
       CMD_DELETE,
+      CMD_EXPORT,
    };
 
    mutable std::map<unsigned int, InternalCommand> m_commands;

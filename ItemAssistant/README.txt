@@ -36,6 +36,8 @@ Version 0.9.3										Release Date: ??/?/2009
     * Find panel now filters on dimension as well.
 	* Added support for Xyphos.com for item stats/links.
 	* The report in the Pattern Matcher now links to the loot table for the boss.
+	* It is now possible to export all items from a toon by right-clicking the 
+	  toon name in the tree-view.
 	* Bug Fix: Identify view will now sort (right hand side list).
 	* Bug Fix: Toonlist in the find-panel and pattern-matcher should now be sorted.
 

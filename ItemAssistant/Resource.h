@@ -39,6 +39,7 @@
 #define IDB_PLAYERSHOP_VIEW             149
 #define IDR_ITEM_POPUP_MULTISEL         150
 #define IDS_XYPHOS_ITEMREF_URL          151
+#define IDD_SERVER_SELECTOR             152
 #define IDC_EDIT2                       1001
 #define IDC_LIST1                       1002
 #define IDC_EDIT1                       1003
@@ -80,6 +81,8 @@
 #define IDC_QLMAX                       1039
 #define IDC_BUTTON_LABEL                1040
 #define IDC_EXCLUDE_ASSEMBLED           1041
+#define IDC_XYPHOS                      1045
+#define IDC_NONE                        1046
 #define ATL_IDC_TAB_CONTROL             0x3020
 #define ID_APPLY_NOW                    0x3021
 #define ID_WIZBACK                      0x3023
@@ -226,9 +229,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        152
+#define _APS_NEXT_RESOURCE_VALUE        153
 #define _APS_NEXT_COMMAND_VALUE         32835
-#define _APS_NEXT_CONTROL_VALUE         1043
+#define _APS_NEXT_CONTROL_VALUE         1047
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

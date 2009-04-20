@@ -90,6 +90,7 @@ public:
 
     void HideFindWindow();
     void UpdateListView(std::tstring const& where);
+    void exportToCSV(std::tstring const& where);
     void OnSelectionChanged();
 
     enum ItemServer {
