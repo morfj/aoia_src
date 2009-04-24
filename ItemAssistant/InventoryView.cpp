@@ -2566,7 +2566,14 @@ void InventoryView::UpdateListView(std::tstring const& where)
 // Exports all items matching the where statement.
 void InventoryView::exportToCSV(std::tstring const& where)
 {
-    ItemListDataModelPtr data(new ItemListDataModel(where, m_sortColumn, !m_sortDesc));
+    std::tstring where_statement;
+    if (!where.empty())
+    {
+        where_statement = _T("(") + where + _T(") AND ");
+    }
+    where_statement += _T("I.children=0");
+
+    ItemListDataModelPtr data(new ItemListDataModel(where_statement, m_sortColumn, !m_sortDesc));
 
     // Ask the user which server to use for item URLs
     ServerSelectorDialog dlg;
