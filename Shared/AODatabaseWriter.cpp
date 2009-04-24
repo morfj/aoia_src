@@ -108,6 +108,7 @@ const std::vector<std::string> c_datatransformation_sql = list_of
 AODatabaseWriter::AODatabaseWriter(std::string const& filename)
 {
     m_db.Init(from_ascii_copy(filename));
+    m_db.Exec("PRAGMA journal_mode=MEMORY");
     m_db.Exec(from_ascii_copy(c_scheme_sql));
     m_db.Exec(STREAM2STR(_T("CREATE VIEW vSchemeVersion AS SELECT '") << CURRENT_AODB_VERSION << _T("' AS Version")));
 }
