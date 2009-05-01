@@ -185,7 +185,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="xcopy /Y &quot;$(SolutionDir)\Externals\SQLite\sqlite3.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;xcopy /Y README.txt &quot;$(OutDir)&quot;&#x0D;&#x0A;"
+				CommandLine="xcopy /Y &quot;$(SolutionDir)\Externals\SQLite\sqlite3.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;xcopy /Y README.txt &quot;$(OutDir)&quot;&#x0D;&#x0A;xcopy /Y &quot;$(SolutionDir)\Externals\Microsoft.VC90.CRT\*&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
