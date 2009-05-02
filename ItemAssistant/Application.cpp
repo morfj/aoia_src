@@ -2,6 +2,7 @@
 #include "Application.h"
 #include "Version.h"
 #include <ItemAssistantCore/PluginManager.h>
+#include <ItemAssistantCore/AOManager.h>
 
 
 Application::Application()
@@ -24,6 +25,8 @@ bool Application::init(std::tstring const& cmdLine)
         Logger::instance().init(_T(""), g_versionNumber);
     }
 
+    LOG(_T("Using AO Folder at: ") << AOManager::instance().getAOFolder());
+
     std::tstring dbfile;
     std::tstring::size_type argPos = cmdLine.find(_T("-db"));
     if (argPos != std::tstring::npos) {
@@ -31,7 +34,7 @@ bool Application::init(std::tstring const& cmdLine)
     }
 
     if (!g_DBManager.init(dbfile)) {
-        Logger::instance().log(_T("Failed to insitialize DB Manager. Aborting!"));
+        LOG(_T("Failed to insitialize DB Manager. Aborting!"));
         return false;
     }
 
