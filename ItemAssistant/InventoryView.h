@@ -115,6 +115,7 @@ protected:
     void CleanupDB(unsigned int charid);
     void UpdateLayout(CSize newSize);
     std::vector<std::tstring> GetAccountNames();
+    std::tstring ensureEncapsulation(std::tstring const& field);
 
 private:
     CSplitterWindow   m_splitter;

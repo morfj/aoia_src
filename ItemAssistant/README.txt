@@ -14,6 +14,18 @@ Usage:
 ======
 Online help system is available at http://ia-help.frellu.net
 
+Known Issues:
+=============
+   * If you have copied your AO installation to a new directory and is now
+     playing from the new location, Item Assistant will not be able to detect
+     that the old installation is not valid any more.
+     To fix this you need to open the registry editor and find the following
+     registry key:
+         [HKEY_CURRENT_USER\Software\AOItemAssistant]
+     Then inside that key set the field called "AOPath" to an empty string.
+     The next time Item Assistant starts up again it will ask for the new
+     valid location of your AO installation.
+
 Aknowledgements:
 ================
 This application is in no way only due to my own efforts. Some people who 
@@ -30,17 +42,21 @@ have contributed either directly or indirectly include:
 
 Change Log:
 ===========
-Version 0.9.3										Release Date: ??/?/2009
-	* Added support for NPC trade-in quest rewards in the item tracking.
+Version 0.9.4                                       Release Date: ?/?/2009
+    * Bug Fix: Exporting all items from a toon should not put multiple quotes
+      around the backpack names any more.
+
+Version 0.9.3                                        Release Date: 4/5/2009
+    * Added support for NPC trade-in quest rewards in the item tracking.
     * Now parsing the 18.0.1 database correctly.
     * Find panel now filters on dimension as well.
-	* Added support for Xyphos.com for item stats/links.
-	* The report in the Pattern Matcher now links to the loot table for the boss.
-	* It is now possible to export all items (excluding backpacks) from a toon by 
-	  right-clicking the toon name in the tree-view.
-	* Improved performance when ripping the AODB.
-	* Bug Fix: Identify view will now sort (right hand side list).
-	* Bug Fix: Toonlist in the find-panel and pattern-matcher should now be sorted.
+    * Added support for Xyphos.com for item stats/links.
+    * The report in the Pattern Matcher now links to the loot table for the boss.
+    * It is now possible to export all items (excluding backpacks) from a toon by 
+      right-clicking the toon name in the tree-view.
+    * Improved performance when ripping the AODB.
+    * Bug Fix: Identify view will now sort (right hand side list).
+    * Bug Fix: Toonlist in the find-panel and pattern-matcher should now be sorted.
 
 Version 0.9.2                                       Release Date: 20/2/2009
     * Enhanced the player-shop monitor to refresh the view when something 

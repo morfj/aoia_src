@@ -4,7 +4,7 @@
 #include "AOMessageParsers.h"
 #include <shared/AODB.h>
 #include <shared/FileUtils.h>
-#include <boost/algorithm/string/replace.hpp>
+#include <boost/algorithm/string.hpp>
 #include <ShellAPI.h>
 #include <ItemAssistantCore/AOManager.h>
 #include "ItemListDataModel.h"
@@ -13,6 +13,7 @@
 
 using namespace WTL;
 using namespace aoia;
+using namespace boost::algorithm;
 
 
 InventoryView::InventoryView()
@@ -2563,6 +2564,22 @@ void InventoryView::UpdateListView(std::tstring const& where)
 }
 
 
+std::tstring InventoryView::ensureEncapsulation(std::tstring const& field)
+{
+    std::tstring retval;
+    if (!starts_with(field, _T("\"")))
+    {
+        retval = _T("\"");
+    }
+    retval += field;
+    if (!ends_with(field, _T("\"")))
+    {
+        retval += _T("\"");
+    }
+    return retval;
+}
+
+
 // Exports all items matching the where statement.
 void InventoryView::exportToCSV(std::tstring const& where)
 {
@@ -2644,7 +2661,7 @@ void InventoryView::exportToCSV(std::tstring const& where)
             if (cell_value.find(_T(",")) != std::tstring::npos)
             {
                 // If the value of the cell contains a comma, we need to encapsulate the text in " symbols.
-                ofs << _T("\"") << cell_value << _T("\"");
+                ofs << ensureEncapsulation(cell_value);
             }
             else 
             {
