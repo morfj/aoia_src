@@ -100,6 +100,7 @@ std::tstring SharedServices::GetContainerName(unsigned int charid, unsigned int 
                     if (StrCmpA(element->Attribute("name"), "container_name") == 0)
                     {
                         result = from_utf8_copy(element->Attribute("value"));
+                        boost::algorithm::replace_all(result, _T("&amp;"), _T("&"));    // Fixes wierd encoding in the AO xml.
                         m_containerFileCache[key] = std::pair<std::tstring, FILETIME>(result, lastWrite);
                         break;
                     }
