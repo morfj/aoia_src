@@ -2,13 +2,13 @@ Installation:
 =============
 - Unzip and run from your location of choice.
 
+Upgrading:
+==========
 When upgrading from a previous version I recommend making a copy in a safe
 location of your old ItemAssistant.db file just to be on the safe side.
 If the automated migration to the new version creates wierd results please
 send a detailed description of the problem and attach BOTH the old and the 
 newly converted ItemAssistant.db file.
-
-Support may be found at the forum: http://apps.sourceforge.net/phpbb/aoia/
 
 Usage:
 ======
@@ -25,6 +25,11 @@ Known Issues:
      Then inside that key set the field called "AOPath" to an empty string.
      The next time Item Assistant starts up again it will ask for the new
      valid location of your AO installation.
+   * While playing on TestLive you may experience that your toon doesn't show
+     up in the toon-list until you restart the application.
+   * AOIA needs to run with the same, or higher, level of privileges on your 
+     computer as the AO client itself is running with. If you run the AO client
+     as administrator, you have to do the same with AOIA.
 
 Aknowledgements:
 ================
@@ -43,6 +48,9 @@ have contributed either directly or indirectly include:
 Change Log:
 ===========
 Version 0.9.4                                       Release Date: ?/?/2009
+    * Enhanced item listing so the container column shows if an item is 
+      equipped, and at which tab-panel it is.
+    * Bug Fix: Fixed weird encoding of ampersands in backpack names.
     * Bug Fix: Exporting all items from a toon should not put multiple quotes
       around the backpack names any more.
 
@@ -186,3 +194,7 @@ Version 0.5                                         Release Date: 20/09/2005
 Version 0.4 (and earlier)                           Release Date: BC
     * Initial test builds.
     * Debug builds.
+
+
+-- 
+MortenF
