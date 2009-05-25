@@ -5,6 +5,7 @@
 #include <shared/AODB.h>
 #include <shared/FileUtils.h>
 #include <boost/algorithm/string.hpp>
+#include <boost/bind.hpp>
 #include <ShellAPI.h>
 #include <ItemAssistantCore/AOManager.h>
 #include "ItemListDataModel.h"
@@ -2555,7 +2556,19 @@ bool InventoryView::PreTranslateMsg(MSG* pMsg)
 // Updates the list view with the results of the SQL query. 'where' is used as the expression after the WHERE keyword.
 void InventoryView::UpdateListView(std::tstring const& where)
 {
+    if (m_datagrid->getModel())
+    {
+        m_datagrid->getModel()->disconnect(m_addSignalConnection);
+        m_datagrid->getModel()->disconnect(m_removeSignalConnection);
+        m_datagrid->getModel()->disconnect(m_clearSignalConnection);
+        m_datagrid->getModel()->disconnect(m_updateSignalConnection);
+    }
+
     ItemListDataModelPtr data(new ItemListDataModel(where, m_sortColumn, !m_sortDesc));
+    m_addSignalConnection = data->connectItemAdded(boost::bind(&InventoryView::onItemAdded, this, _1));
+    m_removeSignalConnection = data->connectItemRemoved(boost::bind(&InventoryView::onItemRemoved, this, _1));
+    m_clearSignalConnection = data->connectAllRemoved(boost::bind(&InventoryView::onAllItemsRemoved, this));
+    m_updateSignalConnection = data->connectCollectionUpdated(boost::bind(&InventoryView::onAllItemsUpdated, this));
 
     m_datagrid->setModel(data);
     m_datagrid->autosizeColumnsUseData();
@@ -2689,7 +2702,7 @@ void InventoryView::exportToCSV(std::tstring const& where)
 void InventoryView::OnSelectionChanged()
 {
     std::set<unsigned int> items = m_datagrid->getSelectedItems();
-
+    
     if (items.size() == 1)
     {
         m_toolbar.EnableButton(ID_SELL_ITEM_AOMARKET, TRUE);
@@ -2701,6 +2714,8 @@ void InventoryView::OnSelectionChanged()
         m_toolbar.EnableButton(ID_SELL_ITEM_AOMARKET, FALSE);
         m_infoview.SetCurrentItem(0);
     }
+
+    UpdateStatusText();
 }
 
 
@@ -2743,4 +2758,37 @@ std::tstring InventoryView::GetServerItemURLTemplate( ItemServer server )
     }
 
     return retval;
+}
+
+
+void InventoryView::UpdateStatusText()
+{
+    // Set status text
+    boost::basic_format<TCHAR> status(_T("%1% of %2% items selected."));
+    status % m_datagrid->getSelectedCount() % m_datagrid->getModel()->getItemCount();
+    setStatusText(status.str());
+}
+
+
+void InventoryView::onAllItemsUpdated()
+{
+    UpdateStatusText();
+}
+
+
+void InventoryView::onItemAdded(unsigned int index)
+{
+    UpdateStatusText();
+}
+
+
+void InventoryView::onItemRemoved(unsigned int index)
+{
+    UpdateStatusText();
+}
+
+
+void InventoryView::onAllItemsRemoved()
+{
+    UpdateStatusText();
 }

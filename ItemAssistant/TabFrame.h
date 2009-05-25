@@ -31,9 +31,13 @@ public:
     void OnAOServerMessage(AOMessageBase &msg);
     void OnAOClientMessage(AOClientMessageBase &msg);
     void SetToolBarPanel(HWND panel) { m_rebarControl.Attach(panel); }
+    void SetStatusBar(HWND statusbar) { m_statusBar.Attach(statusbar); }
 
     /// Sets the state of the toolbar for the active view.
     void SetToolbarVisibility(bool visible);
+
+protected:
+    void onStatusChanged();
 
 private:
     std::vector<PluginViewInterface*> m_viewPlugins;
@@ -46,8 +50,11 @@ private:
 
     WTL::CReBarCtrl m_rebarControl;
     WTL::CToolBarCtrl m_activeViewToolbar;
+    WTL::CStatusBarCtrl m_statusBar;
 
     bool m_toobarVisibility;
+
+    boost::signals::connection m_statusTextSignalConnection;
 };
 
 #endif // TABFRAME_H

@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "Tabframe.h"
+#include <boost/bind.hpp>
 
 
 TabFrame::TabFrame()
@@ -21,6 +22,7 @@ LRESULT TabFrame::OnSelChange(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
     PluginViewInterface* newplugin = GetActivePluginView();
 
     if (oldplugin) {
+        oldplugin->disconnect(m_statusTextSignalConnection);
         oldplugin->OnActive(false);
     }
 
@@ -51,10 +53,20 @@ LRESULT TabFrame::OnSelChange(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
 
             m_rebarControl.SetBandInfo(nBandIndex, &rbbi);
         }
+
+        // Update statusbar
+        m_statusBar.SetText(0, newplugin->GetStatusText().c_str());
+        m_statusTextSignalConnection = newplugin->connectStatusChanged(boost::bind(&TabFrame::onStatusChanged, this));
     }
 
     bHandled = TRUE;
     return 0;
+}
+
+
+void TabFrame::onStatusChanged()
+{
+    m_statusBar.SetText(0, GetActivePluginView()->GetStatusText().c_str());
 }
 
 

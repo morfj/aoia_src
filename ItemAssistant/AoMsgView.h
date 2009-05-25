@@ -6,7 +6,7 @@
 
 
 class DlgView
-    :	public CDialogImpl<DlgView>
+    : public CDialogImpl<DlgView>
     , public CDialogResize<DlgView>
 {
 public:

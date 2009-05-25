@@ -1,6 +1,7 @@
 #ifndef INVENTORYVIEW_H
 #define INVENTORYVIEW_H
 
+#include <boost/signal.hpp>
 #include "shared/aopackets.h"
 #include <PluginSDK/ItemAssistView.h>
 #include <atlsplit.h>
@@ -116,6 +117,13 @@ protected:
     void UpdateLayout(CSize newSize);
     std::vector<std::tstring> GetAccountNames();
     std::tstring ensureEncapsulation(std::tstring const& field);
+    void UpdateStatusText();
+
+    // Data model slots
+    void onAllItemsUpdated();
+    void onItemAdded(unsigned int index);
+    void onItemRemoved(unsigned int index);
+    void onAllItemsRemoved();
 
 private:
     CSplitterWindow   m_splitter;
@@ -136,6 +144,11 @@ private:
     int   m_sortColumn;
 
 	unsigned int GetFromContainerId(unsigned int charId, unsigned short fromType, unsigned short fromSlotId);
+
+    boost::signals::connection m_addSignalConnection;
+    boost::signals::connection m_removeSignalConnection;
+    boost::signals::connection m_clearSignalConnection;
+    boost::signals::connection m_updateSignalConnection;
 };
 
 

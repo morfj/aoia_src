@@ -10,6 +10,7 @@ class ItemAssistView
   , public PluginViewInterface
 {
     typedef ItemAssistView<T> ThisType;
+
 public:
     BEGIN_MSG_MAP_EX(ThisType)
         MSG_WM_ERASEBKGND(OnEraseBkgnd)
@@ -23,6 +24,16 @@ public:
 
     virtual ~ItemAssistView(void)
     {
+    }
+
+    virtual connection_t connectStatusChanged(status_signal_t::slot_function_type slot)
+    {
+        return m_statusTextSignal.connect(slot);
+    }
+
+    virtual void disconnect(connection_t slot)
+    {
+        slot.disconnect();
     }
 
     virtual bool PreTranslateMsg(MSG* pMsg)
@@ -56,8 +67,25 @@ public:
         return m_toolbar.m_hWnd;
     }
 
+    virtual std::tstring GetStatusText() const
+    {
+        return m_statusText;
+    }
+
 protected:
     WTL::CToolBarCtrl m_toolbar;
+
+    void setStatusText(std::tstring const& status)
+    {
+        m_statusText = status;
+        m_statusTextSignal();
+    }
+
+private:
+    /// Signal triggered when status text has been updated.
+    status_signal_t m_statusTextSignal;
+
+    std::tstring m_statusText;
 };
 
 #endif // ITEMASSISTVIEW_H
