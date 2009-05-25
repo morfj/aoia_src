@@ -1,12 +1,11 @@
 #include "stdafx.h"
 
 
-BOOL InjectDLL(DWORD ProcessID, std::tstring const& dllName)
+bool InjectDLL(DWORD ProcessID, std::tstring const& dllName)
 {
     Logger::instance().log(STREAM2STR("Attempting to inject " << dllName));
 
     std::string dllNameA = to_ascii_copy(dllName);
-
 
     if(!ProcessID) {
         Logger::instance().log(_T("No process ID specified to inject into."));

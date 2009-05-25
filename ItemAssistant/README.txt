@@ -30,6 +30,10 @@ Known Issues:
    * AOIA needs to run with the same, or higher, level of privileges on your 
      computer as the AO client itself is running with. If you run the AO client
      as administrator, you have to do the same with AOIA.
+   * Sorting items on the "Backpack" column generates weird results.
+   * Moving a backpack or item while AOIA is _not_ running, can result in 
+     duplicate items in the AOIA database. Re-open all affected backpacks to 
+     rescan the content and fix the sync issue.
 
 Aknowledgements:
 ================

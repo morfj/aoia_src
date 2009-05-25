@@ -2,4 +2,4 @@
 
 #include <string>
 
-BOOL InjectDLL(DWORD ProcessID, std::tstring const& dllName);
+bool InjectDLL(DWORD ProcessID, std::tstring const& dllName);

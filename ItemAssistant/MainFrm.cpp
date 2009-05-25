@@ -14,6 +14,11 @@ typedef  BOOL (WINAPI *ChangeWindowMessageFilterFunc)(UINT message, DWORD dwFlag
 #define MSGFLT_REMOVE 2
 
 
+CMainFrame::CMainFrame()
+{
+}
+
+
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 {
     PluginViewInterface *plugin = m_tabbedChildWindow.GetActivePluginView();
@@ -108,8 +113,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
         }
     }
 
-    Inject();
-    SetTimer(1, 10000);
+    // This is the injection timer. We delay 1 sec initially so the GUI has time to be set up completely.
+    SetTimer(1, 1000);
 
     return 0;
 }
@@ -215,9 +220,16 @@ LRESULT CMainFrame::OnAOMessage(HWND wnd, PCOPYDATASTRUCT pData)
 
 LRESULT CMainFrame::OnTimer(UINT wParam, TIMERPROC lParam)
 {
+    static bool first_injection_try = true;
+
     if (wParam == 1)
     {
-        Inject();
+        bool injected = Inject();
+        if (injected && first_injection_try) {
+            // Show warning about AO being started before AOIA
+            ServicesSingleton::Instance()->ShowTrayIconBalloon(_T("Anarchy Online was started before AO Item Assistant was started.\nItem database might be out of sync."));
+        }
+        first_injection_try = false;
         SetTimer(1, 10000);
     }
     return 0;
@@ -251,27 +263,27 @@ void CMainFrame::OnSysCommand(UINT wParam, CPoint mousePos)
 }
 
 
-void CMainFrame::Inject()
+bool CMainFrame::Inject()
 {
-    HWND AOWnd;
-    DWORD AOProcessId;
+    HWND AOWnd = FindWindow( _T("Anarchy client"), _T("Anarchy Online") );
 
-    if( AOWnd = FindWindow( _T("Anarchy client"), _T("Anarchy Online") ) )
+    if(!AOWnd)
     {
-        // Get process id
-        GetWindowThreadProcessId( AOWnd, &AOProcessId );
-
-        TCHAR CurrDir[MAX_PATH];
-        GetCurrentDirectory( MAX_PATH, CurrDir );
-
-        // Inject the dll into client process
-        std::tstringstream temp;
-        temp << CurrDir << _T("\\ItemAssistantHook.dll");
-        InjectDLL(AOProcessId, temp.str());
-    }
-    else {
         Logger::instance().log(_T("Could not locate Anarchy Online window."));
+        return false;
     }
+
+    // Get process id
+    DWORD AOProcessId;
+    GetWindowThreadProcessId( AOWnd, &AOProcessId );
+
+    TCHAR CurrDir[MAX_PATH];
+    GetCurrentDirectory( MAX_PATH, CurrDir );
+
+    // Inject the dll into client process
+    std::tstringstream temp;
+    temp << CurrDir << _T("\\ItemAssistantHook.dll");
+    return InjectDLL(AOProcessId, temp.str());
 }
 
 

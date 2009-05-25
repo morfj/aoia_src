@@ -16,6 +16,8 @@ class CMainFrame
     , public CIdleHandler
 {
 public:
+    CMainFrame();
+
     DECLARE_FRAME_WND_CLASS(_T("ItemAssistantWindowClass"), IDR_MAINFRAME)
 
     enum {
@@ -69,7 +71,7 @@ public:
     boost::shared_ptr<CTrayNotifyIcon> GetTrayIcon() const { return m_trayIcon; }
 
 private:
-    void Inject();
+    bool Inject();
 
     boost::shared_ptr<CTrayNotifyIcon> m_trayIcon;
     TabFrame m_tabbedChildWindow;
