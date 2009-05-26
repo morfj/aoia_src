@@ -3,6 +3,7 @@
 #include "Version.h"
 #include <ItemAssistantCore/PluginManager.h>
 #include <ItemAssistantCore/AOManager.h>
+#include <ItemAssistantCore/SettingsManager.h>
 
 
 Application::Application()
@@ -17,6 +18,9 @@ Application::~Application()
 
 bool Application::init(std::tstring const& cmdLine)
 {
+    // Read stored settings from file.
+    aoia::SettingsManager::instance().readSettings(_T("aoia.conf"));
+
     // Check to see if logging should be enabled
     if (cmdLine.find(_T("-log")) != std::tstring::npos) {
         Logger::instance().init(_T("ItemAssistant.log"), g_versionNumber);
@@ -46,6 +50,9 @@ bool Application::init(std::tstring const& cmdLine)
 
 void Application::destroy()
 {
+    // Save user settings.
+    aoia::SettingsManager::instance().writeSettings(_T("aoia.conf"));
+
     g_DBManager.lock();
     g_DBManager.destroy();
     g_DBManager.unLock();

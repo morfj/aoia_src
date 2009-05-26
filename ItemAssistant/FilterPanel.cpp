@@ -1,7 +1,9 @@
 #include "StdAfx.h"
 #include "FilterPanel.h"
 #include "DBManager.h"
+#include <ItemAssistantCore/SettingsManager.h>
 
+using namespace aoia;
 
 namespace PatternMatcher {
 
@@ -95,7 +97,15 @@ namespace PatternMatcher {
         }
         else if (oldselection == -1)
         {
-            cb.SetCurSel(0);
+            if (!SettingsManager::instance().getValue(_T("DefaultDimension")).empty())
+            {
+                oldselection = cb.FindStringExact(-1, SettingsManager::instance().getValue(_T("DefaultDimension")).c_str());
+            }
+            if (oldselection == CB_ERR)
+            {
+                oldselection = 0;
+            }
+            cb.SetCurSel(oldselection);
         }
     }
 
@@ -215,6 +225,11 @@ namespace PatternMatcher {
 
     LRESULT FilterPanel::onDimensionComboSelection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
     {
+        CComboBox cb = GetDlgItem(IDC_DIMENSION_COMBO);
+        TCHAR buffer[256];
+        cb.GetLBText(cb.GetCurSel(), buffer);
+        SettingsManager::instance().setValue(_T("DefaultDimension"), buffer);
+
         updateCharList();
         signalSettingsChanged();
         return 0;

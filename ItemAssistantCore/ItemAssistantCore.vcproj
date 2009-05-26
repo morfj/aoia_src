@@ -220,6 +220,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SettingsManager.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -259,6 +263,10 @@
 			</File>
 			<File
 				RelativePath=".\PluginManager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SettingsManager.h"
 				>
 			</File>
 			<File

@@ -1,7 +1,9 @@
 #include "StdAfx.h"
 #include "FindPanel.h"
 #include "InventoryView.h"
+#include <ItemAssistantCore/SettingsManager.h>
 
+using namespace aoia;
 
 FindView::FindView()
     : m_lastQueryChar(-1)
@@ -29,9 +31,24 @@ LRESULT FindView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
     if (cb.GetCount() > 0)
     {
-        cb.SetCurSel(0);
-        updateCharList(cb.GetItemData(0));
-        m_lastQueryDimension = cb.GetItemData(0);
+        int index = CB_ERR;
+        if (!SettingsManager::instance().getValue(_T("DefaultDimension")).empty())
+        {
+            index = cb.FindStringExact(-1, SettingsManager::instance().getValue(_T("DefaultDimension")).c_str());
+        }
+        if (index == CB_ERR)
+        {
+            index = 0;
+        }
+        cb.SetCurSel(index);
+        updateCharList(cb.GetItemData(index));
+        m_lastQueryDimension = cb.GetItemData(index);
+
+        CComboBox toon_combo = GetDlgItem(IDC_CHARCOMBO);
+        if (toon_combo.GetCount() > 0)
+        {
+            toon_combo.SetCurSel(0);
+        }
     }
 
     DlgResize_Init(false, true, WS_CLIPCHILDREN);
@@ -82,18 +99,20 @@ LRESULT FindView::onDimensionSelection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
     if ((item = cb.GetCurSel()) != CB_ERR)
     {
         dimension_id = (unsigned int)cb.GetItemData(item);
+        TCHAR buffer[256];
+        cb.GetLBText(item, buffer);
+        SettingsManager::instance().setValue(_T("DefaultDimension"), buffer);
+    }
+
+    updateCharList(dimension_id);
+    CComboBox toon_combo = GetDlgItem(IDC_CHARCOMBO);
+    if (toon_combo.GetCount() > 0)
+    {
+        toon_combo.SetCurSel(0);
     }
 
     if (dimension_id != m_lastQueryDimension)
     {
-        updateCharList(dimension_id);
-
-        CComboBox toon_combo = GetDlgItem(IDC_CHARCOMBO);
-        if (toon_combo.GetCount() > 0)
-        {
-            toon_combo.SetCurSel(0);
-        }
-
         UpdateFindQuery();
     }
 

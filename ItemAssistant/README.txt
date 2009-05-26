@@ -57,6 +57,8 @@ Version 0.9.4                                       Release Date: ?/?/2009
     * Added baloon warning popup when application is started after the AO 
       client was started since this may lead to the database being out of sync.
     * Improved statusbar for the Inventory view.
+    * The application will now remember which dimension you chose last time you
+      changed dimension in either the find panel or the pattern matcher.
     * Bug Fix: Fixed weird encoding of ampersands in backpack names.
     * Bug Fix: Exporting all items from a toon should not put multiple quotes
       around the backpack names any more.
