@@ -82,6 +82,7 @@ IDR_ITEM_POPUP_MULTISEL MENU
 BEGIN
     POPUP "Item Context Menu"
     BEGIN
+        MENUITEM "Copy Item Names",             ID_COPY_ITEMNAME
         POPUP "Copy Items HTML Links"
         BEGIN
             MENUITEM "Auno",                        ID_COPY_AUNO_ITEMREF
@@ -169,6 +170,7 @@ BEGIN
             MENUITEM "Xyphos",                      ID_VIEW_ITEMSTATS_XYPHOS
         END
         MENUITEM SEPARATOR
+        MENUITEM "Copy Item Name",              ID_COPY_ITEMNAME
         POPUP "Copy Item HTML Link"
         BEGIN
             MENUITEM "Auno",                        ID_COPY_AUNO_ITEMREF

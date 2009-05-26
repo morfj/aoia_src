@@ -126,6 +126,7 @@
 #define ID_EXPORTTOCSV_XYPHOS           32832
 #define ID_VIEWITEMSTATS_XYPHOS         32833
 #define ID_VIEW_ITEMSTATS_XYPHOS        32834
+#define ID_COPY_ITEMNAME                32836
 #define ATL_IDS_IDLEMESSAGE             0xE001
 #define ID_FILE_NEW                     0xE100
 #define ID_FILE_OPEN                    0xE101
@@ -230,7 +231,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        153
-#define _APS_NEXT_COMMAND_VALUE         32835
+#define _APS_NEXT_COMMAND_VALUE         32837
 #define _APS_NEXT_CONTROL_VALUE         1047
 #define _APS_NEXT_SYMED_VALUE           110
 #endif

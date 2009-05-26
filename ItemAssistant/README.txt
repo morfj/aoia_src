@@ -59,6 +59,7 @@ Version 0.9.4                                       Release Date: ?/?/2009
     * Improved statusbar for the Inventory view.
     * The application will now remember which dimension you chose last time you
       changed dimension in either the find panel or the pattern matcher.
+    * Added "Copy Item Name(s)" to the item context menu.
     * Bug Fix: Fixed weird encoding of ampersands in backpack names.
     * Bug Fix: Exporting all items from a toon should not put multiple quotes
       around the backpack names any more.

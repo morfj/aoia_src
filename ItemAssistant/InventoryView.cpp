@@ -190,6 +190,27 @@ LRESULT InventoryView::OnSellItemAoMarket(WORD FromAccelerator, WORD CommandId, 
 }
 
 
+LRESULT InventoryView::OnCopyItemName(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled)
+{
+    if (m_datagrid->getSelectedCount() < 1)
+    {
+        return 0;
+    }
+
+    std::tstring text;
+
+    std::set<unsigned int> selectedIndexes = m_datagrid->getSelectedItems();
+    for (std::set<unsigned int>::iterator it = selectedIndexes.begin(); it != selectedIndexes.end(); ++it)
+    {
+        text += m_datagrid->getModel()->getItemProperty(*it, 0); // column 0 should be the item name.
+        text += _T("\n");
+    }
+
+    SetClipboardText(text);
+    return 0;
+}
+
+
 LRESULT InventoryView::OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled)
 {
     if (m_datagrid->getSelectedCount() < 1)
@@ -306,27 +327,7 @@ LRESULT InventoryView::OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND 
     output += postfix;
     g_DBManager.unLock();
 
-    if (!output.empty() && OpenClipboard() && EmptyClipboard()) {
-        HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT, (output.length() * 2 + 2)); 
-        if (hglbCopy == NULL) {
-            CloseClipboard();
-            return true;
-        }
-
-        // Lock the handle and copy the text to the buffer.
-        TCHAR* lptstrCopy = (TCHAR*)GlobalLock(hglbCopy);
-        ZeroMemory(lptstrCopy, output.length() * 2);
-        memcpy(lptstrCopy, output.c_str(), output.length() * 2);
-        GlobalUnlock(hglbCopy);
-
-        // Place the handle on the clipboard.
-#ifdef UNICODE
-        SetClipboardData(CF_UNICODETEXT, hglbCopy);
-#else
-        SetClipboardData(CF_TEXT, hglbCopy);
-#endif
-        CloseClipboard();
-    }
+    SetClipboardText(output);
 
     // Output to the aoia script in the AO script folder.
     if (scriptOutput) {
@@ -2791,4 +2792,39 @@ void InventoryView::onItemRemoved(unsigned int index)
 void InventoryView::onAllItemsRemoved()
 {
     UpdateStatusText();
+}
+
+
+bool InventoryView::SetClipboardText(std::tstring const& text)
+{
+    if (text.empty())
+    {
+        return false;
+    }
+
+    if (OpenClipboard() && EmptyClipboard())
+    {
+        HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT, (text.length() * 2 + 2)); 
+        if (hglbCopy == NULL) 
+        {
+            CloseClipboard();
+            return false;
+        }
+
+        // Lock the handle and copy the text to the buffer.
+        TCHAR* lptstrCopy = (TCHAR*)GlobalLock(hglbCopy);
+        ZeroMemory(lptstrCopy, text.length() * 2);
+        memcpy(lptstrCopy, text.c_str(), text.length() * 2);
+        GlobalUnlock(hglbCopy);
+
+        // Place the handle on the clipboard.
+#ifdef UNICODE
+        SetClipboardData(CF_UNICODETEXT, hglbCopy);
+#else
+        SetClipboardData(CF_TEXT, hglbCopy);
+#endif
+        CloseClipboard();
+        return true;
+    }
+    return false;
 }
