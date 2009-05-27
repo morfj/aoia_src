@@ -3,9 +3,11 @@
 #include <boost/filesystem.hpp>
 #include <Shared/UnicodeSupport.h>
 #include <Shared/FileUtils.h>
+#include <ItemAssistantCore/SettingsManager.h>
 
 
 namespace bfs = boost::filesystem;
+using namespace aoia;
 
 
 SINGLETON_IMPL(AOManager);
@@ -33,28 +35,14 @@ std::tstring AOManager::getAOFolder() const
         bfs::tpath AODir;
         bool requestFolder = true;
 
-        // Get AO folder from registry
-        ATL::CRegKey regKey;
-        if (regKey.Open(HKEY_CURRENT_USER, _T("Software\\AOItemAssistant"), KEY_ALL_ACCESS) == ERROR_SUCCESS)
+        // Get AO folder from settings
+        std::tstring dir_setting = SettingsManager::instance().getValue(_T("AOPath"));
+        if (!dir_setting.empty())
         {
-            TCHAR ao_dir[MAX_PATH];
-            ULONG ao_dir_size = MAX_PATH;
-            ZeroMemory(ao_dir, MAX_PATH * sizeof(TCHAR));
-
-            if (regKey.QueryStringValue(_T("AOPath"), ao_dir, &ao_dir_size) == ERROR_SUCCESS)
+            AODir = dir_setting;
+            if (bfs::exists(AODir / _T("anarchy.exe")))
             {
-                AODir = std::tstring(ao_dir);
-                if (bfs::exists(AODir / _T("anarchy.exe"))) {
-                    requestFolder = false;
-                }
-            }
-            regKey.Close();
-        }
-        else
-        {
-            if (regKey.Create(HKEY_CURRENT_USER, _T("Software\\AOItemAssistant")) == ERROR_SUCCESS)
-            {
-                regKey.Close();
+                requestFolder = false;
             }
         }
 
@@ -70,11 +58,8 @@ std::tstring AOManager::getAOFolder() const
                 return _T("");
             }
 
-            if (regKey.Open(HKEY_CURRENT_USER, _T("Software\\AOItemAssistant"), KEY_ALL_ACCESS) == ERROR_SUCCESS)
-            {
-                regKey.SetStringValue(_T("AOPath"), AODir.string().c_str());
-                regKey.Close();
-            }
+            // Store the new AO directory in the settings
+            SettingsManager::instance().setValue(_T("AOPath"), AODir.string());
         }
 
         m_aofolder = AODir.string();

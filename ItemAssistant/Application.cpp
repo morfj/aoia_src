@@ -19,7 +19,7 @@ Application::~Application()
 bool Application::init(std::tstring const& cmdLine)
 {
     // Read stored settings from file.
-    aoia::SettingsManager::instance().readSettings(_T("aoia.conf"));
+    aoia::SettingsManager::instance().readSettings(_T("ItemAssistant.conf"));
 
     // Check to see if logging should be enabled
     if (cmdLine.find(_T("-log")) != std::tstring::npos) {
@@ -51,7 +51,7 @@ bool Application::init(std::tstring const& cmdLine)
 void Application::destroy()
 {
     // Save user settings.
-    aoia::SettingsManager::instance().writeSettings(_T("aoia.conf"));
+    aoia::SettingsManager::instance().writeSettings(_T("ItemAssistant.conf"));
 
     g_DBManager.lock();
     g_DBManager.destroy();
