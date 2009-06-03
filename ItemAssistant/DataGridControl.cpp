@@ -59,12 +59,7 @@ namespace aoia {
         NMLVDISPINFO *pdi = (NMLVDISPINFO*)lParam;
         if (pdi->item.mask & LVIF_TEXT) {
             std::tstring text = m_model->getItemProperty(pdi->item.iItem, pdi->item.iSubItem);
-            ZeroMemory(pdi->item.pszText, pdi->item.cchTextMax);
-            unsigned int len = text.length();
-#ifdef UNICODE
-            len = len * 2;
-#endif
-            memcpy(pdi->item.pszText, text.c_str(), len);
+            StrCpyN(pdi->item.pszText, text.c_str(), min(text.length(), pdi->item.cchTextMax));
         }
         return 0;
     }

@@ -99,7 +99,7 @@ LRESULT MFTreeView::OnGetDispInfo(int, LPNMHDR lParam, BOOL&)
       }
       if (lptvdi->item.mask & TVIF_TEXT)
       {
-         StrCpy(lptvdi->item.pszText, pItem->GetLabel().c_str());
+         StrCpyN(lptvdi->item.pszText, pItem->GetLabel().c_str(), lptvdi->item.cchTextMax);
       }
    }
    return 0;

@@ -63,6 +63,7 @@ Version 0.9.4                                       Release Date: ?/?/2009
     * Bug Fix: Fixed weird encoding of ampersands in backpack names.
     * Bug Fix: Exporting all items from a toon should not put multiple quotes
       around the backpack names any more.
+    * Bug Fix: Fixed buffer overflow with long backpack names.
 
 Version 0.9.3                                        Release Date: 4/5/2009
     * Added support for NPC trade-in quest rewards in the item tracking.
