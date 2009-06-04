@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5" DefaultTargets="Deploy">
+
+    <!--<UsingTask TaskName="MFTasks.SetEnvVar" AssemblyFile="MFTasks.dll" />-->
+    
+    <ItemGroup>
+        <ProjectsToBuild Include="Shared/Shared.vcproj">
+            <Properties>Configuration=Release</Properties>
+        </ProjectsToBuild>
+        <ProjectsToBuild Include="AORipper/AORipper.vcproj">
+            <Properties>Configuration=Release</Properties>
+        </ProjectsToBuild>
+    </ItemGroup>
+
+    <!--<PropertyGroup>
+        <Include>$(MSBuildProjectDirectory);$(MSBuildProjectDirectory)\Externals;$(INCLUDE)</Include>
+        <Lib>$(MSBuildProjectDirectory)\Release;$(MSBuildProjectDirectory)\Externals\SQLite;$(MSBuildProjectDirectory)\Externals\boost_bin;$(LIB)</Lib>
+    </PropertyGroup>-->
+
+    <Target Name="Clean">
+        <Message Text="Cleaning" />
+        <VCBuild Projects="@(ProjectsToBuild)" Clean="true" />
+    </Target>
+
+    <Target Name="PrepareForBuild">
+        <Message Text="Preparing" />
+    </Target>
+
+    <Target Name="Build">
+        <Message Text="Building" />
+        <!--<SetEnvVar Variable="INCLUDE" Value="$(Include)" />
+        <SetEnvVar Variable="LIB" Value="$(Lib)" />-->
+        <VCBuild 
+            Projects="@(ProjectsToBuild)" 
+            Configuration="Release|Win32" 
+            SolutionFile="ItemAssistant.sln"
+            UseEnvironment="true" />
+    </Target>
+
+    <Target Name="Deploy" DependsOnTargets="PrepareForBuild;Build">
+        <Message Text="Packaging" />
+    </Target>
+
+</Project>
