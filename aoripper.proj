@@ -10,25 +10,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectsToBuild Include="Shared/Shared.vcproj">
-            <Properties>Configuration=Release</Properties>
-        </ProjectsToBuild>
-        <ProjectsToBuild Include="AORipper/AORipper.vcproj">
-            <Properties>Configuration=Release</Properties>
-        </ProjectsToBuild>
+        <ProjectsToBuild Include="Shared/Shared.vcproj" />
+        <ProjectsToBuild Include="AORipper/AORipper.vcproj" />
     </ItemGroup>
 
-    <!--<PropertyGroup>
-        <Include>$(MSBuildProjectDirectory);$(MSBuildProjectDirectory)\Externals;$(INCLUDE)</Include>
-        <Lib>$(MSBuildProjectDirectory)\Release;$(MSBuildProjectDirectory)\Externals\SQLite;$(MSBuildProjectDirectory)\Externals\boost_bin;$(LIB)</Lib>
-    </PropertyGroup>-->
-
-    <Target Name="Clean">
+    <Target Name="clean">
         <Message Text="Cleaning" />
-        <VCBuild Projects="@(ProjectsToBuild)" Clean="true" />
+        <VCBuild
+            Projects="@(ProjectsToBuild)"
+            Configuration="Release|Win32"
+            SolutionFile="ItemAssistant.sln"
+            Clean="true" />
     </Target>
 
-    <Target Name="PrepareForBuild">
+    <Target Name="prepare_build">
         <Message Text="Preparing" />
         <ItemGroup>
             <OldOutputFiles Include="Release/AORipper*.zip" />
@@ -36,10 +31,8 @@
         <Delete Files="@(OldOutputFiles)" />
     </Target>
 
-    <Target Name="Build">
+    <Target Name="build">
         <Message Text="Building" />
-        <!--<SetEnvVar Variable="INCLUDE" Value="$(Include)" />
-        <SetEnvVar Variable="LIB" Value="$(Lib)" />-->
         <VCBuild 
             Projects="@(ProjectsToBuild)" 
             Configuration="Release|Win32" 
@@ -47,7 +40,7 @@
             UseEnvironment="true" />
     </Target>
 
-    <Target Name="Deploy" DependsOnTargets="PrepareForBuild;Build">
+    <Target Name="package" DependsOnTargets="prepare_build;build">
         <Message Text="Packaging" />
         <ItemGroup>
             <AORipperFiles Include="Release/AORipper.exe" />
