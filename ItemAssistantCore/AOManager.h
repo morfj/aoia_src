@@ -4,8 +4,8 @@
 #include <ItemAssistantCore/ItemAssistantCore.h>
 #include <Shared/UnicodeSupport.h>
 #include <Shared/Singleton.h>
-#include <vector>
 #include <exception>
+#include <vector>
 
 
 class ITEMASSISTANTCORE_API AOManager
@@ -22,6 +22,16 @@ public:
     bool createAOItemsDB(std::tstring const& localfile, bool showProgress = true);
     std::tstring getCustomBackpackName(unsigned int charid, unsigned int containerid) const;
     std::vector<std::tstring> getAccountNames() const;
+
+    struct ITEMASSISTANTCORE_API DimensionInfo
+    {
+        std::vector<unsigned int> server_ip;
+        unsigned int server_port;
+        std::string name;
+        std::string description;
+    };
+
+    std::vector<DimensionInfo> getDimensions() const;
 
 private:
     mutable std::tstring m_aofolder;

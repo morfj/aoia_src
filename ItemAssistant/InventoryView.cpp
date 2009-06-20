@@ -527,37 +527,46 @@ LRESULT InventoryView::OnCreate(LPCREATESTRUCT createStruct)
         SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT DISTINCT dimensionid FROM tToons"));
         g_DBManager.unLock();
 
-        // Add named dimensions.
-        for (std::map<unsigned int, std::tstring>::iterator it = dimensionNames.begin(); it != dimensionNames.end(); ++it)
+        std::vector<AOManager::DimensionInfo> dimensions = AOManager::instance().getDimensions();
+
+        for (std::vector<AOManager::DimensionInfo>::iterator it = dimensions.begin();
+            it != dimensions.end(); ++it)
         {
-            boost::shared_ptr<DimensionNode> node(new DimensionNode(it->second, it->first, this));
-            m_dimensionNodes[it->second] = node;
+            boost::shared_ptr<DimensionNode> node(new DimensionNode(*it, this));
+            m_dimensionNodes[it->name] = node;
         }
 
-        // Add un-named dimensions.
-        for (unsigned int i = 0; i < pT->Rows(); ++i)
-        {
-            unsigned int dimId = boost::lexical_cast<unsigned int>(pT->Data(i, 0));
-            std::tstring dimName;
-            if (dimensionNames.find(dimId) != dimensionNames.end())
-            {
-                continue;   // Skip named ones.
-            }
-            else 
-            {
-                dimName = _T("Unknown Dimension");
-                if (dimId > 0)
-                {
-                    dimName += STREAM2STR(" (0x" << std::hex << dimId << ")");
-                }
-            }
+        //// Add named dimensions.
+        //for (std::map<unsigned int, std::tstring>::iterator it = dimensionNames.begin(); it != dimensionNames.end(); ++it)
+        //{
+        //    boost::shared_ptr<DimensionNode> node(new DimensionNode(it->second, it->first, this));
+        //    m_dimensionNodes[it->second] = node;
+        //}
 
-            boost::shared_ptr<DimensionNode> node(new DimensionNode(dimName, dimId, this));
-            m_dimensionNodes[dimName] = node;
-        }
+        //// Add un-named dimensions.
+        //for (unsigned int i = 0; i < pT->Rows(); ++i)
+        //{
+        //    unsigned int dimId = boost::lexical_cast<unsigned int>(pT->Data(i, 0));
+        //    std::tstring dimName;
+        //    if (dimensionNames.find(dimId) != dimensionNames.end())
+        //    {
+        //        continue;   // Skip named ones.
+        //    }
+        //    else 
+        //    {
+        //        dimName = _T("Unknown Dimension");
+        //        if (dimId > 0)
+        //        {
+        //            dimName += STREAM2STR(" (0x" << std::hex << dimId << ")");
+        //        }
+        //    }
+
+        //    boost::shared_ptr<DimensionNode> node(new DimensionNode(dimName, dimId, this));
+        //    m_dimensionNodes[dimName] = node;
+        //}
 
         // Add the tree-nodes.
-        for (std::map<std::tstring, boost::shared_ptr<DimensionNode> >::iterator it = m_dimensionNodes.begin(); it != m_dimensionNodes.end(); ++it)
+        for (std::map<std::string, boost::shared_ptr<DimensionNode> >::iterator it = m_dimensionNodes.begin(); it != m_dimensionNodes.end(); ++it)
         {
             m_treeview.addRootItem(it->second.get());
         }
@@ -1013,10 +1022,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
 			TRACE(npcAccept.print());
 
-			
-
-
-			//move rejected stuff back to inv:
+            //move rejected stuff back to inv:
 			unsigned int count = npcAccept.itemCount();
 			unsigned int newParent = AO::INV_TOONINV;
 			unsigned int shopContainer = AO::INV_TRADE;
@@ -1072,8 +1078,6 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
 			g_DBManager.Commit();
 			g_DBManager.unLock();
-
-
 		}
 		break;
 
@@ -2431,6 +2435,11 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
                 AO::MobInfo* pMobInfo = (AO::MobInfo*)msg.start();
                 std::string name(&(pMobInfo->characterName.str), pMobInfo->characterName.strLen - 1);
+
+                unsigned int ip = pMobInfo->header.server_ip;
+                unsigned int port = pMobInfo->header.server_port;
+
+                TRACE("server and port: " << ip << " " << port);
 
                 // Assuming server ID contains dimension ID in highbyte.
                 unsigned int dimensionid = (_byteswap_ulong(pMobInfo->header.serverid) & 0x0000FF00) >> 8;

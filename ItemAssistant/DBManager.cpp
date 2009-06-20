@@ -11,7 +11,7 @@
 
 namespace bfs = boost::filesystem;
 
-#define CURRENT_DB_VERSION 4
+#define CURRENT_DB_VERSION 5
 
 /*********************************************************/
 /* DB Manager Implementation                             */
@@ -381,21 +381,21 @@ unsigned int DBManager::getToonDimension(unsigned int charid) const
 }
 
 
-bool DBManager::getDimensions(std::map<unsigned int, std::tstring> &dimensions) const
-{
-    SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR("SELECT dimensionid, dimensionname FROM tDimensions"));
-
-    if (pT != NULL && pT->Rows())
-    {
-        for (unsigned int i = 0; i < pT->Rows(); ++i)
-        {
-            std::tstring name = from_ascii_copy(pT->Data(i, 1));
-            dimensions[boost::lexical_cast<unsigned int>(pT->Data(i, 0))] = name;
-        }
-        return true;
-    }
-    return false;
-}
+//bool DBManager::getDimensions(std::map<unsigned int, std::tstring> &dimensions) const
+//{
+//    SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR("SELECT dimensionid, dimensionname FROM tDimensions"));
+//
+//    if (pT != NULL && pT->Rows())
+//    {
+//        for (unsigned int i = 0; i < pT->Rows(); ++i)
+//        {
+//            std::tstring name = from_ascii_copy(pT->Data(i, 1));
+//            dimensions[boost::lexical_cast<unsigned int>(pT->Data(i, 0))] = name;
+//        }
+//        return true;
+//    }
+//    return false;
+//}
 
 
 unsigned int DBManager::findNextAvailableContainerSlot(unsigned int charId, unsigned int containerId)
@@ -665,6 +665,22 @@ void DBManager::updateDBVersion(unsigned int fromVersion) const
             Exec(_T("INSERT INTO tToons2 (charid, charname, shopid) SELECT charid, charname, shopid FROM tToons"));
             Exec(_T("DROP TABLE tToons"));
             Exec(_T("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0', dimensionid INTEGER DEFAULT '0')"));
+            Exec(_T("INSERT INTO tToons (charid, charname, shopid) SELECT charid, charname, shopid FROM tToons2"));
+            Exec(_T("DROP TABLE tToons2"));
+            Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));
+            Exec(_T("DROP VIEW vSchemeVersion"));
+            Exec(_T("CREATE VIEW vSchemeVersion AS SELECT '4' AS Version"));
+            Commit();
+        }
+        // Dropthrough
+
+    case 4: // Update from v4 is the removal of the Dimension table, and change from dimensionid to server IP and port numbers.
+        {
+            Exec(_T("DROP TABLE tDimensions"));
+            Exec(_T("CREATE TABLE tToons2 (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0', serverip INTEGER DEFAULT '0', serverport INTEGER DEFAULT '0')"));
+            Exec(_T("INSERT INTO tToons2 (charid, charname, shopid) SELECT charid, charname, shopid FROM tToons"));
+            Exec(_T("DROP TABLE tToons"));
+            Exec(_T("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0', serverip INTEGER DEFAULT '0', serverport INTEGER DEFAULT '0')"));
             Exec(_T("INSERT INTO tToons (charid, charname, shopid) SELECT charid, charname, shopid FROM tToons2"));
             Exec(_T("DROP TABLE tToons2"));
             Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));

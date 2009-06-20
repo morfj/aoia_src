@@ -62,7 +62,7 @@ public:
     unsigned int getToonDimension(unsigned int charid) const;
 
     /// Retrieves all the dimension IDs and their descriptions. Returns false if query failed.
-    bool getDimensions(std::map<unsigned int, std::tstring> &dimensions) const;
+    //bool getDimensions(std::map<unsigned int, std::tstring> &dimensions) const;
 
     /// Determines the first available container slot ID for a specified character and container.
     unsigned int findNextAvailableContainerSlot(unsigned int charId, unsigned int containerId);

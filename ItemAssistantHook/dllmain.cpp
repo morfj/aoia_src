@@ -7,6 +7,7 @@
 #include <set>
 #include <boost/smart_ptr.hpp>
 #include <boost/thread.hpp>
+#include <boost/algorithm/string.hpp>
 #include "DataQueue.h"
 
 enum MessageType {
@@ -21,6 +22,9 @@ Message_t* ( * pOriginalDataBlockToMessage )( int _Size, void* _pDataBlock );
 PVOID Func;
 
 void LoadMessageFilter(HKEY hKeyParent, LPCTSTR lpszKeyName);
+
+unsigned int dimension_server_ip = 0;
+unsigned int dimension_server_port = 0;
 
 DWORD g_lastTick = 0;
 DWORD g_lastThreadTick = 0;
@@ -114,7 +118,7 @@ Message_t* DataBlockToMessageHook( int _Size, void* _pDataBlock )
 
     if (g_messageFilter.size() == 0 || g_messageFilter.find(msgId) != g_messageFilter.end())
     {
-        DataItemPtr item(new DataItem(TYPE_INCOMING, _Size, (char*)_pDataBlock));
+        DataItemPtr item(new DataItem(TYPE_INCOMING, _Size, (char*)_pDataBlock, dimension_server_ip, dimension_server_port));
         g_dataQueue.push(item);
         SetEvent(g_hEvent);
     }
@@ -190,7 +194,7 @@ void OnConnectionSend(void * connection, unsigned char * _msgData, unsigned int 
     OutputDebugString(s.str().c_str());
 #endif
 
-    DataItemPtr item(new DataItem(TYPE_OUTGOIING, len, (char*)_msgData));
+    DataItemPtr item(new DataItem(TYPE_OUTGOIING, len, (char*)_msgData, dimension_server_ip, dimension_server_port));
     g_dataQueue.push(item);
     SetEvent(g_hEvent);
 }
@@ -232,6 +236,21 @@ __declspec(naked) void SendConnectionHook (CPU_CONTEXT saved_regs, void * ret_ad
 
 int ProcessAttach( HINSTANCE _hModule )
 {
+    // Determine dimension server and port the client connected to.
+    std::string cmdLine = GetCommandLine();
+
+#ifdef DEBUG
+    OutputDebugString("CommandLine: ");
+    OutputDebugString(cmdLine.c_str());
+#endif
+
+    if (cmdLine.length() > 0)
+    {
+        std::istringstream ss(cmdLine);
+        std::string tmp;
+        ss >> tmp >> tmp >> tmp >> tmp >> dimension_server_ip >> dimension_server_port;
+    }
+
     // Hook ::DataBlockToMessage() (incoming)
     pOriginalDataBlockToMessage = (Message_t *(__cdecl*)(int,void*))::GetProcAddress(::GetModuleHandle("MessageProtocol.dll"), "?DataBlockToMessage@@YAPAVMessage_t@@IPAX@Z");
 

@@ -1,9 +1,10 @@
-#pragma once
+#ifndef INVTREEITEMS_H
+#define INVTREEITEMS_H
 
 #include "MFTreeView.h"
 #include "DBManager.h"
 #include <strstream>
-
+#include <ItemAssistantCore/AOManager.h>
 
 class InventoryView;
 
@@ -83,7 +84,7 @@ class DimensionNode
     : public SqlTreeViewItemBase
 {
 public:
-    DimensionNode(std::tstring const& label, unsigned int dimensionid, InventoryView* pOwner = NULL);
+    DimensionNode(AOManager::DimensionInfo dimension, InventoryView* pOwner = NULL);
     virtual ~DimensionNode();
 
     virtual void OnSelected();
@@ -94,7 +95,13 @@ public:
     virtual bool SortChildren() const { return true; }
     virtual bool HasChildren() const;
 
+protected:
+    std::tstring GetSqlQuery() const;
+
 private:
     std::tstring m_label;
-    unsigned int m_dimensionid;
+    AOManager::DimensionInfo m_dimension;
 };
+
+
+#endif // INVTREEITEMS_H

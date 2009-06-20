@@ -377,10 +377,10 @@ bool CharacterTreeViewItem::HandleMenuCmd(unsigned int commandID, WTL::CTreeItem
 /** Dimension Node                                                        **/
 /***************************************************************************/
 
-DimensionNode::DimensionNode(std::tstring const& label, unsigned int dimensionid, InventoryView* pOwner)
+DimensionNode::DimensionNode(AOManager::DimensionInfo dimension, InventoryView* pOwner)
     : SqlTreeViewItemBase(pOwner)
-    , m_label(label)
-    , m_dimensionid(dimensionid)
+    , m_label(from_ascii_copy(dimension.description))
+    , m_dimension(dimension)
 {
 }
 
@@ -401,7 +401,7 @@ std::vector<MFTreeViewItem*> DimensionNode::GetChildren() const
 
     // Get list of toons for this dimension from the DB
     g_DBManager.lock();
-    SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR("SELECT charid FROM tToons WHERE dimensionid=" << m_dimensionid));
+    SQLite::TablePtr pT = g_DBManager.ExecTable(GetSqlQuery());
     g_DBManager.unLock();
 
     if (pT != NULL)
@@ -420,7 +420,7 @@ std::vector<MFTreeViewItem*> DimensionNode::GetChildren() const
 bool DimensionNode::HasChildren() const
 {
     g_DBManager.lock();
-    SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR("SELECT COUNT(charid) FROM tToons WHERE dimensionid=" << m_dimensionid));
+    SQLite::TablePtr pT = g_DBManager.ExecTable(GetSqlQuery());
     g_DBManager.unLock();
 
     if (pT != NULL && pT->Rows() > 0)
@@ -429,4 +429,21 @@ bool DimensionNode::HasChildren() const
     }
 
     return false;
+}
+
+
+std::tstring DimensionNode::GetSqlQuery() const
+{
+    std::tostringstream ips;
+    for (std::vector<unsigned int>::const_iterator it = m_dimension.server_ip.begin(); it != m_dimension.server_ip.end(); ++it)
+    {
+        if (it != m_dimension.server_ip.begin())
+        {
+            ips << _T(", ");
+        }
+        ips << *it;
+    }
+
+    return STREAM2STR("SELECT charid FROM tToons WHERE serverport="
+        << m_dimension.server_port << " AND serverip IN (" << ips.str() << ")");
 }

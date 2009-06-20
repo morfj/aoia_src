@@ -2,12 +2,14 @@
 #include "DataQueue.h"
 
 
-DataItem::DataItem(unsigned long _type, unsigned int _size, char* _data)
+DataItem::DataItem(unsigned long _type, unsigned int _size, char* _data, unsigned int ip, unsigned int port)
     : m_type(_type)
-    , m_size(_size)
+    , m_size(_size + sizeof(unsigned int) * 2)
 {
-    m_data.reset(new char[_size]);
-    memcpy(m_data.get(), _data, _size);
+    m_data.reset(new char[m_size]);
+    memcpy(m_data.get(), &ip, sizeof(unsigned int));
+    memcpy(m_data.get() + sizeof(unsigned int), &port, sizeof(unsigned int));
+    memcpy(m_data.get() + sizeof(unsigned int) * 2, _data, _size);
 }
 
 
