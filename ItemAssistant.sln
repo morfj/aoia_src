@@ -41,11 +41,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Setup", "Setup\Setup.vcproj
 		{93E190D1-3E5B-4B19-BE87-5A820D7A8B14} = {93E190D1-3E5B-4B19-BE87-5A820D7A8B14}
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{616E01AE-991D-435A-8B5E-9C0DE32CFA12}"
-	ProjectSection(SolutionItems) = preProject
-		aoripper.proj = aoripper.proj
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32

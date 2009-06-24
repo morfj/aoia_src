@@ -163,7 +163,7 @@ void FindView::UpdateFindQuery()
         charid = (unsigned int)cb.GetItemData(item);
     }
 
-    int dimension_id = -1;
+    unsigned int dimension_id = 0;
     item = -1;
     if ((item = dimension_combo.GetCurSel()) != CB_ERR)
     {
@@ -209,48 +209,30 @@ void FindView::UpdateFindQuery()
         m_lastQueryQlMin = minql;
         m_lastQueryQlMax = maxql;
         m_lastQueryDimension = dimension_id;
-        std::ostringstream sql;
+        std::tstringstream sql;
 
         if (charid > 0) {
-            sql << "I.owner = " << charid << " AND ";
+            sql << _T("I.owner = ") << charid << _T(" AND ");
         }
-        else if (dimension_id > -1)
+        else
         {
-            sql << CreateSqlPredicate(m_dimensions[dimension_id]) << " AND ";
+            sql << _T("T.dimensionid = ") << dimension_id << _T(" AND ");
         }
         if (minql > -1) {
-            sql << "I.ql >= " << minql << " AND ";
+            sql << _T("I.ql >= ") << minql << _T(" AND ");
         }
         if (maxql > -1) {
-            sql << "I.ql <= " << maxql << " AND ";
+            sql << _T("I.ql <= ") << maxql << _T(" AND ");
         }
 
-        sql << "keylow IN (SELECT aoid FROM aodb.tblAO WHERE name LIKE \"%" << to_ascii_copy(text) << "%\")";
+        sql << _T("keylow IN (SELECT aoid FROM aodb.tblAO WHERE name LIKE \"%") << text << _T("%\")");
 
-        m_pParent->UpdateListView(from_ascii_copy(sql.str()));
+        m_pParent->UpdateListView(sql.str());
     }
 }
 
 
-std::string FindView::CreateSqlPredicate(AOManager::DimensionInfo const& dimension) const
-{
-    std::ostringstream ips;
-    for (std::vector<unsigned int>::const_iterator it = dimension.server_ip.begin(); it != dimension.server_ip.end(); ++it)
-    {
-        if (it != dimension.server_ip.begin())
-        {
-            ips << ", ";
-        }
-        ips << *it;
-    }
-
-    std::ostringstream sql;
-    sql << "T.serverport=" << dimension.server_port << " AND T.serverip IN (" << ips.str() << ")";
-    return sql.str();
-}
-
-
-void FindView::updateCharList(int dimension_id)
+void FindView::updateCharList(unsigned int dimension_id)
 {
     CComboBox cb = GetDlgItem(IDC_CHARCOMBO);
 
@@ -258,13 +240,8 @@ void FindView::updateCharList(int dimension_id)
     int item = cb.AddString(_T("-"));
     cb.SetItemData(item, 0);
 
-    std::ostringstream sql;
-    sql << "SELECT DISTINCT owner FROM tItems I JOIN tToons T ON I.owner = T.charid ";
-    if (dimension_id > -1)
-    {
-        sql << "WHERE " << CreateSqlPredicate(m_dimensions[dimension_id]);
-    }
-    sql << " ORDER BY T.charname";
+    boost::format sql("SELECT DISTINCT owner FROM tItems I JOIN tToons T ON I.owner = T.charid WHERE dimensionid = %1% ORDER BY T.charname");
+    sql % dimension_id;
 
     g_DBManager.lock();
     SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());
@@ -301,20 +278,42 @@ void FindView::updateDimensionList()
     CComboBox cb = GetDlgItem(IDC_DIMENSION_COMBO);
     cb.ResetContent();
 
-    m_dimensions = AOManager::instance().getDimensions();
+    std::map<unsigned int, std::tstring> dimensionNames;
+    g_DBManager.lock();
+    g_DBManager.getDimensions(dimensionNames);
+    SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT DISTINCT dimensionid FROM tToons"));
+    g_DBManager.unLock();
 
-    for (unsigned int i = 0; i < m_dimensions.size(); ++i)
+    // Add named dimensions.
+    for (std::map<unsigned int, std::tstring>::iterator it = dimensionNames.begin(); it != dimensionNames.end(); ++it)
     {
-        item = cb.AddString(from_ascii_copy(m_dimensions[i].description).c_str());
-        if (item != CB_ERR)
+        if ((item = cb.AddString(it->second.c_str())) != CB_ERR)
         {
-            cb.SetItemData(item, i);
+            cb.SetItemData(item, it->first);
         }
     }
 
-    item = cb.AddString(_T("-"));
-    if (item != CB_ERR)
+    // Add un-named dimensions.
+    for (unsigned int i = 0; i < pT->Rows(); ++i)
     {
-        cb.SetItemData(item, -1);
+        unsigned int dimId = boost::lexical_cast<unsigned int>(pT->Data(i, 0));
+        std::tstring dimName;
+        if (dimensionNames.find(dimId) != dimensionNames.end())
+        {
+            continue;   // Skip named ones.
+        }
+        else 
+        {
+            dimName = _T("Unknown Dimension");
+            if (dimId > 0)
+            {
+                dimName += STREAM2STR(" (0x" << std::hex << dimId << ")");
+            }
+        }
+
+        if ((item = cb.AddString(dimName.c_str())) != CB_ERR)
+        {
+            cb.SetItemData(item, dimId);
+        }
     }
 }

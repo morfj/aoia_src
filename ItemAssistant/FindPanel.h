@@ -1,9 +1,6 @@
 #ifndef FINDPANEL_H
 #define FINDPANEL_H
 
-#include <ItemAssistantCore/AOManager.h>
-
-
 // Forward declarations
 class InventoryView;
 
@@ -51,11 +48,8 @@ public:
 
 protected:
     virtual void UpdateFindQuery();
-    void updateCharList(int dimension_id);
+    void updateCharList(unsigned int dimension_id);
     void updateDimensionList();
-
-    /// Creates a SQL predicate string given a specific dimension info struct.
-    std::string CreateSqlPredicate(AOManager::DimensionInfo const& dimension) const;
 
 private:
     InventoryView* m_pParent;
@@ -64,7 +58,6 @@ private:
     int m_lastQueryQlMin;
     int m_lastQueryQlMax;
     unsigned int m_lastQueryDimension;
-    std::vector<AOManager::DimensionInfo> m_dimensions;
 };
 
 #endif // FINDPANEL_H

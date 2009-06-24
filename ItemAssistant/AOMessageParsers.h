@@ -57,8 +57,6 @@ namespace Native {
     public:
         AOMessageHeader(AO::Header *pHeader, bool bIsFromServer) : m_pHeader(pHeader) { m_bIsFromServer = bIsFromServer; }
 
-        unsigned int serverip() const { return m_pHeader->server_ip; }
-        unsigned int serverport() const { return m_pHeader->server_port; }
         unsigned int msgid()    const { return _byteswap_ulong(m_pHeader->msgid); }
         unsigned int serverid() const { return _byteswap_ulong(m_pHeader->serverid); }
         unsigned int charid()   const { if (m_bIsFromServer) return _byteswap_ulong(m_pHeader->charid); else return _byteswap_ulong(m_pHeader->target.high);}
@@ -646,9 +644,6 @@ namespace Parsers {
             , m_messageid(0)
             , m_entityid(0)
         {
-            unsigned int ip = popInteger();
-            unsigned int port = popInteger();
-
             // Parse and validate header
             unsigned int t = popInteger();
             if (t == 0xDFDF000A) {

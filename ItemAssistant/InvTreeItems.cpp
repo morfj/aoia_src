@@ -377,10 +377,10 @@ bool CharacterTreeViewItem::HandleMenuCmd(unsigned int commandID, WTL::CTreeItem
 /** Dimension Node                                                        **/
 /***************************************************************************/
 
-DimensionNode::DimensionNode(AOManager::DimensionInfo const& dimension, InventoryView* pOwner)
+DimensionNode::DimensionNode(std::tstring const& label, unsigned int dimensionid, InventoryView* pOwner)
     : SqlTreeViewItemBase(pOwner)
-    , m_label(from_ascii_copy(dimension.description))
-    , m_dimension(dimension)
+    , m_label(label)
+    , m_dimensionid(dimensionid)
 {
 }
 
@@ -401,7 +401,7 @@ std::vector<MFTreeViewItem*> DimensionNode::GetChildren() const
 
     // Get list of toons for this dimension from the DB
     g_DBManager.lock();
-    SQLite::TablePtr pT = g_DBManager.ExecTable(GetSqlQuery());
+    SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR("SELECT charid FROM tToons WHERE dimensionid=" << m_dimensionid));
     g_DBManager.unLock();
 
     if (pT != NULL)
@@ -420,7 +420,7 @@ std::vector<MFTreeViewItem*> DimensionNode::GetChildren() const
 bool DimensionNode::HasChildren() const
 {
     g_DBManager.lock();
-    SQLite::TablePtr pT = g_DBManager.ExecTable(GetSqlQuery());
+    SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR("SELECT COUNT(charid) FROM tToons WHERE dimensionid=" << m_dimensionid));
     g_DBManager.unLock();
 
     if (pT != NULL && pT->Rows() > 0)
@@ -429,109 +429,4 @@ bool DimensionNode::HasChildren() const
     }
 
     return false;
-}
-
-
-std::tstring DimensionNode::GetSqlQuery() const
-{
-    std::tostringstream ips;
-    for (std::vector<unsigned int>::const_iterator it = m_dimension.server_ip.begin(); it != m_dimension.server_ip.end(); ++it)
-    {
-        if (it != m_dimension.server_ip.begin())
-        {
-            ips << _T(", ");
-        }
-        ips << *it;
-    }
-
-    return STREAM2STR("SELECT charid FROM tToons WHERE serverport="
-        << m_dimension.server_port << " AND serverip IN (" << ips.str() << ")");
-}
-
-
-/************************************************************************/
-/* Unknown Dimensions Node                                              */
-/************************************************************************/
-
-UnknownDimensionsNode::UnknownDimensionsNode(InventoryView* pOwner)
-    : SqlTreeViewItemBase(pOwner)
-    , m_label(_T("Unknown"))
-{
-}
-
-
-UnknownDimensionsNode::~UnknownDimensionsNode()
-{
-
-}
-
-
-void UnknownDimensionsNode::OnSelected()
-{
-
-}
-
-
-std::vector<MFTreeViewItem*> UnknownDimensionsNode::GetChildren() const
-{
-    std::vector<MFTreeViewItem*> result;
-
-    // Get list of toons for this dimension from the DB
-    g_DBManager.lock();
-    SQLite::TablePtr pT = g_DBManager.ExecTable(GetSqlQuery());
-    g_DBManager.unLock();
-
-    if (pT != NULL)
-    {
-        for (size_t i = 0; i < pT->Rows(); ++i)
-        {
-            unsigned int charId = boost::lexical_cast<unsigned int>(pT->Data(i,0));
-            result.push_back(new CharacterTreeViewItem(m_pOwner, charId));
-        }
-    }
-
-    return result;
-}
-
-
-bool UnknownDimensionsNode::HasChildren() const
-{
-    g_DBManager.lock();
-    SQLite::TablePtr pT = g_DBManager.ExecTable(GetSqlQuery());
-    g_DBManager.unLock();
-
-    if (pT != NULL && pT->Rows() > 0)
-    {
-        return boost::lexical_cast<unsigned int>(pT->Data(0,0)) > 0 ? true : false;
-    }
-
-    return false;
-}
-
-
-std::tstring UnknownDimensionsNode::GetSqlQuery() const
-{
-    std::ostringstream sql;
-    sql << "SELECT charid FROM tToons WHERE ";
-
-    std::vector<AOManager::DimensionInfo> dimensions = AOManager::instance().getDimensions();
-    for (std::vector<AOManager::DimensionInfo>::iterator dimIt = dimensions.begin(); dimIt != dimensions.end(); ++dimIt)
-    {
-        if (dimIt != dimensions.begin())
-        {
-            sql << " AND ";
-        }
-        std::ostringstream subsql;
-        for (std::vector<unsigned int>::const_iterator it = dimIt->server_ip.begin(); it != dimIt->server_ip.end(); ++it)
-        {
-            if (it != dimIt->server_ip.begin())
-            {
-                subsql << ", ";
-            }
-            subsql << *it;
-        }
-        sql << " NOT (serverport=" << dimIt->server_port << " AND serverip IN (" << subsql.str() << ")) ";
-    }
-
-    return from_ascii_copy(sql.str());
 }

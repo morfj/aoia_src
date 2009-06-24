@@ -55,8 +55,6 @@ namespace AO {
     */
     struct Header
     {
-        unsigned int    server_ip;      // Custom data prefixed by hook.
-        unsigned int    server_port;    // Custom data prefixed by hook.
         unsigned int	headerid;	// 0xDFDF000A
         unsigned short	unknown1;	// 0x0001		protocol version?
         unsigned short	msgsize;	//				size incl header

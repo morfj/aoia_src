@@ -1,10 +1,9 @@
-#ifndef INVTREEITEMS_H
-#define INVTREEITEMS_H
+#pragma once
 
 #include "MFTreeView.h"
 #include "DBManager.h"
 #include <strstream>
-#include <ItemAssistantCore/AOManager.h>
+
 
 class InventoryView;
 
@@ -84,7 +83,7 @@ class DimensionNode
     : public SqlTreeViewItemBase
 {
 public:
-    DimensionNode(AOManager::DimensionInfo const& dimension, InventoryView* pOwner = NULL);
+    DimensionNode(std::tstring const& label, unsigned int dimensionid, InventoryView* pOwner = NULL);
     virtual ~DimensionNode();
 
     virtual void OnSelected();
@@ -95,35 +94,7 @@ public:
     virtual bool SortChildren() const { return true; }
     virtual bool HasChildren() const;
 
-protected:
-    std::tstring GetSqlQuery() const;
-
 private:
     std::tstring m_label;
-    AOManager::DimensionInfo m_dimension;
+    unsigned int m_dimensionid;
 };
-
-
-class UnknownDimensionsNode
-    : public SqlTreeViewItemBase
-{
-public:
-    UnknownDimensionsNode(InventoryView* pOwner = NULL);
-    virtual ~UnknownDimensionsNode();
-
-    virtual void OnSelected();
-    virtual bool CanEdit() const { return false; }
-    virtual bool CanDelete() const { return false; }
-    virtual std::tstring GetLabel() const { return m_label; }
-    virtual std::vector<MFTreeViewItem*> GetChildren() const;
-    virtual bool SortChildren() const { return true; }
-    virtual bool HasChildren() const;
-
-protected:
-    std::tstring GetSqlQuery() const;
-
-private:
-    std::tstring m_label;
-};
-
-#endif // INVTREEITEMS_H

@@ -1,11 +1,9 @@
 #include "StdAfx.h"
 #include "AOManager.h"
 #include <boost/filesystem.hpp>
-#include <boost/algorithm/string.hpp>
 #include <Shared/UnicodeSupport.h>
 #include <Shared/FileUtils.h>
 #include <ItemAssistantCore/SettingsManager.h>
-#include "NetUtils.h"
 
 
 namespace bfs = boost::filesystem;
@@ -17,8 +15,6 @@ SINGLETON_IMPL(AOManager);
 
 AOManager::AOManager()
 {
-    WSADATA wsaData;
-    WSAStartup(MAKEWORD(2, 2), &wsaData);
 }
 
 
@@ -101,88 +97,29 @@ std::vector<std::tstring> AOManager::getAccountNames() const
         }
     }
 
+
+
+    //std::tstring path = getAOFolder();
+    //path += _T("\\Prefs\\*");
+
+    //WIN32_FIND_DATA findData;
+
+    //HANDLE hFind = FindFirstFileEx(path.c_str(), FindExInfoStandard, &findData, FindExSearchLimitToDirectories, NULL, 0);
+
+    //if (hFind != INVALID_HANDLE_VALUE)
+    //{
+    //    do
+    //    {
+    //        if ((findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) 
+    //            && (findData.cFileName[0] != NULL) 
+    //            && (findData.cFileName[0] != '.'))
+    //        {
+    //            result.push_back(std::tstring(findData.cFileName));
+    //        }
+    //    }
+    //    while (FindNextFile(hFind, &findData));
+    //    FindClose(hFind);
+    //}
+
     return result;
-}
-
-
-std::vector<AOManager::DimensionInfo> AOManager::getDimensions() const
-{
-    std::vector<AOManager::DimensionInfo> retval;
-
-    bfs::path dimensionFile(to_ascii_copy(getAOFolder()));
-    dimensionFile /= "cd_image/data/launcher/dimensions.txt";
-
-    if (!bfs::exists(dimensionFile))
-    {
-        return retval;
-    }
-
-    std::ifstream ifs(dimensionFile.string().c_str());
-    if (!ifs.is_open())
-    {
-        return retval;
-    }
-
-    DimensionInfo dimension;
-    char buffer[1024];
-    while (!ifs.eof())
-    {
-        ifs.getline(buffer, 1024, '\n');
-        std::string line(buffer);
-        if (line.length() < 3)
-        {
-            continue;
-        }
-        if (line[0] == '#')
-        {
-            continue;
-        }
-        if (line == "STARTINFO")
-        {
-            dimension.description = "";
-            dimension.name = "";
-            dimension.server_port = 0;
-            dimension.server_ip.clear();
-            continue;
-        }
-        if (line == "ENDINFO")
-        {
-            retval.push_back(dimension);
-            continue;
-        }
-        size_t splitpos = line.find("=");
-        if (splitpos == std::string::npos)
-        {
-            continue;
-        }
-
-        std::string left = line.substr(0, splitpos);
-        std::string right = line.substr(splitpos + 1);
-
-        boost::algorithm::trim(left);
-        boost::algorithm::trim(right);
-
-        if (left == "displayname")
-        {
-            dimension.description = right;
-            continue;
-        }
-        if (left == "description")
-        {
-            dimension.name = right;
-            continue;
-        }
-        if (left == "connect")
-        {
-            dimension.server_ip = NetUtils::LookupHost(right);
-            continue;
-        }
-        if (left == "ports")
-        {
-            dimension.server_port = atoi(right.c_str());
-            continue;
-        }
-    }
-
-    return retval;
 }
