@@ -54,8 +54,8 @@ namespace PatternMatcher {
 
         std::map<unsigned int, std::tstring> dimensionNames;
         g_DBManager.lock();
-        g_DBManager.getDimensions(dimensionNames);
-        SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT DISTINCT dimensionid FROM tToons"));
+        //g_DBManager.getDimensions(dimensionNames);
+        SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT DISTINCT serverip FROM tToons"));
         g_DBManager.unLock();
 
         // Add named dimensions.

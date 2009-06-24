@@ -143,7 +143,7 @@ private:
 
     CAccelerator m_accelerators;
 
-    std::map<std::string, boost::shared_ptr<DimensionNode> > m_dimensionNodes;
+    std::map<std::string, boost::shared_ptr<MFTreeViewItem> > m_dimensionNodes;
 
     bool  m_sortDesc;
     int   m_sortColumn;

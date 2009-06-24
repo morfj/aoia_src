@@ -84,7 +84,7 @@ class DimensionNode
     : public SqlTreeViewItemBase
 {
 public:
-    DimensionNode(AOManager::DimensionInfo dimension, InventoryView* pOwner = NULL);
+    DimensionNode(AOManager::DimensionInfo const& dimension, InventoryView* pOwner = NULL);
     virtual ~DimensionNode();
 
     virtual void OnSelected();
@@ -103,5 +103,27 @@ private:
     AOManager::DimensionInfo m_dimension;
 };
 
+
+class UnknownDimensionsNode
+    : public SqlTreeViewItemBase
+{
+public:
+    UnknownDimensionsNode(InventoryView* pOwner = NULL);
+    virtual ~UnknownDimensionsNode();
+
+    virtual void OnSelected();
+    virtual bool CanEdit() const { return false; }
+    virtual bool CanDelete() const { return false; }
+    virtual std::tstring GetLabel() const { return m_label; }
+    virtual std::vector<MFTreeViewItem*> GetChildren() const;
+    virtual bool SortChildren() const { return true; }
+    virtual bool HasChildren() const;
+
+protected:
+    std::tstring GetSqlQuery() const;
+
+private:
+    std::tstring m_label;
+};
 
 #endif // INVTREEITEMS_H

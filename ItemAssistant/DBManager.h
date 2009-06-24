@@ -55,11 +55,11 @@ public:
     /// Retrieves the recorded (if any) character ID associated with the specified shop ID.
     unsigned int getShopOwner(unsigned int shopid);
 
-    /// Assign a dimension ID to a specified character.
-    void setToonDimension(unsigned int charid, unsigned int dimensionid);
+    /// Assign a server IP and port number to a specified character.
+    void setToonDimension(unsigned int charid, unsigned int serverip, unsigned int serverport);
 
-    /// Retrieves the dimension a character belongs to. 0 means dimension is unknown.
-    unsigned int getToonDimension(unsigned int charid) const;
+    /// Retrieves the server IP and port as a pair the specified toon belongs to.
+    std::pair<unsigned int, unsigned int> getToonDimension(unsigned int charid) const;
 
     /// Retrieves all the dimension IDs and their descriptions. Returns false if query failed.
     //bool getDimensions(std::map<unsigned int, std::tstring> &dimensions) const;

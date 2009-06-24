@@ -521,12 +521,6 @@ LRESULT InventoryView::OnCreate(LPCREATESTRUCT createStruct)
 
     // Populate the tree-view
     {
-        std::map<unsigned int, std::tstring> dimensionNames;
-        g_DBManager.lock();
-        g_DBManager.getDimensions(dimensionNames);
-        SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT DISTINCT dimensionid FROM tToons"));
-        g_DBManager.unLock();
-
         std::vector<AOManager::DimensionInfo> dimensions = AOManager::instance().getDimensions();
 
         for (std::vector<AOManager::DimensionInfo>::iterator it = dimensions.begin();
@@ -536,45 +530,16 @@ LRESULT InventoryView::OnCreate(LPCREATESTRUCT createStruct)
             m_dimensionNodes[it->name] = node;
         }
 
-        //// Add named dimensions.
-        //for (std::map<unsigned int, std::tstring>::iterator it = dimensionNames.begin(); it != dimensionNames.end(); ++it)
-        //{
-        //    boost::shared_ptr<DimensionNode> node(new DimensionNode(it->second, it->first, this));
-        //    m_dimensionNodes[it->second] = node;
-        //}
-
-        //// Add un-named dimensions.
-        //for (unsigned int i = 0; i < pT->Rows(); ++i)
-        //{
-        //    unsigned int dimId = boost::lexical_cast<unsigned int>(pT->Data(i, 0));
-        //    std::tstring dimName;
-        //    if (dimensionNames.find(dimId) != dimensionNames.end())
-        //    {
-        //        continue;   // Skip named ones.
-        //    }
-        //    else 
-        //    {
-        //        dimName = _T("Unknown Dimension");
-        //        if (dimId > 0)
-        //        {
-        //            dimName += STREAM2STR(" (0x" << std::hex << dimId << ")");
-        //        }
-        //    }
-
-        //    boost::shared_ptr<DimensionNode> node(new DimensionNode(dimName, dimId, this));
-        //    m_dimensionNodes[dimName] = node;
-        //}
-
         // Add the tree-nodes.
-        for (std::map<std::string, boost::shared_ptr<DimensionNode> >::iterator it = m_dimensionNodes.begin(); it != m_dimensionNodes.end(); ++it)
+        for (std::map<std::string, boost::shared_ptr<MFTreeViewItem> >::iterator it = m_dimensionNodes.begin(); it != m_dimensionNodes.end(); ++it)
         {
             m_treeview.addRootItem(it->second.get());
         }
-    }
 
-    //m_treeview.SetUnicodeFormat();
-    //m_treeRoot.SetOwner(this);
-    //m_treeview.addRootItem(&m_treeRoot);
+        boost::shared_ptr<UnknownDimensionsNode> node(new UnknownDimensionsNode(this));
+        m_dimensionNodes["Unknown"] = node;
+        m_treeview.addRootItem(node.get());
+    }
 
     m_splitter.SetSplitterPanes(m_treeview, m_datagrid->m_hWnd);
     m_splitter.SetActivePane(SPLIT_PANE_LEFT);
@@ -2441,12 +2406,9 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
                 TRACE("server and port: " << ip << " " << port);
 
-                // Assuming server ID contains dimension ID in highbyte.
-                unsigned int dimensionid = (_byteswap_ulong(pMobInfo->header.serverid) & 0x0000FF00) >> 8;
-
                 g_DBManager.lock();
                 g_DBManager.setToonName(msg.characterId(), from_ascii_copy(name));
-                g_DBManager.setToonDimension(msg.characterId(), dimensionid);
+                g_DBManager.setToonDimension(msg.characterId(), ip, port);
                 g_DBManager.unLock();
             }
         }

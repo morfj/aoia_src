@@ -283,8 +283,6 @@ int ProcessDetach( HINSTANCE _hModule )
     LONG res2 = DetourUpdateThread(GetCurrentThread());
     LONG res3 = DetourDetach((PVOID*)&pOriginalDataBlockToMessage, DataBlockToMessageHook);
     LONG res4 = DetourTransactionCommit();
-	
-	
 
     LONG res5 = DetourTransactionBegin();
     LONG res6 = DetourDetach(&Func, SendConnectionHook);

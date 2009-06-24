@@ -347,28 +347,26 @@ unsigned int DBManager::getToonShopId(unsigned int charid) const
 }
 
 
-void DBManager::setToonDimension(unsigned int charid, unsigned int dimensionid)
+void DBManager::setToonDimension(unsigned int charid, unsigned int serverip, unsigned int serverport)
 {
     assert(charid != 0);
-    assert(dimensionid != 0);
+    assert(serverip != 0);
     g_DBManager.Begin();
-    g_DBManager.Exec(STREAM2STR("UPDATE OR IGNORE tToons SET dimensionid = " << dimensionid << " WHERE charid = " << charid));
+    g_DBManager.Exec(STREAM2STR("UPDATE OR IGNORE tToons SET serverip = " << serverip << ", serverport = " << serverport << " WHERE charid = " << charid));
     g_DBManager.Commit();
 }
 
 
-unsigned int DBManager::getToonDimension(unsigned int charid) const
+std::pair<unsigned int, unsigned int> DBManager::getToonDimension(unsigned int charid) const
 {
     assert(charid != 0);
 
-    unsigned int result = 0;
-
-    SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR("SELECT dimensionid FROM tToons WHERE charid = " << charid));
+    SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR("SELECT serverip, serverport FROM tToons WHERE charid = " << charid));
     if (pT != NULL && pT->Rows())
     {
         try
         {
-            result = boost::lexical_cast<unsigned int>(pT->Data(0,0));
+            return std::make_pair(boost::lexical_cast<unsigned int>(pT->Data(0,0)), boost::lexical_cast<unsigned int>(pT->Data(0, 1)));
         }
         catch (boost::bad_lexical_cast &/*e*/)
         {
@@ -377,25 +375,8 @@ unsigned int DBManager::getToonDimension(unsigned int charid) const
         }
     }
 
-    return result;
+    return std::make_pair(0,0);
 }
-
-
-//bool DBManager::getDimensions(std::map<unsigned int, std::tstring> &dimensions) const
-//{
-//    SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR("SELECT dimensionid, dimensionname FROM tDimensions"));
-//
-//    if (pT != NULL && pT->Rows())
-//    {
-//        for (unsigned int i = 0; i < pT->Rows(); ++i)
-//        {
-//            std::tstring name = from_ascii_copy(pT->Data(i, 1));
-//            dimensions[boost::lexical_cast<unsigned int>(pT->Data(i, 0))] = name;
-//        }
-//        return true;
-//    }
-//    return false;
-//}
 
 
 unsigned int DBManager::findNextAvailableContainerSlot(unsigned int charId, unsigned int containerId)
@@ -685,7 +666,7 @@ void DBManager::updateDBVersion(unsigned int fromVersion) const
             Exec(_T("DROP TABLE tToons2"));
             Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));
             Exec(_T("DROP VIEW vSchemeVersion"));
-            Exec(_T("CREATE VIEW vSchemeVersion AS SELECT '4' AS Version"));
+            Exec(_T("CREATE VIEW vSchemeVersion AS SELECT '5' AS Version"));
             Commit();
         }
         // Dropthrough
@@ -705,12 +686,8 @@ void DBManager::createDBScheme() const
     Exec(_T("CREATE VIEW vInvItems AS SELECT * FROM tItems WHERE parent=2"));
     Exec(_T("CREATE INDEX iOwner ON tItems (owner)"));
     Exec(_T("CREATE INDEX iParent ON tItems (parent)"));
-    Exec(_T("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0', dimensionid INTEGER DEFAULT '0')"));
+    Exec(_T("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0', serverip INTEGER DEFAULT '0', serverport INTEGER DEFAULT '0')"));
     Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));
-    Exec(_T("CREATE TABLE tDimensions (dimensionid INTEGER NOT NULL PRIMARY KEY UNIQUE, dimensionname VARCHAR)"));
-    Exec(_T("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (11, 'Atlantean (Rubi-Ka 1)')"));
-    Exec(_T("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (12, 'Rimor (Rubi-Ka 2)')"));
-    Exec(_T("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (13, 'Die Neue Welt (German Server)')"));
     Exec(STREAM2STR(_T("CREATE VIEW vSchemeVersion AS SELECT '") << CURRENT_DB_VERSION << _T("' AS Version")));
     Commit();
 }
