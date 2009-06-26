@@ -4,11 +4,7 @@
 #include <boost/smart_ptr.hpp>
 #include <shared/AODB.h>
 #include <string>
-
-// Forwards
-struct ifil;
-struct iidx;
-struct iseg;
+#include <boost/iostreams/device/mapped_file.hpp>
 
 
 class AODatabaseParser
@@ -30,14 +26,23 @@ public:
     /// Retrieves the next item of the current type
     boost::shared_ptr<ao_item> GetNextItem();
 
-private:
-    boost::shared_ptr<ifil> m_aodbFile;
-    boost::shared_ptr<iidx> m_aodbIndex;
-    boost::shared_array<iseg> m_aodbSegment;
+protected:
+    void ReadIndexFile(std::string filename);
+    const char* ReadIndexBlock(const char* pos, const char* end);
 
+
+private:
     ResourceType m_currentResourceType;
     bool m_isOk;
-    boost::shared_array<char> m_buffer;};
+    //boost::shared_array<char> m_buffer;
+
+    boost::iostreams::mapped_file_source m_file;
+    boost::iostreams::mapped_file_source::iterator m_current_pos;
+
+    // This maps a resource type to a map from resource ID to resource offset in the database file.
+    std::map<ResourceType, std::map<unsigned int, unsigned int> > m_record_index;
+    std::map<unsigned int, unsigned int>::iterator m_current_record;
+};
 
 
 class AOItemParser

@@ -1,168 +1,151 @@
 #include "stdafx.h"
 #include "AODatabaseParser.h"
-#include "ctree.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/assign.hpp>
 #include <ItemAssistantCore/Logger.h>
+#include <boost/iostreams/device/mapped_file.hpp>
+#include <algorithm>
 
 #define BUFFER_SIZE 1024*1024
+#define INDEX_FILE_BLOCK_SIZE 0x2000
 
 using namespace boost;
 using namespace boost::assign;
 using namespace boost::algorithm;
+using namespace boost::iostreams;
+
+
+struct DataBaseRecord
+{
+    unsigned int record_size;
+    unsigned int payload_size;
+    unsigned int payload_type;
+    char payload;
+};
+
 
 AODatabaseParser::AODatabaseParser(std::string const& aodbfile)
-    : m_aodbFile(new ifil)
-    , m_aodbIndex(new iidx)
-    , m_aodbSegment(new iseg[2])
-    , m_currentResourceType(AODB_TYP_UNKNOWN)
+    : m_currentResourceType(AODB_TYP_UNKNOWN)
     , m_isOk(false)
 {
-    std::string filename = aodbfile;
+    std::string index_filename = aodbfile;
     if (ends_with(aodbfile, ".dat")) {
-        replace_last(filename, ".dat", "");
+        replace_last(index_filename, ".dat", ".idx");
     }
+    ReadIndexFile(index_filename);
 
-    // Link the Ctree DLL
-    if (!CTreeStd_LinkDll(_T("ctreestd.dll"))) {
-        return;
-    }
-
-    // Initialize Ctree
-    if (InitISAM(256,4,4)) { 
-        CTreeStd_UnlinkDll();
-        return;
-    }
-
-    // Build file details
-    m_aodbFile->pfilnam = (pTEXT)filename.c_str();
-    m_aodbFile->dfilno = -1;
-    m_aodbFile->dreclen = 8;
-    m_aodbFile->dxtdsiz = 4096;
-    m_aodbFile->dfilmod = 0x0D; // ctSHARED | ctVIRTUAL | ctVLENGTH | ctREADFIL
-    m_aodbFile->dnumidx = 1;
-    m_aodbFile->ixtdsiz = 4096;
-    m_aodbFile->ifilmod = 0x09; // ctSHARED | ctVIRTUAL | ctREADFIL
-    m_aodbFile->ix = m_aodbIndex.get();
-    m_aodbFile->rfstfld = "Type";
-    m_aodbFile->rlstfld = "Blob";
-    m_aodbFile->tfilno = 0;
-    m_aodbIndex->ikeylen = 8;
-    m_aodbIndex->ikeytyp = 0;
-    m_aodbIndex->ikeydup = 0;
-    m_aodbIndex->inulkey = 0;
-    m_aodbIndex->iempchr = 0;
-    m_aodbIndex->inumseg = 2;
-    m_aodbIndex->seg = m_aodbSegment.get();
-    m_aodbIndex->ridxnam = "ItemIdx";
-    m_aodbIndex->aidxnam = 0;
-    m_aodbIndex->altseq = 0;
-    m_aodbIndex->pvbyte = 0;
-    m_aodbSegment[0].soffset = 0;
-    m_aodbSegment[0].slength = 4;
-    m_aodbSegment[0].segmode = 1;
-    m_aodbSegment[1].soffset = 4;
-    m_aodbSegment[1].slength = 4;
-    m_aodbSegment[1].segmode = 1;
-
-    // Open the AO database
-    if (OpenIFile(m_aodbFile.get())) {
-        CloseISAM();
-        CTreeStd_UnlinkDll();
-        return;
-    }
-
-    m_buffer.reset(new char[BUFFER_SIZE]);
-    ZeroMemory(m_buffer.get(), BUFFER_SIZE);
-
-    m_isOk = true;
+    m_file.open(aodbfile);
+    m_isOk = m_file.is_open();
 }
 
 
 AODatabaseParser::~AODatabaseParser()
 {
-    if (m_isOk) {
-        CloseIFile(m_aodbFile.get());
-        CloseISAM();
-        CTreeStd_UnlinkDll();
+    if (m_file.is_open())
+    {
+        m_file.close();
     }
 }
 
 
 unsigned int AODatabaseParser::GetItemCount(ResourceType type)
 {
-    if (!m_isOk) {
-        throw CTreeDbException("AODatabaseParser was not initialize properly.");
+    std::map<ResourceType, std::map<unsigned int, unsigned int> >::iterator it = m_record_index.find(type);
+    if (it != m_record_index.end())
+    {
+        return it->second.size();
+    }
+    return 0;
+}
+
+
+void AODatabaseParser::ReadIndexFile(std::string filename)
+{
+    mapped_file_source index_file(filename);
+    mapped_file_source::iterator current_pos = index_file.begin();
+
+    // Skip two blocks at the head of the file
+    current_pos += INDEX_FILE_BLOCK_SIZE * 2;
+
+    while (current_pos + INDEX_FILE_BLOCK_SIZE < index_file.end())
+    {
+        current_pos = ReadIndexBlock(current_pos, std::min<const char*>(index_file.end(), current_pos + INDEX_FILE_BLOCK_SIZE));
+    }
+}
+
+
+const char* AODatabaseParser::ReadIndexBlock(const char* pos, const char* end)
+{
+    // Skip block header
+    pos += 0x12;
+
+    const unsigned int* int_pos = (unsigned int*)pos;
+
+    while ((const char*)int_pos < end)
+    {
+        unsigned int offset = *int_pos;
+        ++int_pos;
+        unsigned int resource_type = *int_pos;
+        ++int_pos;
+        unsigned int resource_id = *int_pos;
+        ++int_pos;
+
+        resource_type = _byteswap_ulong(resource_type);
+        resource_id = _byteswap_ulong(resource_id);
+
+//#ifdef _DEBUG
+//        std::ostringstream s;
+//        s << "Index T:" << resource_type << " \tID:" << resource_id << " \tPos:" << offset << "\r\n";
+//        OutputDebugStringA(s.str().c_str());
+//#endif
+
+        m_record_index[(ResourceType)resource_type][resource_id] = offset;
     }
 
-    long startKey[2] = { _byteswap_ulong(type), 0 };
-    long endKey[2] = { _byteswap_ulong(type + 1), 0 };
-
-    LONG recCount = NbrOfKeysInRange(m_aodbFile->tfilno + 1, &startKey, &endKey);
-
-    return recCount;
+    return (char*)int_pos;
 }
 
 
 shared_ptr<ao_item> AODatabaseParser::GetFirstItem(ResourceType type)
 {
-    if (!m_isOk) {
-        throw CTreeDbException("AODatabaseParser was not initialize properly.");
-    }
-
+    m_current_pos = m_file.begin();
     m_currentResourceType = type;
 
-    shared_ptr<ao_item> retval;
-
-    long startKey[2] = { _byteswap_ulong(type), 0 };
-
-    unsigned int bufSize = BUFFER_SIZE;
-    ZeroMemory(m_buffer.get(), BUFFER_SIZE);
-    if (GetGTEVRecord(m_aodbFile->tfilno + 1, &startKey, m_buffer.get(), &bufSize)) {
-        return retval;
-    }
-
-    if (bufSize > BUFFER_SIZE) {
-        assert(false);
-        bufSize = BUFFER_SIZE;
-    }
-
-    long* pKey = (PLONG)(m_buffer.get());
-    if (*pKey != m_currentResourceType) {
-        return retval;
-    }
-
-    retval.reset(new AOItemParser(m_buffer.get(), bufSize));
-    return retval;
+    return GetNextItem();
 }
 
 
 shared_ptr<ao_item> AODatabaseParser::GetNextItem()
 {
-    if (!m_isOk) {
+    if (!m_isOk)
+    {
         throw CTreeDbException("AODatabaseParser was not initialize properly.");
     }
 
     shared_ptr<ao_item> retval;
 
-    if (!m_isOk) {
-        return retval;
-    }
-
-    unsigned int bufSize = BUFFER_SIZE;
-    ZeroMemory(m_buffer.get(), BUFFER_SIZE);
-    if (COUNT res = NextVRecord(m_aodbFile->tfilno + 1, m_buffer.get(), &bufSize)) {
-        return retval;
-    }
-
-    if (bufSize > BUFFER_SIZE) {
-        //assert(false);
-        bufSize = BUFFER_SIZE;
-    }
-
-    long* pKey = (long*)(m_buffer.get());
-    if (*pKey == m_currentResourceType) {
-        retval.reset(new AOItemParser(m_buffer.get(), bufSize));
+    char prev_char = NULL;
+    while (m_current_pos < m_file.begin() + m_file.size())
+    {
+        //char current = *m_current_pos;
+        if (prev_char == (char)0xFA && (*m_current_pos) == (char)0xFA)
+        {
+            prev_char = NULL;
+            ++m_current_pos;
+            DataBaseRecord &r = *(DataBaseRecord*)(m_current_pos);
+            m_current_pos += r.record_size - 2; // Deduct 2 so we stop on the next magic number
+            if (r.payload_type == m_currentResourceType)
+            {
+                retval.reset(new AOItemParser(&r.payload, r.payload_size));
+                break;
+            }
+            continue;
+        }
+        else
+        {
+            prev_char = *m_current_pos;
+            ++m_current_pos;
+        }
     }
 
     return retval;
@@ -279,15 +262,17 @@ static std::map<unsigned short, unsigned char> s_effectkeys = map_list_of
     (0xee,   3) // ??: KnockBack-Self <unknown, unknown, unknown> / KnockBack-Target?
     (0xef,   0) // 17.10.0: ??
     (0xf0,   0) // 18.0.0 : ?? AOID = 278587
-    (0xf2,   0) // 18.0.1 : ??
+    (0xf1,   1) // 18.1.0 : ?? Instanced City gate?
+    (0xf2,   0) // 18.0.1 : ?? 
+    (0xf3,   1) // 18.1.0 : ?? Instanced City Guest Key Generator
     (0xf4,   1) // 18.0.0 : ?? AOID = 280162
     ;
 
 AOItemParser::AOItemParser(char* pBuffer, unsigned int bufSize)
 {
-    this->aoid = *(((unsigned int*)pBuffer) + 1);
+    this->aoid = *((unsigned int*)pBuffer);
 
-    char *p = pBuffer + 0x24;
+    char *p = pBuffer + 0x20;
     bool head = true;
     unsigned int ftype = 0; // we need bigger scope for this variable, as it is used for catching lingering functions
 
