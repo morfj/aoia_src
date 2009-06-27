@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #define BUFFER_SIZE 1024*1024
-#define INDEX_FILE_BLOCK_SIZE 0x2000
 
 using namespace boost;
 using namespace boost::assign;
@@ -25,8 +24,7 @@ struct DataBaseRecord
 
 
 AODatabaseParser::AODatabaseParser(std::string const& aodbfile)
-    : m_currentResourceType(AODB_TYP_UNKNOWN)
-    , m_isOk(false)
+    : m_isOk(false)
 {
     std::string index_filename = aodbfile;
     if (ends_with(aodbfile, ".dat")) {
@@ -35,7 +33,15 @@ AODatabaseParser::AODatabaseParser(std::string const& aodbfile)
     ReadIndexFile(index_filename);
 
     m_file.open(aodbfile);
-    m_isOk = m_file.is_open();
+
+    //std::string file_001 = aodbfile;
+    //file_001 += ".001";
+
+    //mapped_file_params params(file_001);
+    //params.hint = m_file.end();
+    //m_file_001.open(params);
+
+    m_isOk = m_file.is_open() /*&& m_file_001.is_open()*/;
 }
 
 
@@ -64,12 +70,19 @@ void AODatabaseParser::ReadIndexFile(std::string filename)
     mapped_file_source index_file(filename);
     mapped_file_source::iterator current_pos = index_file.begin();
 
-    // Skip two blocks at the head of the file
-    current_pos += INDEX_FILE_BLOCK_SIZE * 2;
+    // Extract some info from the header
+    // Info found by tdb @ AODevs.
+    unsigned int last_offset = *(unsigned int*)current_pos;
+    unsigned int block_size = *(unsigned int*)(current_pos + 0x0C);
+    unsigned int data_end = *(unsigned int*)(current_pos + 0x08);
+    unsigned int data_start = *(unsigned int*)(current_pos + 0x48);
 
-    while (current_pos + INDEX_FILE_BLOCK_SIZE < index_file.end())
+    // Skip to data_start
+    current_pos = index_file.begin() + data_start;
+
+    while (current_pos + block_size < index_file.end())
     {
-        current_pos = ReadIndexBlock(current_pos, std::min<const char*>(index_file.end(), current_pos + INDEX_FILE_BLOCK_SIZE));
+        current_pos = ReadIndexBlock(current_pos, std::min<const char*>(index_file.end(), current_pos + block_size));
     }
 }
 
@@ -81,7 +94,7 @@ const char* AODatabaseParser::ReadIndexBlock(const char* pos, const char* end)
 
     const unsigned int* int_pos = (unsigned int*)pos;
 
-    while ((const char*)int_pos < end)
+    while ((const char*)(int_pos + 2) < end)
     {
         unsigned int offset = *int_pos;
         ++int_pos;
@@ -93,25 +106,26 @@ const char* AODatabaseParser::ReadIndexBlock(const char* pos, const char* end)
         resource_type = _byteswap_ulong(resource_type);
         resource_id = _byteswap_ulong(resource_id);
 
-//#ifdef _DEBUG
-//        std::ostringstream s;
-//        s << "Index T:" << resource_type << " \tID:" << resource_id << " \tPos:" << offset << "\r\n";
-//        OutputDebugStringA(s.str().c_str());
-//#endif
-
         m_record_index[(ResourceType)resource_type][resource_id] = offset;
     }
 
-    return (char*)int_pos;
+    // Return 'end' since we should always consume the entire block size
+    return end;
 }
 
 
 shared_ptr<ao_item> AODatabaseParser::GetFirstItem(ResourceType type)
 {
-    m_current_pos = m_file.begin();
-    m_currentResourceType = type;
+    shared_ptr<ao_item> retval;
 
-    return GetNextItem();
+    m_current_resource = m_record_index.find(type);
+    if (m_current_resource != m_record_index.end())
+    {
+        m_current_record = m_current_resource->second.begin();
+        retval = GetNextItem();
+    }
+
+    return retval;
 }
 
 
@@ -124,32 +138,43 @@ shared_ptr<ao_item> AODatabaseParser::GetNextItem()
 
     shared_ptr<ao_item> retval;
 
-    char prev_char = NULL;
-    while (m_current_pos < m_file.begin() + m_file.size())
+    if (m_current_record != m_current_resource->second.end())
     {
-        //char current = *m_current_pos;
-        if (prev_char == (char)0xFA && (*m_current_pos) == (char)0xFA)
+        unsigned int itemid = m_current_record->first;
+        if (m_current_record->second < m_file.size())
         {
-            prev_char = NULL;
-            ++m_current_pos;
-            DataBaseRecord &r = *(DataBaseRecord*)(m_current_pos);
-            m_current_pos += r.record_size - 2; // Deduct 2 so we stop on the next magic number
-            if (r.payload_type == m_currentResourceType)
-            {
-                retval.reset(new AOItemParser(&r.payload, r.payload_size));
-                break;
-            }
-            continue;
+            retval = ExtractItem(m_file.begin() + m_current_record->second);
         }
         else
         {
-            prev_char = *m_current_pos;
-            ++m_current_pos;
+            //retval = ExtractItem(m_file_001.begin() + m_current_record->second - m_file.size());
         }
+    }
+
+    ++m_current_record;
+    return retval;
+}
+
+
+shared_ptr<ao_item> AODatabaseParser::ExtractItem(const char* pos)
+{
+    shared_ptr<ao_item> retval;
+
+    // Check for magic value.
+    if (pos[0] == (char)0xFA && pos[1] == (char)0xFA)
+    {
+        pos += 2;
+        DataBaseRecord &r = *(DataBaseRecord*)(pos);
+        retval.reset(new AOItemParser(&r.payload, r.payload_size));
+    }
+    else
+    {
+        TRACE("Skipped item because index did not point to the correct entry in the DB file.");
     }
 
     return retval;
 }
+
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -262,9 +287,9 @@ static std::map<unsigned short, unsigned char> s_effectkeys = map_list_of
     (0xee,   3) // ??: KnockBack-Self <unknown, unknown, unknown> / KnockBack-Target?
     (0xef,   0) // 17.10.0: ??
     (0xf0,   0) // 18.0.0 : ?? AOID = 278587
-    (0xf1,   1) // 18.1.0 : ?? Instanced City gate?
+    (0xf1,   6) // 18.1.0 : ?? Instanced City gate?
     (0xf2,   0) // 18.0.1 : ?? 
-    (0xf3,   1) // 18.1.0 : ?? Instanced City Guest Key Generator
+    (0xf3,   3) // 18.1.0 : ?? Instanced City Guest Key Generator
     (0xf4,   1) // 18.0.0 : ?? AOID = 280162
     ;
 

@@ -29,18 +29,16 @@ public:
 protected:
     void ReadIndexFile(std::string filename);
     const char* ReadIndexBlock(const char* pos, const char* end);
-
+    boost::shared_ptr<ao_item> ExtractItem(const char* pos);
 
 private:
-    ResourceType m_currentResourceType;
     bool m_isOk;
-    //boost::shared_array<char> m_buffer;
-
     boost::iostreams::mapped_file_source m_file;
-    boost::iostreams::mapped_file_source::iterator m_current_pos;
+    //boost::iostreams::mapped_file_source m_file_001;
 
     // This maps a resource type to a map from resource ID to resource offset in the database file.
     std::map<ResourceType, std::map<unsigned int, unsigned int> > m_record_index;
+    std::map<ResourceType, std::map<unsigned int, unsigned int> >::iterator m_current_resource;
     std::map<unsigned int, unsigned int>::iterator m_current_record;
 };
 

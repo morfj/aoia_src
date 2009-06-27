@@ -150,8 +150,12 @@ bool DBManager::syncLocalItemsDB(std::tstring const& localfile, std::tstring con
             unsigned int count = 1;
             writer.BeginWrite();
             writer.WriteItem(item);
-            while (item = aodb.GetNextItem()) { 
-                ++count; 
+            for (; count < itemCount; ++count)
+            {
+                if (!(item = aodb.GetNextItem()))
+                {
+                    continue;
+                }
                 writer.WriteItem(item);
                 if (count % 1000 == 0) {
                     if (dlg.userCanceled()) {
@@ -188,8 +192,12 @@ bool DBManager::syncLocalItemsDB(std::tstring const& localfile, std::tstring con
             unsigned int count = 1;
             writer.BeginWrite();
             writer.WriteItem(nano);
-            while (nano = aodb.GetNextItem()) { 
-                ++count; 
+            for (; count < nanoCount; ++count)
+            {
+                if(!(nano = aodb.GetNextItem()))
+                {
+                    continue;
+                }
                 writer.WriteItem(nano);
                 if (count % 1000 == 0) {
                     if (dlg.userCanceled()) {
