@@ -12,6 +12,7 @@ using namespace boost;
 using namespace boost::assign;
 using namespace boost::algorithm;
 using namespace boost::iostreams;
+using namespace boost::filesystem;
 
 
 struct DataBaseRecord
@@ -23,25 +24,23 @@ struct DataBaseRecord
 };
 
 
-AODatabaseParser::AODatabaseParser(std::string const& aodbfile)
-    : m_isOk(false)
+AODatabaseParser::AODatabaseParser(std::vector<std::string> const& aodbfiles)
+  : m_current_file_offset(0)
 {
-    std::string index_filename = aodbfile;
-    if (ends_with(aodbfile, ".dat")) {
-        replace_last(index_filename, ".dat", ".idx");
+    unsigned int accumulated_offset = 0;
+    for (std::vector<std::string>::const_iterator it = aodbfiles.begin(); it != aodbfiles.end(); ++it)
+    {
+        path file(*it);
+        if (exists(file) && is_regular(file))
+        {
+            m_file_offsets[accumulated_offset] = *it;
+            accumulated_offset += file_size(file);
+        }
+        else
+        {
+            throw Exception("Invalid database file specified.");
+        }
     }
-    ReadIndexFile(index_filename);
-
-    m_file.open(aodbfile);
-
-    //std::string file_001 = aodbfile;
-    //file_001 += ".001";
-
-    //mapped_file_params params(file_001);
-    //params.hint = m_file.end();
-    //m_file_001.open(params);
-
-    m_isOk = m_file.is_open() /*&& m_file_001.is_open()*/;
 }
 
 
@@ -54,109 +53,14 @@ AODatabaseParser::~AODatabaseParser()
 }
 
 
-unsigned int AODatabaseParser::GetItemCount(ResourceType type)
+shared_ptr<ao_item> AODatabaseParser::GetItem(unsigned int offset) const
 {
-    std::map<ResourceType, std::map<unsigned int, unsigned int> >::iterator it = m_record_index.find(type);
-    if (it != m_record_index.end())
-    {
-        return it->second.size();
-    }
-    return 0;
+    EnsureFileOpen(offset);
+    return ExtractItem(m_file.begin() + (offset - m_current_file_offset));
 }
 
 
-void AODatabaseParser::ReadIndexFile(std::string filename)
-{
-    mapped_file_source index_file(filename);
-    mapped_file_source::iterator current_pos = index_file.begin();
-
-    // Extract some info from the header
-    // Info found by tdb @ AODevs.
-    unsigned int last_offset = *(unsigned int*)current_pos;
-    unsigned int block_size = *(unsigned int*)(current_pos + 0x0C);
-    unsigned int data_end = *(unsigned int*)(current_pos + 0x08);
-    unsigned int data_start = *(unsigned int*)(current_pos + 0x48);
-
-    // Skip to data_start
-    current_pos = index_file.begin() + data_start;
-
-    while (current_pos + block_size < index_file.end())
-    {
-        current_pos = ReadIndexBlock(current_pos, std::min<const char*>(index_file.end(), current_pos + block_size));
-    }
-}
-
-
-const char* AODatabaseParser::ReadIndexBlock(const char* pos, const char* end)
-{
-    // Skip block header
-    pos += 0x12;
-
-    const unsigned int* int_pos = (unsigned int*)pos;
-
-    while ((const char*)(int_pos + 2) < end)
-    {
-        unsigned int offset = *int_pos;
-        ++int_pos;
-        unsigned int resource_type = *int_pos;
-        ++int_pos;
-        unsigned int resource_id = *int_pos;
-        ++int_pos;
-
-        resource_type = _byteswap_ulong(resource_type);
-        resource_id = _byteswap_ulong(resource_id);
-
-        m_record_index[(ResourceType)resource_type][resource_id] = offset;
-    }
-
-    // Return 'end' since we should always consume the entire block size
-    return end;
-}
-
-
-shared_ptr<ao_item> AODatabaseParser::GetFirstItem(ResourceType type)
-{
-    shared_ptr<ao_item> retval;
-
-    m_current_resource = m_record_index.find(type);
-    if (m_current_resource != m_record_index.end())
-    {
-        m_current_record = m_current_resource->second.begin();
-        retval = GetNextItem();
-    }
-
-    return retval;
-}
-
-
-shared_ptr<ao_item> AODatabaseParser::GetNextItem()
-{
-    if (!m_isOk)
-    {
-        throw CTreeDbException("AODatabaseParser was not initialize properly.");
-    }
-
-    shared_ptr<ao_item> retval;
-
-    if (m_current_record != m_current_resource->second.end())
-    {
-        unsigned int itemid = m_current_record->first;
-        if (m_current_record->second < m_file.size())
-        {
-            retval = ExtractItem(m_file.begin() + m_current_record->second);
-        }
-        else
-        {
-            //retval = ExtractItem(m_file_001.begin() + m_current_record->second - m_file.size());
-        }
-    }
-
-    ++m_current_record;
-    return retval;
-}
-
-
-shared_ptr<ao_item> AODatabaseParser::ExtractItem(const char* pos)
+shared_ptr<ao_item> AODatabaseParser::ExtractItem(const char* pos) const
 {
     shared_ptr<ao_item> retval;
 
@@ -173,6 +77,53 @@ shared_ptr<ao_item> AODatabaseParser::ExtractItem(const char* pos)
     }
 
     return retval;
+}
+
+
+void AODatabaseParser::EnsureFileOpen(unsigned int offset) const
+{
+    if (m_file.is_open())
+    {
+        if (offset < m_current_file_offset || offset > m_current_file_offset + m_file.size())
+        {
+            m_file.close();
+
+            std::map<unsigned int, std::string>::const_iterator it = m_file_offsets.upper_bound(offset);
+            if (it == m_file_offsets.begin())
+            {
+                throw Exception("Unable to locate database file for offset.");
+            }
+            --it;   // Decrement to get to the item we are after.
+            if (it == m_file_offsets.end())
+            {
+                throw Exception("Unable to locate database file for offset.");
+            }
+
+            m_file.open(it->second);
+            m_current_file_offset = it->first;
+        }
+    }
+    else
+    {
+        std::map<unsigned int, std::string>::const_iterator it = m_file_offsets.upper_bound(offset);
+        if (it == m_file_offsets.begin())
+        {
+            throw Exception("Unable to locate database file for offset.");
+        }
+        --it;   // Decrement to get to the item we are after.
+        if (it == m_file_offsets.end())
+        {
+            throw Exception("Unable to locate database file for offset.");
+        }
+
+        m_file.open(it->second);
+        m_current_file_offset = it->first;
+    }
+
+    if (offset > m_current_file_offset + m_file.size())
+    {
+        throw Exception("Unable to locate database file for offset.");
+    }
 }
 
 

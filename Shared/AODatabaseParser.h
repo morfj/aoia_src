@@ -10,34 +10,30 @@
 class AODatabaseParser
 {
 public:
-    struct CTreeDbException : public std::exception {
-        CTreeDbException(std::string const& what) : std::exception(what.c_str()) {}
+    struct Exception : public std::exception {
+        Exception(std::string const& what) : std::exception(what.c_str()) {}
     };
 
-    AODatabaseParser(std::string const& aodbfile);
+    /// Creates a new AO Database parser for the specified set of files.
+    AODatabaseParser(std::vector<std::string> const& aodbfiles);
     ~AODatabaseParser();
 
-    /// Retrieves the number of items with the specified type
-    unsigned int GetItemCount(ResourceType type);
-
-    /// Retrieves the first item of a specific type
-    boost::shared_ptr<ao_item> GetFirstItem(ResourceType type);
-
-    /// Retrieves the next item of the current type
-    boost::shared_ptr<ao_item> GetNextItem();
+    /// Retrieves the item at the specified offset.
+    boost::shared_ptr<ao_item> GetItem(unsigned int offset) const;
 
 protected:
-    void ReadIndexFile(std::string filename);
-    const char* ReadIndexBlock(const char* pos, const char* end);
-    boost::shared_ptr<ao_item> ExtractItem(const char* pos);
+    boost::shared_ptr<ao_item> ExtractItem(const char* pos) const;
+    void EnsureFileOpen(unsigned int offset) const;
 
 private:
-    bool m_isOk;
-    boost::iostreams::mapped_file_source m_file;
+    std::map<unsigned int, std::string> m_file_offsets;
+    mutable boost::iostreams::mapped_file_source m_file;
+    mutable unsigned int m_current_file_offset;
+
     //boost::iostreams::mapped_file_source m_file_001;
 
     // This maps a resource type to a map from resource ID to resource offset in the database file.
-    std::map<ResourceType, std::map<unsigned int, unsigned int> > m_record_index;
+    //std::map<ResourceType, std::map<unsigned int, unsigned int> > m_record_index;
     std::map<ResourceType, std::map<unsigned int, unsigned int> >::iterator m_current_resource;
     std::map<unsigned int, unsigned int>::iterator m_current_record;
 };

@@ -4,10 +4,12 @@
 #include <boost/lexical_cast.hpp>
 #include <shared/AODatabaseParser.h>
 #include <shared/AODatabaseWriter.h>
+#include <Shared/AODatabaseIndex.h>
 #include <shared/FileUtils.h>
 #include <sstream>
 #include "ProgressDialog.h"
 #include <ItemAssistantCore/AOManager.h>
+#include <boost/assign.hpp>
 
 namespace bfs = boost::filesystem;
 
@@ -132,11 +134,15 @@ bool DBManager::syncLocalItemsDB(std::tstring const& localfile, std::tstring con
     bfs::remove(tmpfile);
 
     try {
-        AODatabaseParser aodb(original.string());
-        AODatabaseWriter writer(tmpfile.string());
+        AODatabaseIndex indexer(to_ascii_copy(aofolder) + "/cd_image/data/db/ResourceDatabase.idx");
+        std::vector<unsigned int> item_offsets = indexer.GetOffsets(AODB_TYP_ITEM);
+        std::vector<unsigned int> nano_offsets = indexer.GetOffsets(AODB_TYP_NANO);
+        unsigned int itemCount = item_offsets.size();
+        unsigned int nanoCount = nano_offsets.size();
 
-        unsigned int itemCount = aodb.GetItemCount(AODB_TYP_ITEM);
-        unsigned int nanoCount = aodb.GetItemCount(AODB_TYP_NANO);
+        std::vector<std::string> original_files = boost::assign::list_of(original.string())(original.string()+".001");
+        AODatabaseParser aodb(original_files);
+        AODatabaseWriter writer(tmpfile.string());
 
         CProgressDialog dlg(itemCount + nanoCount, itemCount);
         dlg.SetWindowText(_T("Progress Dialog - Item Assistant"));
@@ -145,88 +151,80 @@ bool DBManager::syncLocalItemsDB(std::tstring const& localfile, std::tstring con
         dlg.setText(2, _T("Overall progress: 0%"));
 
         // Extract items
-        boost::shared_ptr<ao_item> item = aodb.GetFirstItem(AODB_TYP_ITEM);
-        if (item) {
-            unsigned int count = 1;
-            writer.BeginWrite();
-            writer.WriteItem(item);
-            for (; count < itemCount; ++count)
+        boost::shared_ptr<ao_item> item;
+        unsigned int count = 0;
+        writer.BeginWrite();
+        for (std::vector<unsigned int>::iterator item_it = item_offsets.begin(); item_it != item_offsets.end(); ++item_it)
+        {
+            item = aodb.GetItem(*item_it);
+            count++;
+            if (!item)
             {
-                if (!(item = aodb.GetNextItem()))
-                {
-                    continue;
-                }
-                writer.WriteItem(item);
-                if (count % 1000 == 0) {
-                    if (dlg.userCanceled()) {
-                        return false;
-                    }
-                    dlg.setTaskProgress(count, itemCount);
-                    dlg.setText(1, STREAM2STR("Finished " << count << " out of " << itemCount << " items."));
-                    dlg.setOverallProgress(count, itemCount + nanoCount);
-                    dlg.setText(2, STREAM2STR("Overall progress: " << (count * 100) / (itemCount + nanoCount) << "%"));
-                }
-                if (count % 10000 == 0) {
-                    writer.CommitItems();
-                    writer.BeginWrite();
-                }
+                continue;
             }
-            dlg.setTaskProgress(count, itemCount);
-            dlg.setText(1, STREAM2STR("Finished " << count << " out of " << itemCount << " items."));
-            dlg.setOverallProgress(count, itemCount + nanoCount);
-            dlg.setText(2, STREAM2STR("Overall progress: " << (count * 100) / (itemCount + nanoCount) << "%"));
-            writer.CommitItems();
+            writer.WriteItem(item);
+            if (count % 1000 == 0) {
+                if (dlg.userCanceled()) {
+                    return false;
+                }
+                dlg.setTaskProgress(count, itemCount);
+                dlg.setText(1, STREAM2STR("Finished " << count << " out of " << itemCount << " items."));
+                dlg.setOverallProgress(count, itemCount + nanoCount);
+                dlg.setText(2, STREAM2STR("Overall progress: " << (count * 100) / (itemCount + nanoCount) << "%"));
+            }
+            if (count % 10000 == 0) {
+                writer.CommitItems();
+                writer.BeginWrite();
+            }
         }
+        item.reset();
+        dlg.setTaskProgress(count, itemCount);
+        dlg.setText(1, STREAM2STR("Finished " << count << " out of " << itemCount << " items."));
+        dlg.setOverallProgress(count, itemCount + nanoCount);
+        dlg.setText(2, STREAM2STR("Overall progress: " << (count * 100) / (itemCount + nanoCount) << "%"));
+        writer.CommitItems();
 
         if (dlg.userCanceled()) {
             return false;
         }
-        //dlg.setTaskProgress(0, nanoCount);
-        //dlg.setText(1, STREAM2STR("Finished " << 0 << " out of " << nanoCount << " nanos."));
-        //dlg.setText(2, STREAM2STR("Overall progress: " << (itemCount * 100) / (itemCount + nanoCount) << "%"));
-        //dlg.setOverallProgress(itemCount, itemCount + nanoCount);
 
         // Extract nano programs
-        boost::shared_ptr<ao_item> nano = aodb.GetFirstItem(AODB_TYP_NANO);
-        if (nano) {
-            unsigned int count = 1;
-            writer.BeginWrite();
-            writer.WriteItem(nano);
-            for (; count < nanoCount; ++count)
+        boost::shared_ptr<ao_item> nano;
+        count = 0;
+        writer.BeginWrite();
+        for (std::vector<unsigned int>::iterator nano_it = nano_offsets.begin(); nano_it != nano_offsets.end(); ++nano_it)
+        {
+            nano = aodb.GetItem(*nano_it);
+            count++;
+            if (!nano)
             {
-                if(!(nano = aodb.GetNextItem()))
-                {
-                    continue;
-                }
-                writer.WriteItem(nano);
-                if (count % 1000 == 0) {
-                    if (dlg.userCanceled()) {
-                        return false;
-                    }
-                    dlg.setTaskProgress(count, nanoCount);
-                    dlg.setText(1, STREAM2STR("Finished " << count << " out of " << nanoCount << " nanos."));
-                    dlg.setOverallProgress(itemCount + count, itemCount + nanoCount);
-                    dlg.setText(2, STREAM2STR("Overall progress: " << ((itemCount + count) * 100) / (itemCount + nanoCount) << "%"));
-                }
-                if (count % 10000 == 0) {
-                    writer.CommitItems();
-                    writer.BeginWrite();
-                }
+                continue;
             }
-            dlg.setTaskProgress(count, nanoCount);
-            dlg.setText(1, STREAM2STR("Finished " << count << " out of " << nanoCount << " nanos."));
-            dlg.setOverallProgress(itemCount + count, itemCount + nanoCount);
-            dlg.setText(2, STREAM2STR("Overall progress: " << ((itemCount + count) * 100) / (itemCount + nanoCount) << "%"));
-            writer.CommitItems();
+            writer.WriteItem(nano);
+            if (count % 1000 == 0) {
+                if (dlg.userCanceled()) {
+                    return false;
+                }
+                dlg.setTaskProgress(count, nanoCount);
+                dlg.setText(1, STREAM2STR("Finished " << count << " out of " << nanoCount << " nanos."));
+                dlg.setOverallProgress(itemCount + count, itemCount + nanoCount);
+                dlg.setText(2, STREAM2STR("Overall progress: " << ((itemCount + count) * 100) / (itemCount + nanoCount) << "%"));
+            }
+            if (count % 10000 == 0) {
+                writer.CommitItems();
+                writer.BeginWrite();
+            }
         }
+        nano.reset();
+        dlg.setTaskProgress(count, nanoCount);
+        dlg.setText(1, STREAM2STR("Finished " << count << " out of " << nanoCount << " nanos."));
+        dlg.setOverallProgress(itemCount + count, itemCount + nanoCount);
+        dlg.setText(2, STREAM2STR("Overall progress: " << ((itemCount + count) * 100) / (itemCount + nanoCount) << "%"));
+        writer.CommitItems();
 
         if (dlg.userCanceled()) {
             return false;
         }
-        //dlg.setTaskProgress(nanoCount, nanoCount);
-        //dlg.setOverallProgress(itemCount + nanoCount, itemCount + nanoCount);
-        //dlg.setText(1, STREAM2STR("Finished " << nanoCount << " out of " << nanoCount << " nanos."));
-        //dlg.setText(2, _T("Overall progress: 100%"));
 
         writer.PostProcessData();
     }
@@ -235,7 +233,7 @@ bool DBManager::syncLocalItemsDB(std::tstring const& localfile, std::tstring con
         Logger::instance().log(STREAM2STR(_T("Error creating item database. ") << e.what()));
         return false;
     }
-    catch (AODatabaseParser::CTreeDbException &e) {
+    catch (AODatabaseParser::Exception &e) {
         assert(false);
         Logger::instance().log(STREAM2STR(_T("Error parsing the AO Database. ") << e.what()));
         MessageBox( NULL, _T("Unable to parse the AO database.\n\rPlease make sure Anarchy Online is not running and try again."),
