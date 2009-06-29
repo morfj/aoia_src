@@ -9,7 +9,7 @@ using namespace boost::assign;
 
 const std::string c_scheme_sql = 
     "CREATE TABLE tblAO ("
-    "   [aoid] INTEGER  PRIMARY KEY NOT NULL,"
+    "   [aoid] INTEGER NOT NULL PRIMARY KEY UNIQUE,"
     "   [name] TEXT  NOT NULL,"
     "   [ql] INTEGER  NULL,"
     "   [type] TEXT  NOT NULL,"
