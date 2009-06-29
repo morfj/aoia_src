@@ -8,15 +8,17 @@
 class AODatabaseIndex
 {
 public:
-    AODatabaseIndex(std::string const& index_file);
+    /// Extracts all the specified resource types from the index file. If no 
+    /// resource types are specified, all indexes will be extracted.
+    AODatabaseIndex(std::string const& index_file, std::set<ResourceType>& types);
     ~AODatabaseIndex();
 
     /// Returns a sorted array of all the record offsets for a specific resource type.
     std::vector<unsigned int> GetOffsets(ResourceType type) const;
 
 protected:
-    void ReadIndexFile(std::string filename);
-    void ReadIndexBlock(const char* pos, const char* end);
+    void ReadIndexFile(std::string filename, std::set<ResourceType>& types);
+    void ReadIndexBlock(const char* pos, const char* end, std::set<ResourceType>& types);
 
 private:
     typedef std::map<unsigned int, std::set<unsigned int> > IdOffsetMap;

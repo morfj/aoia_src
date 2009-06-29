@@ -6,9 +6,9 @@
 using namespace boost::iostreams;
 
 
-AODatabaseIndex::AODatabaseIndex(std::string const& index_file)
+AODatabaseIndex::AODatabaseIndex(std::string const& index_file, std::set<ResourceType>& types)
 {
-    ReadIndexFile(index_file);
+    ReadIndexFile(index_file, types);
 }
 
 
@@ -35,7 +35,7 @@ std::vector<unsigned int> AODatabaseIndex::GetOffsets(ResourceType type) const
 }
 
 
-void AODatabaseIndex::ReadIndexFile(std::string filename)
+void AODatabaseIndex::ReadIndexFile(std::string filename, std::set<ResourceType>& types)
 {
     mapped_file_source index_file(filename);
     mapped_file_source::iterator current_pos = index_file.begin();
@@ -52,13 +52,13 @@ void AODatabaseIndex::ReadIndexFile(std::string filename)
 
     while (current_pos + block_size < index_file.end())
     {
-        ReadIndexBlock(current_pos, std::min<const char*>(index_file.end(), current_pos + block_size));
+        ReadIndexBlock(current_pos, std::min<const char*>(index_file.end(), current_pos + block_size), types);
         current_pos += block_size;
     }
 }
 
 
-void AODatabaseIndex::ReadIndexBlock(const char* pos, const char* end)
+void AODatabaseIndex::ReadIndexBlock(const char* pos, const char* end, std::set<ResourceType>& types)
 {
     // Skip block header
     pos += 0x12;
@@ -75,6 +75,9 @@ void AODatabaseIndex::ReadIndexBlock(const char* pos, const char* end)
         resource_type = _byteswap_ulong(resource_type);
         resource_id = _byteswap_ulong(resource_id);
 
-        m_record_index[(ResourceType)resource_type][resource_id].insert(offset);
+        if (types.empty() || types.find((ResourceType)resource_type) != types.end())
+        {
+            m_record_index[(ResourceType)resource_type][resource_id].insert(offset);
+        }
     }
 }

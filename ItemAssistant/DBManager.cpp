@@ -134,7 +134,8 @@ bool DBManager::syncLocalItemsDB(std::tstring const& localfile, std::tstring con
     bfs::remove(tmpfile);
 
     try {
-        AODatabaseIndex indexer(to_ascii_copy(aofolder) + "/cd_image/data/db/ResourceDatabase.idx");
+        std::set<ResourceType> resource_types = boost::assign::list_of(AODB_TYP_ITEM)(AODB_TYP_NANO);
+        AODatabaseIndex indexer(to_ascii_copy(aofolder) + "/cd_image/data/db/ResourceDatabase.idx", resource_types);
         std::vector<unsigned int> item_offsets = indexer.GetOffsets(AODB_TYP_ITEM);
         std::vector<unsigned int> nano_offsets = indexer.GetOffsets(AODB_TYP_NANO);
         unsigned int itemCount = item_offsets.size();
