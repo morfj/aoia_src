@@ -19,14 +19,11 @@ Known Issues:
    * If you have copied your AO installation to a new directory and is now
      playing from the new location, Item Assistant will not be able to detect
      that the old installation is not valid any more.
-     To fix this you need to open the registry editor and find the following
-     registry key:
-         [HKEY_CURRENT_USER\Software\AOItemAssistant]
-     Then inside that key set the field called "AOPath" to an empty string.
-     The next time Item Assistant starts up again it will ask for the new
-     valid location of your AO installation.
-   * While playing on TestLive you may experience that your toon doesn't show
-     up in the toon-list until you restart the application.
+     To fix this you need to open the file called ItemAssistant.conf and either
+     - Change the AOPath setting to the new location of your AO installation, or
+     - Delete the AOPath setting. Item Assistant will then ask you to specify
+       the location on the next startup.
+   * Your toons may show up under incorrect dimension nodes.
    * AOIA needs to run with the same, or higher, level of privileges on your 
      computer as the AO client itself is running with. If you run the AO client
      as administrator, you have to do the same with AOIA.
@@ -51,7 +48,10 @@ have contributed either directly or indirectly include:
 
 Change Log:
 ===========
-Version 0.9.4                                       Release Date: ?/?/2009
+Version 0.9.4                                       Release Date: 30/6/2009
+    * Added support for the new database in v18.1.
+    * The application is no longer using the registry to store its settings.
+      Settings are stored in the ItemAssistant.conf file.
     * Enhanced item listing so the container column shows if an item is 
       equipped, and at which tab-panel it is.
     * Added baloon warning popup when application is started after the AO 
