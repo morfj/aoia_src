@@ -4,9 +4,11 @@
 #include "stdafx.h"
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/assign.hpp>
 #include <iostream>
 #include <Shared/AODatabaseParser.h>
 #include <Shared/AODatabaseWriter.h>
+#include <Shared/AODatabaseIndex.h>
 
 
 namespace bpo = boost::program_options;
@@ -27,7 +29,7 @@ int _tmain(int argc, _TCHAR* argv[])
     bpo::options_description desc("Allowed options");
     desc.add_options()
         ("help,h", "produce help message")
-        ("input,i", bpo::value<std::string>(&input), "Specify the input AODB file.")
+        ("input,i", bpo::value<std::string>(&input), "Specify the path to the AO folder.")
         ("output,o", bpo::value<std::string>(&output), "Specify the output SQLite file.")
         ("postprocess,p", bpo::value<bool>(&doPostProcess)->default_value(false), "Specify if postprocessing should be done or not.")
         ("force,f", bpo::value<bool>(&doForce)->default_value(false), "Force overwriting the output file if it exists.")
@@ -49,7 +51,7 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 
     if (!bfs::exists(input)) {
-        std::cerr << "Could not locate input file.";
+        std::cerr << "Could not locate input folder.";
         return 3;
     }
     if (bfs::exists(output)) {
@@ -68,47 +70,74 @@ int _tmain(int argc, _TCHAR* argv[])
 }
 
 
-bool RippIt(std::string const& input, std::string const& output, bool doPostProcess)
+bool RippIt(std::string const& input_folder, std::string const& output_file, bool doPostProcess)
 {
-    try {
-        AODatabaseParser aodb(input);
-        AODatabaseWriter writer(output);
+    try
+    {
+        // Set up indexer
+        std::set<ResourceType> resource_types = boost::assign::list_of(AODB_TYP_ITEM)(AODB_TYP_NANO);
+        AODatabaseIndex indexer(input_folder + "/cd_image/data/db/ResourceDatabase.idx", resource_types);
+        std::vector<unsigned int> item_offsets = indexer.GetOffsets(AODB_TYP_ITEM);
+        std::vector<unsigned int> nano_offsets = indexer.GetOffsets(AODB_TYP_NANO);
+
+        // Set up parser
+        std::vector<std::string> original_files = boost::assign::list_of
+            (input_folder + "/cd_image/data/db/ResourceDatabase.dat")
+            (input_folder + "/cd_image/data/db/ResourceDatabase.dat.001");
+        AODatabaseParser aodb(original_files);
+
+        // Set up writer
+        AODatabaseWriter writer(output_file);
 
         // Extract items
-        boost::shared_ptr<ao_item> item = aodb.GetFirstItem(AODB_TYP_ITEM);
-        if (item) {
-            unsigned int itemcount = 1;
-            writer.BeginWrite();
-            writer.WriteItem(item);
-            while (item = aodb.GetNextItem()) { 
-                ++itemcount; 
+        unsigned int itemcount = 0;
+        writer.BeginWrite();
+        for (std::vector<unsigned int>::iterator item_it = item_offsets.begin(); item_it != item_offsets.end(); ++item_it)
+        {
+            boost::shared_ptr<ao_item> item = aodb.GetItem(*item_it);
+            ++itemcount; 
+            if (item)
+            {
                 writer.WriteItem(item);
                 if (itemcount % 10000 == 0) {
                     writer.CommitItems();
                     writer.BeginWrite();
                 }
             }
-            writer.CommitItems();
         }
+        writer.CommitItems();
+        std::cout << "Parsed " << itemcount << " item records." << std::endl;
 
         // Extract nano programs
-        boost::shared_ptr<ao_item> nano = aodb.GetFirstItem(AODB_TYP_NANO);
-        if (nano) {
-            unsigned int itemcount = 1;
-            writer.BeginWrite();
-            writer.WriteItem(nano);
-            while (nano = aodb.GetNextItem()) { 
-                ++itemcount; 
+        itemcount = 0;
+        writer.BeginWrite();
+        for (std::vector<unsigned int>::iterator nano_it = nano_offsets.begin(); nano_it != nano_offsets.end(); ++nano_it)
+        {
+            boost::shared_ptr<ao_item> nano = aodb.GetItem(*nano_it);
+            ++itemcount; 
+            if (nano)
+            {
                 writer.WriteItem(nano);
                 if (itemcount % 10000 == 0) {
                     writer.CommitItems();
                     writer.BeginWrite();
                 }
             }
-            writer.CommitItems();
         }
+        writer.CommitItems();
+        std::cout << "Parsed " << itemcount << " nano records." << std::endl;
 
-        writer.PostProcessData();
+        if (doPostProcess)
+        {
+            std::cout << "Post processing." << std::endl;
+            writer.PostProcessData();
+        }
+    }
+    catch (AODatabaseParser::Exception &e)
+    {
+        assert(false);
+        std::cerr << "Error parsing: " << e.what();
+        return false;
     }
     catch (std::bad_alloc &e) {
         assert(false);
