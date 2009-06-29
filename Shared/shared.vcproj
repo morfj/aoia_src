@@ -171,10 +171,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ctree.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\FileUtils.cpp"
 				>
 			</File>
@@ -238,10 +234,6 @@
 			</File>
 			<File
 				RelativePath=".\aopackets.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ctree.h"
 				>
 			</File>
 			<File
