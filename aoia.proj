@@ -55,7 +55,8 @@
         <VCBuild
             Projects="@(Projects)"
             Configuration="Release|Win32"
-            SolutionFile="ItemAssistant.sln" />
+            SolutionFile="ItemAssistant.sln" 
+            Rebuild="true" />
     </Target>
 
     <Target Name="package" DependsOnTargets="prepare_build;update_version;build">

@@ -37,7 +37,8 @@
             Projects="@(ProjectsToBuild)" 
             Configuration="Release|Win32" 
             SolutionFile="ItemAssistant.sln"
-            UseEnvironment="true" />
+            UseEnvironment="true" 
+            Rebuild="true" />
     </Target>
 
     <Target Name="package" DependsOnTargets="prepare_build;build">
