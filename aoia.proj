@@ -42,7 +42,7 @@
         </ItemGroup>
         <WriteLinesToFile
             File="@(VersionFile)"
-            Lines="#pragma once;;const std::tstring g_versionNumber = _T(&quot;$(Version))&quot;)%3b;"
+            Lines="#pragma once;;const std::tstring g_versionNumber = _T(&quot;$(Version)&quot;)%3b;"
             Overwrite="true" />
     </Target>
 
