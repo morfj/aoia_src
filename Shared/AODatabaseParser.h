@@ -5,6 +5,8 @@
 #include <shared/AODB.h>
 #include <string>
 #include <boost/iostreams/device/mapped_file.hpp>
+#include <boost/smart_ptr.hpp>
+#include <fstream>
 
 
 class AODatabaseParser
@@ -22,34 +24,19 @@ public:
     boost::shared_ptr<ao_item> GetItem(unsigned int offset) const;
 
 protected:
-    boost::shared_ptr<ao_item> ExtractItem(const char* pos) const;
     void EnsureFileOpen(unsigned int offset) const;
+    std::pair<unsigned int, std::string> GetFileFromOffset(unsigned int offset) const;
+    void OpenFileFromOffset(unsigned int offset) const;
 
 private:
     std::map<unsigned int, std::string> m_file_offsets;
-    mutable boost::iostreams::mapped_file_source m_file;
+    //mutable boost::iostreams::mapped_file_source m_file;
     mutable unsigned int m_current_file_offset;
-
-    //boost::iostreams::mapped_file_source m_file_001;
-
-    // This maps a resource type to a map from resource ID to resource offset in the database file.
-    //std::map<ResourceType, std::map<unsigned int, unsigned int> > m_record_index;
-    std::map<ResourceType, std::map<unsigned int, unsigned int> >::iterator m_current_resource;
-    std::map<unsigned int, unsigned int>::iterator m_current_record;
+    mutable unsigned int m_current_file_size;
+    //mutable unsigned int m_current_block_index;
+    //const unsigned int c_map_block_size;
+    mutable std::ifstream m_file;
+    boost::shared_array<char> m_buffer;
 };
-
-
-class AOItemParser
-    : public ao_item
-{
-public:
-    AOItemParser(char* pBuffer, unsigned int bufSize);
-
-private:
-    char* ParseFunctions(char* pBuffer, unsigned int bufSize, unsigned int ftype, unsigned int fkey);
-    char* ParseRequirements(char *pBuffer, unsigned int bufSize, std::list<ao_item_req> &reqlist, unsigned int cnt, int rhook);
-    char* ParseString(char *pBuffer, unsigned int bufSize, std::string &outText);
-};
-
 
 #endif // AODatabaseParser_h__

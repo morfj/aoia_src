@@ -90,7 +90,7 @@ void DBManager::destroy()
  * If it is, then check if it is up to date.
  * If local database is missing or obsolete then recreate it.
  * Return true if application has a local items database to run with, false otherwise.
-*/
+ */
 bool DBManager::syncLocalItemsDB(std::tstring const& localfile, std::tstring const& aofolder)
 {
     bool hasLocalDB = false;

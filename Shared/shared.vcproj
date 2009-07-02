@@ -171,6 +171,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\AOItemParser.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\FileUtils.cpp"
 				>
 			</File>
@@ -230,6 +234,10 @@
 			</File>
 			<File
 				RelativePath=".\AODB.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AOItemParser.h"
 				>
 			</File>
 			<File
