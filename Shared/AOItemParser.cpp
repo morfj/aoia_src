@@ -296,8 +296,22 @@ AOItemParser::AOItemParser(char* pBuffer, unsigned int bufSize)
                     unsigned short lname, linfo;
                     lname = *((unsigned short*)p); p += 2;
                     linfo = *((unsigned short*)p); p += 2;
-                    this->name = std::string(p, lname);
-                    this->description = std::string(p+lname, linfo);
+                    try
+                    {
+                        this->name = std::string(p, lname);
+                    }
+                    catch (std::exception &e)
+                    {
+                        throw std::exception("Error extracting item name string.");
+                    }
+                    try
+                    {
+                        this->description = std::string(p+lname, linfo);
+                    }
+                    catch (std::exception &e)
+                    {
+                        throw std::exception("Error extracting item description string.");
+                    }
                     p += lname + linfo;
                     head = false;
                     //debugf(DEBUG_INFO, "Name: %s\n", item->name);

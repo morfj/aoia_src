@@ -2,11 +2,9 @@
 #define AODatabaseParser_h__
 
 #include <boost/smart_ptr.hpp>
+#include <fstream>
 #include <shared/AODB.h>
 #include <string>
-#include <boost/iostreams/device/mapped_file.hpp>
-#include <boost/smart_ptr.hpp>
-#include <fstream>
 
 
 class AODatabaseParser
@@ -30,11 +28,8 @@ protected:
 
 private:
     std::map<unsigned int, std::string> m_file_offsets;
-    //mutable boost::iostreams::mapped_file_source m_file;
     mutable unsigned int m_current_file_offset;
     mutable unsigned int m_current_file_size;
-    //mutable unsigned int m_current_block_index;
-    //const unsigned int c_map_block_size;
     mutable std::ifstream m_file;
     boost::shared_array<char> m_buffer;
 };

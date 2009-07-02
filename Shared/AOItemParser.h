@@ -3,6 +3,7 @@
 
 #include <shared/AODB.h>
 
+
 class AOItemParser
     : public ao_item
 {
@@ -14,7 +15,6 @@ private:
     char* ParseRequirements(char *pBuffer, unsigned int bufSize, std::list<ao_item_req> &reqlist, unsigned int cnt, int rhook);
     char* ParseString(char *pBuffer, unsigned int bufSize, std::string &outText);
 };
-
 
 
 #endif // AOITEMPARSER_H

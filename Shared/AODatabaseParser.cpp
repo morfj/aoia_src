@@ -7,7 +7,6 @@
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <boost/filesystem.hpp>
 
-
 using namespace boost;
 using namespace boost::assign;
 using namespace boost::algorithm;
@@ -88,7 +87,16 @@ shared_ptr<ao_item> AODatabaseParser::GetItem(unsigned int offset) const
     }
 
     // Parse payload
-    retval.reset(new AOItemParser(m_buffer.get(), record_header.payload_size));
+    try
+    {
+        retval.reset(new AOItemParser(m_buffer.get(), record_header.payload_size));
+    }
+    catch (std::exception &e)
+    {
+        std::ostringstream oss;
+        oss << "Caught exception trying to parse item at offset " << offset << ". Original error: '" << e.what() << "'.";
+        throw Exception(oss.str());
+    }
 
     return retval;
 }

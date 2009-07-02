@@ -231,19 +231,23 @@ bool DBManager::syncLocalItemsDB(std::tstring const& localfile, std::tstring con
     }
     catch (std::bad_alloc &e) {
         assert(false);
-        Logger::instance().log(STREAM2STR(_T("Error creating item database. ") << e.what()));
+        LOG(_T("Error creating item database. ") << e.what());
+        MessageBox( NULL, _T("Unable to parse the AO database.\n\rMore details might be found in the log-file (if enabled)."),
+            _T("Error - AO Item Assistant"), MB_OK | MB_ICONERROR);
         return false;
     }
     catch (AODatabaseParser::Exception &e) {
         assert(false);
-        Logger::instance().log(STREAM2STR(_T("Error parsing the AO Database. ") << e.what()));
-        MessageBox( NULL, _T("Unable to parse the AO database.\n\rPlease make sure Anarchy Online is not running and try again."),
+        LOG(_T("Error creating item database. ") << e.what());
+        MessageBox( NULL, _T("Unable to parse the AO database.\n\rMore details might be found in the log-file (if enabled)."),
             _T("Error - AO Item Assistant"), MB_OK | MB_ICONERROR);
         return false;
     }
     catch (std::exception &e) {
         assert(false);
-        Logger::instance().log(STREAM2STR(_T("Error creating item database. ") << e.what()));
+        LOG(_T("Error creating item database. ") << e.what());
+        MessageBox( NULL, _T("Unable to parse the AO database.\n\rMore details might be found in the log-file (if enabled)."),
+            _T("Error - AO Item Assistant"), MB_OK | MB_ICONERROR);
         return false;
     }
 
