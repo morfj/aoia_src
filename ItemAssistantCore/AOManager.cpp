@@ -54,7 +54,8 @@ std::tstring AOManager::getAOFolder() const
             }
 
             if (!bfs::exists(AODir / _T("anarchy.exe"))) {
-                MessageBox( NULL, _T("This is not AO's directory."), _T("ERROR"), MB_OK | MB_ICONERROR);
+                MessageBox( NULL, _T("The specified directory doesn't contain a valid Anarchy Online installation."),
+                    _T("Error - AO Item Assistant"), MB_OK | MB_ICONERROR);
                 return _T("");
             }
 

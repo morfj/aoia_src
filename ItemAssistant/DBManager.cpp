@@ -68,7 +68,7 @@ bool DBManager::init(std::tstring dbfile)
     }
 
     if (!syncLocalItemsDB(_T("aoitems.db"), aofolder)) {
-        MessageBox( NULL, _T("AO Item Assistant can not start without a valid item database."),
+        MessageBox( NULL, _T("AO Item Assistant cannot start without a valid item database."),
             _T("Error - AO Item Assistant"), MB_OK | MB_ICONERROR);
         return false;
     }
