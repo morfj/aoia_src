@@ -48,6 +48,11 @@ have contributed either directly or indirectly include:
 
 Change Log:
 ===========
+Version 0.9.5                                       Release Date: 3/6/2009
+    * Fixed database parser so the app will run on Windows XP again.
+    * Fixed message handler so the app once again connects to the AO client 
+      and can track items.
+      
 Version 0.9.4                                       Release Date: 30/6/2009
     * Added support for the new database in v18.1.
     * The application is no longer using the registry to store its settings.
