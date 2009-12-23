@@ -438,6 +438,10 @@ namespace AO {
 		MSG_GIVE_TO_NPC	=	0x3a1b2c0c,//give or remove from npc trade win
 		MSG_ACCEPT_NPC_TRADE = 0x2d212407,//From server when accepting trade, contains items npc didnt want..
 		MSG_END_NPC_TRADE = 0x55682b24,//From client when ending trade, contains accept or cancel
+		MSG_CHAR_INFO = 0x4d38242e,
+		MSG_ORG_CONTRACT = 0x64582a07,
+		MSG_ORG_CITY_P1 = 0x365e555b,
+		MSG_ORG_CITY_P2 = 0x5f4b442a,
 
 		/*
 		followed by a move slotId0 from overflow each!
