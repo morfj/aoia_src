@@ -3,6 +3,7 @@
 #include "AOMessageParsers.h"
 #include <iostream>
 #include <fstream>
+#include "DBManager.h"
 
 
 AoMsgView::AoMsgView(void)
