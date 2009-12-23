@@ -7,7 +7,7 @@
 using namespace boost::algorithm;
 using namespace boost::assign;
 
-const std::string c_scheme_sql = 
+const std::string c_scheme_sql =
     "CREATE TABLE tblAO ("
     "   [aoid] INTEGER NOT NULL PRIMARY KEY UNIQUE,"
     "   [name] TEXT  NOT NULL,"
@@ -36,7 +36,8 @@ const std::string c_scheme_sql =
     "   [hits] INTEGER,"
     "   [delay] INTEGER,"
     "   [target] INTEGER,"
-    "   [value] INTEGER,"
+    "   [value1] INTEGER,"
+    "   [value2] INTEGER,"
     "   [text] TEXT"
     "   );"
 
@@ -59,6 +60,7 @@ const std::string c_scheme_sql =
     "   [purpose] TEXT"
     "   );"
 
+	"CREATE INDEX tblItemEffects_aoid_idx ON tblItemEffects (aoid);"
     ;
 
 
@@ -156,11 +158,11 @@ void AODatabaseWriter::WriteItem(boost::shared_ptr<ao_item> item)
     std::string desc = boost::algorithm::replace_all_copy(item->description, "'", "''");
 
     std::ostringstream sql;
-    sql << "INSERT INTO tblAO (aoid, name, ql, type, description, flags, properties, icon) VALUES (" 
-        << item->aoid << ", " 
-        << "'" << name << "', " 
-        << item->ql << ", " 
-        << "'" << s_ItemTypeMap[item->type] << "', " 
+    sql << "INSERT INTO tblAO (aoid, name, ql, type, description, flags, properties, icon) VALUES ("
+        << item->aoid << ", "
+        << "'" << name << "', "
+        << item->ql << ", "
+        << "'" << s_ItemTypeMap[item->type] << "', "
         << "'" << desc << "', "
         << item->flags << ", "
         << item->props << ", "
@@ -199,11 +201,18 @@ void AODatabaseWriter::writeRequirement(unsigned int aoid, ao_item_req const& re
 
 void AODatabaseWriter::writeEffect(unsigned int aoid, ao_item_effect const& eff)
 {
-    // HACK 1: Only dump the first value from the vector for now.
-    unsigned int value = 0;
+    // HACK 1 [SUPERSEDED]: Only dump the first value from the vector for now.
+	// HACK 1A: Dump first or first two values from the vector
+    unsigned int value1 = 0;
+    unsigned int value2 = 0;
     if (!eff.values.empty())
     {
-        value = *eff.values.begin();
+		if (eff.values.size() == 1) {
+            value1 = eff.values.at(0);
+	    } else {
+            value1 = eff.values.at(0);
+            value2 = eff.values.at(1);
+	    }
     }
 
     // Escape ' symbols in the text.
@@ -212,14 +221,15 @@ void AODatabaseWriter::writeEffect(unsigned int aoid, ao_item_effect const& eff)
 
     // HACK 2: We skip altogether the requirements associated with an effect for now.
     std::ostringstream sql;
-    sql << "INSERT INTO tblItemEffects (aoid, hook, type, hits, delay, target, value, text) VALUES ("
+    sql << "INSERT INTO tblItemEffects (aoid, hook, type, hits, delay, target, value1, value2, text) VALUES ("
         << aoid << ", "
         << eff.hook << ", "
         << eff.type << ", "
         << eff.hits << ", "
         << eff.delay << ", "
         << eff.target << ", "
-        << value << ", "
+        << value1 << ", "
+        << value2 << ", "
         << "'" << eff.text << "')";
     m_db.Exec(from_ascii_copy(sql.str()));
 }
