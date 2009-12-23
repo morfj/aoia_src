@@ -14,11 +14,9 @@ AoMsgView::AoMsgView(void)
     m_mask.insert(AO::MSG_UNKNOWN_4);
 }
 
-
 AoMsgView::~AoMsgView(void)
 {
 }
-
 
 BOOL AoMsgView::PreTranslateMessage(MSG* pMsg)
 {
@@ -29,30 +27,23 @@ BOOL AoMsgView::PreTranslateMessage(MSG* pMsg)
     return FALSE;
 }
 
-
 LRESULT AoMsgView::OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
     CPaintDC dc(m_hWnd);
     //RECT rect;
-
     //GetClientRect(&rect);
     //dc.DrawText("AO MSG VIEW", -1, &rect, NULL);
-
     return 0;
 }
-
 
 LRESULT AoMsgView::OnCreate(LPCREATESTRUCT createStruct)
 {
     //m_hWndClient = m_listview.Create(m_hWnd, rcDefault, 0, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | LVS_REPORT, /*WS_EX_CLIENTEDGE*/ NULL );
-
     m_dlgview.Create(m_hWnd);
-
     m_listview = m_dlgview.GetDlgItem(IDC_LIST1);
     m_listview.ModifyStyle(0, LVS_REPORT, SWP_NOACTIVATE);
     m_listview.AddColumn(_T("Message ID"), 0);
     m_listview.AddColumn(_T("Size"), 1);
-
     TBBUTTON buttons[1];
     buttons[0].iBitmap = 0;
     buttons[0].idCommand = ID_EDIT_CLEAR;
@@ -60,18 +51,15 @@ LRESULT AoMsgView::OnCreate(LPCREATESTRUCT createStruct)
     buttons[0].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_AUTOSIZE;
     buttons[0].dwData = NULL;
     buttons[0].iString = (INT_PTR)_T("Clear");
-
     CImageList imageList;
     imageList.CreateFromImage(IDB_AOMESSAGE_VIEW, 16, 1, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
-
-    m_toolbar.Create(GetTopLevelWindow(), NULL, _T("AOMessageViewToolBar"), 
-        ATL_SIMPLE_TOOLBAR_PANE_STYLE | TBSTYLE_LIST, 
+    m_toolbar.Create(GetTopLevelWindow(), NULL, _T("AOMessageViewToolBar"),
+        ATL_SIMPLE_TOOLBAR_PANE_STYLE | TBSTYLE_LIST,
         TBSTYLE_EX_MIXEDBUTTONS);
     m_toolbar.SetButtonStructSize();
     m_toolbar.SetImageList(imageList);
     m_toolbar.AddButtons(ARRAYSIZE(buttons), buttons);
     m_toolbar.AutoSize();
-
     return 0;
 }
 
@@ -82,13 +70,11 @@ LRESULT AoMsgView::OnSize(UINT wParam, CSize newSize)
     return 0;
 }
 
-
 LRESULT AoMsgView::OnClear(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
     m_listview.DeleteAllItems();
     return 0;
 }
-
 
 void AoMsgView::OnAOServerMessage(AOMessageBase &msg)
 {
@@ -100,7 +86,6 @@ void AoMsgView::OnAOServerMessage(AOMessageBase &msg)
     //    unsigned char ids[] = { 0x00, 0xC7, 0x90, 0x19 };
     //    bool found = false;
     //    found = SearchMessageForBinarySequence(msg, ids, ARRAYSIZE(ids));
-
     //    if (found) {
     //        std::ofstream ofs;
     //        ofs.open("c:\\temp\\aoia_search_hits.bin", std::ios_base::out | std::ios_base::app);
@@ -111,54 +96,92 @@ void AoMsgView::OnAOServerMessage(AOMessageBase &msg)
 
     switch(msgid)
     {
-    //case AO::MSG_FULLSYNC:
+
+	case AO::MSG_FULLSYNC:
+        {
+            //Native::AOEquip* pEquip((AO::Equip*)msg.start());
+            AO::Equip* pEquip((AO::Equip*)msg.start());
+			unsigned int l_charid = msg.characterId();
+            std::tstring name = g_DBManager.getToonName(l_charid);
+            //unsigned int numitems = pEquip.numitems();
+            std::ofstream ofs;
+            std::tstring filename = _T("binfiles\\fullsync_");
+            filename += name;
+            filename += _T(".bin");
+            ofs.open(filename.c_str(), std::ios_base::out | std::ios_base::binary);
+            DumpMessageToStream(ofs, msg);
+        }
+        break;
+
+	case AO::MSG_CHAR_INFO:
+        {
+			unsigned int l_charid = msg.characterId();
+            std::tstring name = g_DBManager.getToonName(l_charid);
+            std::ofstream ofs;
+            std::tstring filename = _T("binfiles\\char_info_");
+            filename += name;
+            filename += _T(".dat");
+            ofs.open(filename.c_str(), std::ios_base::out | std::ios_base::binary);
+            DumpMessageToStream(ofs, msg);
+        }
+        break;
+
+	case AO::MSG_ORG_CONTRACT:
+        {
+			unsigned int l_charid = msg.characterId();
+            std::tstring name = g_DBManager.getToonName(l_charid);
+            std::ofstream ofs;
+            std::tstring filename = _T("binfiles\\org_contracts_");
+            filename += name;
+            filename += _T(".dat");
+            ofs.open(filename.c_str(), std::ios_base::out | std::ios_base::binary);
+            DumpMessageToStream(ofs, msg);
+        }
+        break;
+
+	case AO::MSG_ORG_CITY_P1:
+        {
+			unsigned int l_charid = msg.characterId();
+            std::tstring name = g_DBManager.getToonName(l_charid);
+            std::ofstream ofs;
+            std::tstring filename = _T("binfiles\\org_city_");
+            filename += name;
+            filename += _T(".dat");
+            ofs.open(filename.c_str(), std::ios_base::out | std::ios_base::binary);
+            DumpMessageToStream(ofs, msg);
+        }
+        break;
+    //case AO::MSG_MOB_SYNC:
+        //{
+            //AO::MobInfo* pMobInfo = (AO::MobInfo*)msg.start();
+            //std::string name(&(pMobInfo->characterName.str), pMobInfo->characterName.strLen - 1);
+            // Dump all character IDs and names to a file.
+            //{
+            //    std::ofstream ofs;
+            //    ofs.open("c:\\temp\\character_names.csv", std::ios_base::out | std::ios_base::app);
+            //    ofs << msg.entityId() << "\t" << name << "\r\n";
+            //}
+            //{
+            //    std::string filename = "binfiles\\info_msg_";
+            //    filename += name;
+            //    filename += ".bin";
+            //    std::ofstream ofs;
+            //    ofs.open(filename.c_str(), std::ios_base::out | std::ios_base::binary);
+            //    DumpMessageToStream(ofs, msg);
+            //}
+            // Search message for the playershop container ID
+            //unsigned char ids[] = { 0x00, 0xC7, 0x90, 0x19 };
+            //bool found = SearchMessageForBinarySequence(msg, ids, ARRAYSIZE(ids));
+        //}
+        //break;
+
+	//case AO::MSG_BACKPACK:
     //    {
-    //        Native::AOEquip equip((AO::Equip*)msg.start());
-
-    //        unsigned int numitems = equip.numitems();
-
-    //        std::ofstream ofs;
-    //        ofs.open("c:\\temp\\fullsync.bin", std::ios_base::out | std::ios_base::binary);
-    //        DumpMessageToStream(ofs, msg);
+    //        std::basic_ofstream<TCHAR> ofs;
+	//		ofs.open("c:\\temp\\msg_backpack.txt", std::ios_base::out | std::ios_base::app);
+    //        DumpMessageToTextStream(ofs, msg);
     //    }
     //    break;
-
-    case AO::MSG_MOB_SYNC:
-        {
-            AO::MobInfo* pMobInfo = (AO::MobInfo*)msg.start();
-            std::string name(&(pMobInfo->characterName.str), pMobInfo->characterName.strLen - 1); 
-
-            // Dump all character IDs and names to a file.
-            {
-                std::ofstream ofs;
-                ofs.open("c:\\temp\\character_names.csv", std::ios_base::out | std::ios_base::app);
-                ofs << msg.entityId() << "\t" << name << "\r\n";
-            }
-
-            // Dump all mob sync messages to file
-            {
-                std::string filename = "c:\\temp\\info_msg_";
-                filename += name;
-                filename += ".bin";
-
-                std::ofstream ofs;
-                ofs.open(filename.c_str(), std::ios_base::out | std::ios_base::binary);
-                DumpMessageToStream(ofs, msg);
-            }
-
-            // Search message for the playershop container ID
-            unsigned char ids[] = { 0x00, 0xC7, 0x90, 0x19 };
-            bool found = SearchMessageForBinarySequence(msg, ids, ARRAYSIZE(ids));
-        }
-        break;
-
-		case AO::MSG_BACKPACK:
-        {
-            std::basic_ofstream<TCHAR> ofs;
-			ofs.open("c:\\temp\\msg_backpack.txt", std::ios_base::out | std::ios_base::app);
-            DumpMessageToTextStream(ofs, msg);
-        }
-        break;
 
     //case AO::MSG_SHOP_ITEMS:
     //    {
@@ -173,6 +196,7 @@ void AoMsgView::OnAOServerMessage(AOMessageBase &msg)
     //        AOPlayerShopInfo infoMsg(msg.start(), msg.size());
     //    }
     //    break;
+
     }
 
     //if (msgid == AO::MSG_POS_SYNC) {
@@ -198,28 +222,24 @@ void AoMsgView::OnAOServerMessage(AOMessageBase &msg)
 
     msgString.Format(_T("0x%08x"), msgid);
     sizeStr.Format(_T("%d"), msg.size());
-
     int id = m_listview.AddItem(m_listview.GetItemCount(), 0, msgString);
-
     char* pdata = (char*)malloc(msg.end() - msg.start());
     memcpy(pdata, msg.start(), msg.end() - msg.start());
-
     m_listview.SetItemData(id, (DWORD_PTR)pdata);
     m_listview.SetItemText(id, 1, sizeStr);
-
-    std::ofstream ofs;
-    ofs.open("c:\\temp\\messages.bin", std::ios_base::out | std::ios_base::binary | std::ios_base::app);
-    DumpMessageToStream(ofs, msg);
-    ofs << "========" << std::flush;
+    //std::ofstream ofs;
+    //ofs.open("c:\\temp\\messages.bin", std::ios_base::out | std::ios_base::binary | std::ios_base::app);
+    //DumpMessageToStream(ofs, msg);
+    //ofs << "========" << std::flush;
 }
 
 
 void AoMsgView::OnAOClientMessage(AOClientMessageBase &msg)
 {
-    std::ofstream ofs;
-    ofs.open("c:\\temp\\client_messages.bin", std::ios_base::out | std::ios_base::binary | std::ios_base::app);
-    DumpMessageToStream(ofs, msg);
-    ofs << "========" << std::flush;
+    //std::ofstream ofs;
+    //ofs.open("c:\\temp\\client_messages.bin", std::ios_base::out | std::ios_base::binary | std::ios_base::app);
+    //DumpMessageToStream(ofs, msg);
+    //ofs << "========" << std::flush;
 }
 
 
@@ -227,8 +247,8 @@ void AoMsgView::OnAOClientMessage(AOClientMessageBase &msg)
 void AoMsgView::DumpMessageToStream(std::ostream &out, Parser &msg)
 {
     char* p = msg.start();
-
-    while (p < msg.end()) {
+    while (p < msg.end())
+	{
         out << *p;
         ++p;
     }
@@ -237,20 +257,18 @@ void AoMsgView::DumpMessageToStream(std::ostream &out, Parser &msg)
 void AoMsgView::DumpMessageToTextStream(std::basic_ofstream<TCHAR> &out, Parser &msg)
 {
     char* p = msg.start();
-
 	//out.width(2);
 	//out.fill('0');
-    while (p < msg.end()) {
-
+    while (p < msg.end())
+	{
 		//short pp = _byteswap_ushort((*p << 8) + *(p+1));
 		short pp = _byteswap_ushort((*p << 8));
 		//<< std::showbase gives 0x first
 		out.width(2);
 		out.fill('0');
 		out << std::hex << pp << _T(" ");
-        ++p; 
+        ++p;
     }
-
 	out << std::endl;
 }
 
@@ -263,14 +281,17 @@ bool AoMsgView::SearchMessageForBinarySequence(AOMessageBase &msg, unsigned char
 
     while (p + arraySize < msg.end())
     {
-        for (unsigned int i = 0; i < arraySize; ++i) {
-            if (p[i] != pArray[i]) {
+        for (unsigned int i = 0; i < arraySize; ++i)
+		{
+            if (p[i] != pArray[i])
+			{
                 retval = false;
                 break;  // No match.
             }
             retval = true;
         }
-        if (retval) {
+        if (retval)
+		{
             break;
         }
         ++p;
@@ -279,52 +300,39 @@ bool AoMsgView::SearchMessageForBinarySequence(AOMessageBase &msg, unsigned char
 }
 
 
-
-
-
 LRESULT DlgView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
     this->SetWindowText(_T("Dialog View"));
-
     HICON hIcon = (HICON)::LoadImage(
         _Module.GetResourceInstance(),
         MAKEINTRESOURCE(IDR_MAINFRAME),
         IMAGE_ICON, 16, 16, LR_SHARED);
     this->SetIcon(hIcon, ICON_SMALL);
-
     DlgResize_Init(false, true, WS_CLIPCHILDREN);
     return 0;
 }
 
-
 LRESULT DlgView::OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
 {
     LPMSG pMsg = (LPMSG)lParam;
-
     return this->PreTranslateMessage(pMsg);
 }
-
 
 LRESULT DlgView::OnNMClickList1(int /*idCtrl*/, LPNMHDR pNMHDR, BOOL& /*bHandled*/)
 {
     WTL::CListViewCtrl listview(GetDlgItem(IDC_LIST1));
-
     int index = listview.GetSelectedIndex();
     if (index >= 0)
     {
         AO::Header *pMsg = (AO::Header*)listview.GetItemData(index);
         Native::AOMessageHeader msg(pMsg, true); //TODO: We only show server messages in this view
-
         char* pData = (char*)pMsg;
         unsigned int size = _byteswap_ushort(pMsg->msgsize);
-
         WTL::CString str;
         std::tstring text;
         unsigned char * p = (unsigned char*)pData;
         int linebreak = 0;
-
         text += msg.print();
-
         for (unsigned int offset = 0; offset < size; offset += 4)
         {
             p = (unsigned char*)(pData + offset);
@@ -344,12 +352,10 @@ LRESULT DlgView::OnNMClickList1(int /*idCtrl*/, LPNMHDR pNMHDR, BOOL& /*bHandled
                 linebreak = 0;
             }
         }
-
         GetDlgItem(IDC_EDIT2).SetWindowText(text.c_str());
     }
     return 0;
 }
-
 
 BOOL DlgView::PreTranslateMessage(MSG* pMsg)
 {
