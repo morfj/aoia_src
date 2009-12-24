@@ -109,8 +109,16 @@ void AoMsgView::OnAOServerMessage(AOMessageBase &msg)
             std::tstring filename = _T("binfiles\\fullsync_");
             filename += name;
             filename += _T(".bin");
-            ofs.open(filename.c_str(), std::ios_base::out | std::ios_base::binary);
-            DumpMessageToStream(ofs, msg);
+            try
+            {
+                ofs.open(filename.c_str(), std::ios_base::out | std::ios_base::binary);
+                DumpMessageToStream(ofs, msg);
+            }
+            catch (std::exception &e)
+            {
+                // Swallow this exception so a failure to openwrite to stream doesn't crash the applocation.
+                LOG(_T("Unable to write MSG_FULLSYNC packet to disk. ") << e.what());
+            }
         }
         break;
 
@@ -122,8 +130,16 @@ void AoMsgView::OnAOServerMessage(AOMessageBase &msg)
             std::tstring filename = _T("binfiles\\char_info_");
             filename += name;
             filename += _T(".dat");
-            ofs.open(filename.c_str(), std::ios_base::out | std::ios_base::binary);
-            DumpMessageToStream(ofs, msg);
+            try
+            {
+                ofs.open(filename.c_str(), std::ios_base::out | std::ios_base::binary);
+                DumpMessageToStream(ofs, msg);
+            }
+            catch (std::exception &e)
+            {
+                // Swallow this exception so a failure to openwrite to stream doesn't crash the applocation.
+                LOG(_T("Unable to write MSG_CHAR_INFO packet to disk. ") << e.what());
+            }
         }
         break;
 
@@ -135,8 +151,16 @@ void AoMsgView::OnAOServerMessage(AOMessageBase &msg)
             std::tstring filename = _T("binfiles\\org_contracts_");
             filename += name;
             filename += _T(".dat");
-            ofs.open(filename.c_str(), std::ios_base::out | std::ios_base::binary);
-            DumpMessageToStream(ofs, msg);
+            try
+            {
+                ofs.open(filename.c_str(), std::ios_base::out | std::ios_base::binary);
+                DumpMessageToStream(ofs, msg);
+            }
+            catch (std::exception &e)
+            {
+                // Swallow this exception so a failure to openwrite to stream doesn't crash the applocation.
+                LOG(_T("Unable to write MSG_ORG_CONTRACT packet to disk. ") << e.what());
+            }
         }
         break;
 
@@ -148,8 +172,16 @@ void AoMsgView::OnAOServerMessage(AOMessageBase &msg)
             std::tstring filename = _T("binfiles\\org_city_");
             filename += name;
             filename += _T(".dat");
-            ofs.open(filename.c_str(), std::ios_base::out | std::ios_base::binary);
-            DumpMessageToStream(ofs, msg);
+            try
+            {
+                ofs.open(filename.c_str(), std::ios_base::out | std::ios_base::binary);
+                DumpMessageToStream(ofs, msg);
+            }
+            catch (std::exception &e)
+            {
+                // Swallow this exception so a failure to openwrite to stream doesn't crash the applocation.
+                LOG(_T("Unable to write MSG_CHAR_CITY_P1 packet to disk. ") << e.what());
+            }
         }
         break;
     //case AO::MSG_MOB_SYNC:
