@@ -44,10 +44,17 @@ have contributed either directly or indirectly include:
                       message hooking as well as all the item-transfer message 
                       decoding.
     * Gremlin       - For being a guinea pig.
+    * Mordwin		- Integration with character profiler.
     * Everyone else that has provided feedback and done testing.
 
 Change Log:
 ===========
+Version 0.9.6										Release Date: ?/?/2010
+	* Fixed database parser bugs. The symptom was that the application was 
+	  unable to track certain items.
+	* Application now outputs files that can be opened with the character 
+	  profiler application.
+
 Version 0.9.5                                       Release Date: 3/6/2009
     * Fixed database parser so the app will run on Windows XP again.
     * Fixed message handler so the app once again connects to the AO client 
