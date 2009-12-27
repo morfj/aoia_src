@@ -13,6 +13,8 @@ using namespace boost::algorithm;
 using namespace boost::iostreams;
 using namespace boost::filesystem;
 
+#define BUFFER_SIZE 1024*1024
+
 struct DataBaseRecordHeader
 {
     unsigned int record_size;
@@ -24,7 +26,7 @@ struct DataBaseRecordHeader
 AODatabaseParser::AODatabaseParser(std::vector<std::string> const& aodbfiles)
   : m_current_file_offset(0)
 {
-    m_buffer.reset(new char[1024*1024]); // Creating a 1 MB buffer for record parsing.
+    m_buffer.reset(new char[BUFFER_SIZE]); // Creating a buffer for record parsing.
 
     unsigned int accumulated_offset = 0;
     for (std::vector<std::string>::const_iterator it = aodbfiles.begin(); it != aodbfiles.end(); ++it)
@@ -33,7 +35,7 @@ AODatabaseParser::AODatabaseParser(std::vector<std::string> const& aodbfiles)
         if (exists(file) && is_regular(file))
         {
             m_file_offsets[accumulated_offset] = *it;
-            accumulated_offset += file_size(file);
+            accumulated_offset += file_size(file) - 0x1000; // HACK: Should not hardcode 0x1000. Datafile size can be found in the index file.
         }
         else
         {
@@ -60,22 +62,38 @@ shared_ptr<ao_item> AODatabaseParser::GetItem(unsigned int offset) const
     m_file.seekg(offset - m_current_file_offset);
 
     // Check that the offset has the magic 0xFAFA cookie.
-    if (m_file.peek() != 0xFA)
+    unsigned char cookie[2];
+    cookie[0] = m_file.peek();
+    m_file.ignore();
+    cookie[1] = m_file.peek();
+    m_file.ignore();
+
+    if (cookie[0] != 0xFA || cookie[1] != 0xFA)
     {
+        assert(false);  // Should only happen if our offsets are wrong.
         return retval;
     }
-    m_file.ignore();
-    if (m_file.peek() != 0xFA)
-    {
-        return retval;
-    }
-    m_file.ignore();
 
     // Load record header
     DataBaseRecordHeader record_header;
     m_file.read((char*)&record_header, sizeof(DataBaseRecordHeader));
     if (m_file.fail())
     {
+        assert(false);
+        return retval;
+    }
+
+    if (record_header.payload_size > record_header.record_size)
+    {
+        //LOG(_T("Skipping record at offset ") << offset << _T(" due to payload-size being larger (") << record_header.payload_size << _T(" bytes) than the reord-size (") << record_header.record_size << _T(" bytes). "));
+        assert(false);
+        return retval;
+    }
+
+    if (record_header.payload_size > BUFFER_SIZE)
+    {
+        //LOG(_T("Skipping record at offset ") << offset << _T(" due to payload-size being larger (") << record_header.payload_size << _T(" bytes) than the parsing buffer."));
+        assert(false);
         return retval;
     }
 
@@ -83,6 +101,7 @@ shared_ptr<ao_item> AODatabaseParser::GetItem(unsigned int offset) const
     m_file.read(m_buffer.get(), record_header.payload_size);
     if (m_file.fail())
     {
+        assert(false);
         return retval;
     }
 
