@@ -2,7 +2,9 @@
 #include "FindPanel.h"
 #include "InventoryView.h"
 #include <ItemAssistantCore/SettingsManager.h>
+#include <boost/algorithm/string.hpp>
 
+namespace ba = boost::algorithm;
 using namespace aoia;
 
 FindView::FindView()
@@ -174,6 +176,7 @@ void FindView::UpdateFindQuery()
     ZeroMemory(buffer, MAX_PATH);
     eb.GetWindowText(buffer, MAX_PATH);
     std::tstring text(buffer);
+    ba::trim_if(text, ba::is_any_of(" \n\r\t"));
 
     int minql = -1;
     ZeroMemory(buffer, MAX_PATH);
