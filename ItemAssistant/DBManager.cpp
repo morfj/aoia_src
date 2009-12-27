@@ -161,6 +161,7 @@ bool DBManager::syncLocalItemsDB(std::tstring const& localfile, std::tstring con
             count++;
             if (!item)
             {
+                LOG(_T("Parsing item ") << count << _T(" at offset ") << *item_it << _T(" failed!"));
                 continue;
             }
             writer.WriteItem(item);
@@ -199,6 +200,7 @@ bool DBManager::syncLocalItemsDB(std::tstring const& localfile, std::tstring con
             count++;
             if (!nano)
             {
+                LOG(_T("Parsing nano ") << count << _T(" at offset ") << *nano_it << _T(" failed!"));
                 continue;
             }
             writer.WriteItem(nano);
