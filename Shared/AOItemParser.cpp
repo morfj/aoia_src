@@ -93,6 +93,7 @@ static std::map<unsigned short, unsigned char> s_effectkeys = map_list_of
 (0xc0,   2) // SL: Modify attribute by percentage
 (0xc1,   5) // SL: "Drain hit", attribute, minimum, maximum, armor-attribute, recover %
 (0xc3,   3) // SL: Lock perk
+(0xc7,   1) // ??: "Monster Sit useitem" - AOID 283566
 (0xc8,  11) // 
 (0xc9,   2) // ??: SL: unknown
 (0xcc,   4) // SL: "Special hit", attribute, minimum, maximum, armor-attribute
