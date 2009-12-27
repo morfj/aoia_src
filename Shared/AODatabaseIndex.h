@@ -18,7 +18,7 @@ public:
 
 protected:
     void ReadIndexFile(std::string filename, std::set<ResourceType>& types);
-    void ReadIndexBlock(const char* pos, const char* end, std::set<ResourceType>& types);
+    unsigned int ReadIndexBlock(const char* pos, const char* end, std::set<ResourceType>& types);
 
 private:
     typedef std::map<unsigned int, std::set<unsigned int> > IdOffsetMap;

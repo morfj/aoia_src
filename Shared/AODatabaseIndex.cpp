@@ -52,18 +52,36 @@ void AODatabaseIndex::ReadIndexFile(std::string filename, std::set<ResourceType>
 
     while (current_pos + block_size < index_file.end())
     {
-        ReadIndexBlock(current_pos, std::min<const char*>(index_file.end(), current_pos + block_size), types);
-        current_pos += block_size;
+        unsigned int next_block = ReadIndexBlock(current_pos, std::min<const char*>(index_file.end(), current_pos + block_size), types);
+
+        if (next_block > 0)
+        {
+            current_pos = index_file.begin() + next_block;
+        }
+        else
+        {
+            break;
+        }
     }
 }
 
 
-void AODatabaseIndex::ReadIndexBlock(const char* pos, const char* end, std::set<ResourceType>& types)
+unsigned int AODatabaseIndex::ReadIndexBlock(const char* pos, const char* end, std::set<ResourceType>& types)
 {
+    // Index blocks are stored in a double linked list. 
+    // Extract pointer to next block.
+    unsigned int next_block = *(unsigned int*)pos;
+    // Extract pointer to previous block.
+    unsigned int prev_block = *(unsigned int*)(pos + 4);
+
+    // Number of active record indexes in this block
+    unsigned short count = *(unsigned short*)(pos + 8);
+
     // Skip block header
     pos += 0x12;
+    
     const unsigned int* int_pos = (unsigned int*)pos;
-    while ((const char*)(int_pos + 2) < end)
+    while (count-- > 0 && (const char*)(int_pos + 2) < end)
     {
         unsigned int offset = *int_pos;
         ++int_pos;
@@ -80,4 +98,6 @@ void AODatabaseIndex::ReadIndexBlock(const char* pos, const char* end, std::set<
             m_record_index[(ResourceType)resource_type][resource_id].insert(offset);
         }
     }
+
+    return next_block;
 }
