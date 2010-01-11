@@ -351,6 +351,7 @@ unsigned int DBManager::getToonShopId(unsigned int charid) const
         }
         catch (boost::bad_lexical_cast &/*e*/)
         {
+            LOG("Error in getToonShopId(). Bad lexical cast.");
             // Wierd.. lets debug!
             assert(false);
         }
@@ -385,6 +386,7 @@ unsigned int DBManager::getToonDimension(unsigned int charid) const
         }
         catch (boost::bad_lexical_cast &/*e*/)
         {
+            LOG("Error in getToonDimension(). Bad lexical cast.");
             // Wierd.. lets debug!
             assert(false);
         }
@@ -402,8 +404,17 @@ bool DBManager::getDimensions(std::map<unsigned int, std::tstring> &dimensions) 
     {
         for (unsigned int i = 0; i < pT->Rows(); ++i)
         {
-            std::tstring name = from_ascii_copy(pT->Data(i, 1));
-            dimensions[boost::lexical_cast<unsigned int>(pT->Data(i, 0))] = name;
+            try
+            {
+                std::tstring name = from_ascii_copy(pT->Data(i, 1));
+                dimensions[boost::lexical_cast<unsigned int>(pT->Data(i, 0))] = name;
+            }
+            catch (boost::bad_lexical_cast &/*e*/)
+            {
+                LOG("Error in getDimensions(). Bad lexical cast.");
+                // Wierd.. lets debug!
+                assert(false);
+            }
         }
         return true;
     }

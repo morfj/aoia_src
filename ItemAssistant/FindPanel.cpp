@@ -254,20 +254,29 @@ void FindView::updateCharList(unsigned int dimension_id)
     {
         for (unsigned int i = 0; i < pT->Rows(); i++)
         {
-            unsigned int id = boost::lexical_cast<unsigned int>(pT->Data(i,0));
-
-            g_DBManager.lock();
-            std::tstring name = g_DBManager.getToonName(id);
-            g_DBManager.unLock();
-
-            if (name.empty())
+            try
             {
-                name = from_ascii_copy(pT->Data()[pT->Columns()*i]);
+                unsigned int id = boost::lexical_cast<unsigned int>(pT->Data(i,0));
+
+                g_DBManager.lock();
+                std::tstring name = g_DBManager.getToonName(id);
+                g_DBManager.unLock();
+
+                if (name.empty())
+                {
+                    name = from_ascii_copy(pT->Data()[pT->Columns()*i]);
+                }
+
+                if ((item = cb.AddString(name.c_str())) != CB_ERR)
+                {
+                    cb.SetItemData(item, id);
+                }
             }
-
-            if ((item = cb.AddString(name.c_str())) != CB_ERR)
+            catch (boost::bad_lexical_cast &/*e*/)
             {
-                cb.SetItemData(item, id);
+                // This is here because of a wierd but that appears to be SQLite's fault.
+                LOG("Error in updateCharList(). Bad lexical cast at row " << i << ".");
+                continue;
             }
         }
     }
