@@ -49,7 +49,8 @@ have contributed either directly or indirectly include:
 
 Change Log:
 ===========
-Version 0.9.6										Release Date: ?/?/2010
+Version 0.9.6										Release Date: 15/1/2010
+	* Updated SQLite to version 3.6.22 to resolve some issues.
 	* Fixed database parser bugs. The symptom was that the application was 
 	  unable to track certain items.
 	* Application now outputs files that can be opened with the character 
