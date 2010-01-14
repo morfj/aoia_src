@@ -44,7 +44,7 @@ have contributed either directly or indirectly include:
                       message hooking as well as all the item-transfer message 
                       decoding.
     * Gremlin       - For being a guinea pig.
-    * Mordwin		- Integration with character profiler.
+    * Mordwin		- Integration with CharacterParser.
     * Everyone else that has provided feedback and done testing.
 
 Change Log:
@@ -53,8 +53,8 @@ Version 0.9.6										Release Date: 15/1/2010
 	* Updated SQLite to version 3.6.22 to resolve some issues.
 	* Fixed database parser bugs. The symptom was that the application was 
 	  unable to track certain items.
-	* Application now outputs files that can be opened with the character 
-	  profiler application.
+	* Application now outputs files that can be opened with the CharacterParser 
+	  application.
 
 Version 0.9.5                                       Release Date: 3/6/2009
     * Fixed database parser so the app will run on Windows XP again.
