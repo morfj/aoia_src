@@ -96,11 +96,11 @@ LRESULT TabFrame::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandl
     AddTab(m_identifyView, _T("Identify"));
     m_viewPlugins.push_back(&m_identifyView);
 
-//#ifdef _DEBUG
+#ifdef _DEBUG
     m_MsgView.Create(*this, defRect, 0, style);
     AddTab(m_MsgView, _T("Messages (Debug)"));
     m_viewPlugins.push_back(&m_MsgView);
-//#endif
+#endif
 
     DisplayTab(m_InventoryView);
 

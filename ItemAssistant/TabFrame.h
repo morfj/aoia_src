@@ -3,11 +3,13 @@
 
 #include <PluginSDK/PluginViewInterface.h>
 #include "InventoryView.h"
-#include "AoMsgView.h"
 #include "PatternMatchView.h"
 #include "PlayershopView.h"
 #include "IdentifyView.h"
 
+#ifdef _DEBUG
+#include "AoMsgView.h"
+#endif
 
 class TabFrame
     : public CTabbedChildWindow< CDotNetTabCtrl<CTabViewTabItem> >
@@ -43,7 +45,9 @@ private:
     std::vector<PluginViewInterface*> m_viewPlugins;
 
     InventoryView       m_InventoryView;
+#ifdef _DEBUG
     AoMsgView           m_MsgView;
+#endif
     PatternMatchView    m_PatternView;
     PlayershopView      m_PlayershopView;
     IdentifyView        m_identifyView;

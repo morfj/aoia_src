@@ -100,6 +100,7 @@
 #define ID_PB_FILTER                    32786
 #define ID_PB_FILTER_HIDE               32787
 #define ID_INFO                         32789
+#define ID_RECORD_STATS_TOGGLE          32790
 #define ID_TRAYMENU_SHOW                32791
 #define ID_TRAYMENU_                    32792
 #define ID_TRAYMENU_ABOUTITEMASSISTANT  32793

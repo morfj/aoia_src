@@ -204,9 +204,21 @@
 			<File
 				RelativePath=".\AoMsgView.cpp"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\Application.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CharacterParserDumper.cpp"
 				>
 			</File>
 			<File
@@ -353,6 +365,10 @@
 			</File>
 			<File
 				RelativePath=".\Application.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CharacterParserDumper.h"
 				>
 			</File>
 			<File

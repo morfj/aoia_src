@@ -11,6 +11,7 @@
 #include "DataGridControl.h"
 #include "InfoPanel.h"
 #include "FindPanel.h"
+#include "CharacterParserDumper.h"
 
 
 class InventoryView
@@ -61,6 +62,7 @@ public:
         COMMAND_ID_HANDLER(ID_COPY_XYPHOS_ITEMREF_VBB, OnCopyItemRef)
         COMMAND_ID_HANDLER(ID_VIEW_ITEMSTATS_XYPHOS, OnShowItemRef)
         COMMAND_ID_HANDLER(ID_EXPORTTOCSV_XYPHOS, OnExportToCSV)
+        COMMAND_ID_HANDLER(ID_RECORD_STATS_TOGGLE, OnRecordStatsToggle)
         NOTIFY_CODE_HANDLER_EX(LVN_COLUMNCLICK, OnColumnClick)
         //NOTIFY_CODE_HANDLER_EX(LVN_ITEMACTIVATE, OnItemActivate)
         NOTIFY_CODE_HANDLER_EX(LVN_ITEMCHANGED, OnItemChanged)
@@ -87,6 +89,8 @@ public:
 
     LRESULT OnShowItemRef(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
     LRESULT OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
+
+    LRESULT OnRecordStatsToggle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	virtual void OnAOClientMessage(AOClientMessageBase &msg);
     virtual void OnAOServerMessage(AOMessageBase &msg);
@@ -131,6 +135,9 @@ protected:
     bool SetClipboardText(std::tstring const& text);
 
 private:
+    CharacterParserDumper m_characterParserDumper;
+    bool m_enableCharacterParserDumper;
+
     CSplitterWindow   m_splitter;
     MFTreeView        m_treeview;
     FindView          m_findview;

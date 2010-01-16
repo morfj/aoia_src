@@ -13,5 +13,5 @@ public:
     int run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT);
 
 private:
-    CMainFrame m_mainWindow;
+    boost::shared_ptr<CMainFrame> m_mainWindow;
 };

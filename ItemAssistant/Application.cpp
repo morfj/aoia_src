@@ -50,6 +50,8 @@ bool Application::init(std::tstring const& cmdLine)
 
 void Application::destroy()
 {
+    m_mainWindow.reset();
+
     // Save user settings.
     aoia::SettingsManager::instance().writeSettings(_T("ItemAssistant.conf"));
 
@@ -66,14 +68,17 @@ int Application::run(LPTSTR /*lpstrCmdLine*/, int nCmdShow)
     CMessageLoop theLoop;
     _Module.AddMessageLoop(&theLoop);
 
-    if(m_mainWindow.CreateEx() == NULL) {
+    // Create the GUI
+    m_mainWindow.reset(new CMainFrame());
+    if (m_mainWindow->CreateEx() == NULL)
+    {
         assert(false);  // Could not create main window for some reason.
         return 0;
     }
 
-    ServicesSingleton::Instance()->SetTrayIcon(m_mainWindow.GetTrayIcon());
+    ServicesSingleton::Instance()->SetTrayIcon(m_mainWindow->GetTrayIcon());
 
-    m_mainWindow.ShowWindow(nCmdShow);
+    m_mainWindow->ShowWindow(nCmdShow);
 
     int nRet = theLoop.Run();
 

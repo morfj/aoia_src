@@ -1,13 +1,15 @@
 Installation:
 =============
-- Unzip and run from your location of choice.
+Unzip and run from your location of choice. To avoid possible issues, extract 
+to C:\aoia or similar. Running from the Desktop or from inside Program Files, 
+may cause problems (in the sense that AOIA wont work) on some systems.
 
 Upgrading:
 ==========
-When upgrading from a previous version I recommend making a copy in a safe
-location of your old ItemAssistant.db file just to be on the safe side.
+When upgrading from a previous version I recommend making a copy of your old 
+ItemAssistant.db file just to be on the safe side.
 If the automated migration to the new version creates wierd results please
-send a detailed description of the problem and attach BOTH the old and the 
+send a detailed description of the problem and attach both the old and the 
 newly converted ItemAssistant.db file.
 
 Usage:
@@ -49,7 +51,7 @@ have contributed either directly or indirectly include:
 
 Change Log:
 ===========
-Version 0.9.6										Release Date: 15/1/2010
+Version 0.9.6										Release Date: 16/1/2010
 	* Updated SQLite to version 3.6.22 to resolve some issues.
 	* Fixed database parser bugs. The symptom was that the application was 
 	  unable to track certain items.

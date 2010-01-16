@@ -10,6 +10,7 @@
 #include <ItemAssistantCore/AOManager.h>
 #include "ItemListDataModel.h"
 #include "ServerSelectorDialog.h"
+#include <ItemAssistantCore/SettingsManager.h>
 
 
 using namespace WTL;
@@ -21,7 +22,13 @@ InventoryView::InventoryView()
     : m_sortDesc(false)
     , m_sortColumn(0)
     , m_datagrid(new DataGridControl())
+    , m_characterParserDumper(_T("binfiles"))
 {
+    m_enableCharacterParserDumper = true;
+    if (boost::algorithm::iequals(SettingsManager::instance().getValue(_T("Record Stats")), _T("no")))
+    {
+        m_enableCharacterParserDumper = false;
+    }
 }
 
 
@@ -480,6 +487,17 @@ LRESULT InventoryView::OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND 
 }
 
 
+LRESULT InventoryView::OnRecordStatsToggle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+    m_enableCharacterParserDumper = !m_enableCharacterParserDumper;
+
+    m_toolbar.CheckButton(ID_RECORD_STATS_TOGGLE, m_enableCharacterParserDumper ? TRUE : FALSE);
+    SettingsManager::instance().setValue(_T("Record Stats"), m_enableCharacterParserDumper ? _T("yes") : _T("no"));
+
+    return 0;
+}
+
+
 void InventoryView::HideFindWindow()
 {
     if (::IsWindowVisible(m_findview))
@@ -572,37 +590,48 @@ LRESULT InventoryView::OnCreate(LPCREATESTRUCT createStruct)
 
     m_accelerators.LoadAccelerators(IDR_INV_ACCEL);
 
-    TBBUTTON buttons[5];
+    TBBUTTON buttons[6];
     buttons[0].iBitmap = 0;
     buttons[0].idCommand = ID_INV_FIND_TOGGLE;
     buttons[0].fsState = TBSTATE_ENABLED;
     buttons[0].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_CHECK | BTNS_AUTOSIZE;
     buttons[0].dwData = NULL;
     buttons[0].iString = (INT_PTR)_T("Find Item");
+
     buttons[1].iBitmap = 1;
     buttons[1].idCommand = ID_INFO;
     buttons[1].fsState = TBSTATE_ENABLED;
     buttons[1].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_CHECK | BTNS_AUTOSIZE;
     buttons[1].dwData = NULL;
     buttons[1].iString = (INT_PTR)_T("Item Info");
+
     buttons[2].iBitmap = 3;
     buttons[2].idCommand = 0;
     buttons[2].fsState = 0;
     buttons[2].fsStyle = BTNS_SEP;
     buttons[2].dwData = NULL;
     buttons[2].iString = NULL;
+
     buttons[3].iBitmap = 3;
     buttons[3].idCommand = ID_SELL_ITEM_AOMARKET;
     buttons[3].fsState = 0;
     buttons[3].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_AUTOSIZE;
     buttons[3].dwData = NULL;
     buttons[3].iString = (INT_PTR)_T("Sell Item");
-    buttons[4].iBitmap = 2;
-    buttons[4].idCommand = ID_HELP;
+
+    buttons[4].iBitmap = 4;
+    buttons[4].idCommand = ID_RECORD_STATS_TOGGLE;
     buttons[4].fsState = TBSTATE_ENABLED;
-    buttons[4].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_AUTOSIZE;
+    buttons[4].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_CHECK | BTNS_AUTOSIZE;
     buttons[4].dwData = NULL;
-    buttons[4].iString = (INT_PTR)_T("Help");
+    buttons[4].iString = (INT_PTR)_T("Record Stats");
+
+    buttons[5].iBitmap = 2;
+    buttons[5].idCommand = ID_HELP;
+    buttons[5].fsState = TBSTATE_ENABLED;
+    buttons[5].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_AUTOSIZE;
+    buttons[5].dwData = NULL;
+    buttons[5].iString = (INT_PTR)_T("Help");
 
     CImageList imageList;
     imageList.CreateFromImage(IDB_INVENTORY_VIEW, 16, 2, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
@@ -615,6 +644,8 @@ LRESULT InventoryView::OnCreate(LPCREATESTRUCT createStruct)
     m_toolbar.SetImageList(imageList);
     m_toolbar.AddButtons(ARRAYSIZE(buttons), buttons);
     m_toolbar.AutoSize();
+
+    m_toolbar.CheckButton(ID_RECORD_STATS_TOGGLE, m_enableCharacterParserDumper ? TRUE : FALSE);
 
     PostMessage(WM_POSTCREATE);
 
@@ -1000,6 +1031,11 @@ unsigned int InventoryView::GetFromContainerId(unsigned int charId, unsigned sho
 
 void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 {
+    if (m_enableCharacterParserDumper)
+    {
+        m_characterParserDumper.OnAOServerMessage(msg);
+    }
+
     switch(msg.messageId())
     {
 	case AO::MSG_ACCEPT_NPC_TRADE:
