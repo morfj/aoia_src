@@ -52,6 +52,7 @@ have contributed either directly or indirectly include:
 Change Log:
 ===========
 Version 0.9.6										Release Date: 16/1/2010
+    * Changed link to AO Mainframe.
 	* Updated SQLite to version 3.6.22 to resolve some issues.
 	* Fixed database parser bugs. The symptom was that the application was 
 	  unable to track certain items.
@@ -62,7 +63,7 @@ Version 0.9.5                                       Release Date: 3/6/2009
     * Fixed database parser so the app will run on Windows XP again.
     * Fixed message handler so the app once again connects to the AO client 
       and can track items.
-      
+
 Version 0.9.4                                       Release Date: 30/6/2009
     * Added support for the new database in v18.1.
     * The application is no longer using the registry to store its settings.
@@ -220,7 +221,3 @@ Version 0.5                                         Release Date: 20/09/2005
 Version 0.4 (and earlier)                           Release Date: BC
     * Initial test builds.
     * Debug builds.
-
-
--- 
-MortenF
