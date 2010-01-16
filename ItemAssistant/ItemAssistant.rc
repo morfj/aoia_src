@@ -29,8 +29,8 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,9,5,0
- PRODUCTVERSION 0,9,5,0
+ FILEVERSION 0,9,6,0
+ PRODUCTVERSION 0,9,6,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -48,12 +48,12 @@ BEGIN
             VALUE "Comments", "Homepage is located at http://ia.frellu.net"
             VALUE "CompanyName", "http://ia.frellu.net"
             VALUE "FileDescription", "Anarchy Online Item Assistant"
-            VALUE "FileVersion", "0,9,5,0"
+            VALUE "FileVersion", "0, 9, 6, 0"
             VALUE "InternalName", "AOIA"
             VALUE "LegalCopyright", "Copyright (c) 2006 - 2009"
             VALUE "OriginalFilename", "ItemAssistant.exe"
             VALUE "ProductName", "Item Assistant"
-            VALUE "ProductVersion", "0,9,5,0"
+            VALUE "ProductVersion", "0, 9, 6, 0"
         END
     END
     BLOCK "VarFileInfo"
@@ -469,7 +469,7 @@ BEGIN
     IDR_INVENTORY_VIEW      "Inventory"
     IDR_DEBUG_VIEW          "Debug Messages"
     IDS_AUNO_ITEMREF_URL    "http://auno.org/ao/db.php?id=%lowid%&ql=%ql%"
-    IDS_JAYDEE_ITEMREF_URL  "http://aomainframe.net/showitem.asp?LowID=%lowid%&HiID=%hiid%&QL=%ql%"
+    IDS_JAYDEE_ITEMREF_URL  "http://ao.tcdev.de/showitem.asp?LowID=%lowid%&HiID=%hiid%&QL=%ql%"
     IDS_AO_ITEMREF_URL      "itemref://%lowid%/%hiid%/%ql%"
 END
 
