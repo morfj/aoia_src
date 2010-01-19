@@ -35,6 +35,19 @@
         <Delete Files="@(OldOutputFiles)" />
     </Target>
 
+    <Target Name="update_version_resource">
+        <Message Text="Updating Version Resource" />
+        <ItemGroup>
+            <ResourceFile Include="ItemAssistant/*.rc" />
+        </ItemGroup>
+        <FileUpdate Files="@(ResourceFile)"
+                    Regex="VERSION +\d+, ?\d+, ?\d+, ?\d+"
+                    ReplacementText="VERSION $(Version)" />
+        <FileUpdate Files="@(ResourceFile)"
+                    Regex="&quot;\d+, ?\d+, ?\d+, ?\d+&quot;"
+                    ReplacementText="&quot;$(Version)&quot;" />
+    </Target>
+
     <Target Name="update_version">
         <Message Text="Updating Version" />
         <ItemGroup>
@@ -55,7 +68,7 @@
             Rebuild="true" />
     </Target>
 
-    <Target Name="package" DependsOnTargets="prepare_build;update_version;build">
+    <Target Name="package" DependsOnTargets="prepare_build;update_version;update_version_resource;build">
         <Message Text="Packaging" />
         <ItemGroup>
             <Files Include="Release/ItemAssistant.exe" />
