@@ -45,8 +45,11 @@ void CharacterParserDumper::OnAOServerMessage(AOMessageBase &msg)
 
     case AO::MSG_ORG_CONTRACT:
         {
-            std::tstring toon_name = g_DBManager.getToonName(msg.characterId());
-            DumpMessageToFile(STREAM2STR(_T("org_contracts_") << toon_name << _T(".dat")), msg);
+			// 59 byte versions of this packet are sent on zoning, ignore these
+			if (msg.size()>59) {
+				std::tstring toon_name = g_DBManager.getToonName(msg.characterId());
+				DumpMessageToFile(STREAM2STR(_T("org_contracts_") << toon_name << _T(".dat")), msg);
+			}
         }
         break;
 
