@@ -44,8 +44,14 @@
                     Regex="VERSION +\d+, ?\d+, ?\d+, ?\d+"
                     ReplacementText="VERSION $(Version)" />
         <FileUpdate Files="@(ResourceFile)"
+                    Regex="VERSION (\d+)\.(\d+)\.(\d+)\.(\d+)"
+                    ReplacementText="VERSION $1,$2,$3,$4" />
+        <FileUpdate Files="@(ResourceFile)"
                     Regex="&quot;\d+, ?\d+, ?\d+, ?\d+&quot;"
                     ReplacementText="&quot;$(Version)&quot;" />
+        <FileUpdate Files="@(ResourceFile)"
+                    Regex="&quot;(\d+)\.(\d+)\.(\d+)\.(\d+)&quot;"
+                    ReplacementText="&quot;$1, $2, $3, $4&quot;" />
     </Target>
 
     <Target Name="update_version">
