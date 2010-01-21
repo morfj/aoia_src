@@ -35,21 +35,33 @@
         <Delete Files="@(OldOutputFiles)" />
     </Target>
 
+    <!--<Target Name="revert_modified_files">
+        <ItemGroup>
+            <ModifiedFiles Include="ItemAssistant/*.rc" />
+            <ModifiedFiles Include="ItemAssistant/Version.h" />
+        </ItemGroup>
+        <Exec Command="svn revert %(ModifiedFiles.Identity)" />
+    </Target>-->
+    
     <Target Name="update_version_resource">
         <Message Text="Updating Version Resource" />
         <ItemGroup>
             <ResourceFile Include="ItemAssistant/*.rc" />
         </ItemGroup>
         <FileUpdate Files="@(ResourceFile)"
+                    Encoding="ASCII"
                     Regex="VERSION +\d+, ?\d+, ?\d+, ?\d+"
                     ReplacementText="VERSION $(Version)" />
         <FileUpdate Files="@(ResourceFile)"
+                    Encoding="ASCII"
                     Regex="VERSION (\d+)\.(\d+)\.(\d+)\.(\d+)"
                     ReplacementText="VERSION $1,$2,$3,$4" />
         <FileUpdate Files="@(ResourceFile)"
+                    Encoding="ASCII"
                     Regex="&quot;\d+, ?\d+, ?\d+, ?\d+&quot;"
                     ReplacementText="&quot;$(Version)&quot;" />
         <FileUpdate Files="@(ResourceFile)"
+                    Encoding="ASCII"
                     Regex="&quot;(\d+)\.(\d+)\.(\d+)\.(\d+)&quot;"
                     ReplacementText="&quot;$1, $2, $3, $4&quot;" />
     </Target>
