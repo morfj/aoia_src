@@ -51,6 +51,12 @@ have contributed either directly or indirectly include:
 
 Change Log:
 ===========
+Version 0.9.7                                       Release Date: 26/1/2010
+    * Fixed org city output for CharacterParser integration. Does not dump
+      contract message on zone since it doesn't contain anything useful anyway.
+    * Includes UAC manifest in EXE file. Hopefully this should make some 
+      compatibility problems with Vista and 7 go away.
+
 Version 0.9.6										Release Date: 16/1/2010
     * Changed link to AO Mainframe.
 	* Updated SQLite to version 3.6.22 to resolve some issues.
