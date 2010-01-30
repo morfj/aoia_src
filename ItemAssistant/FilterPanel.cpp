@@ -123,7 +123,7 @@ namespace PatternMatcher {
             return;
         }
 
-        int oldselection = cb.GetCurSel();
+        unsigned int prev_selected_toon = cb.GetItemData(cb.GetCurSel());
 
         cb.ResetContent();
         int item = cb.AddString(_T("-"));
@@ -156,8 +156,21 @@ namespace PatternMatcher {
         }
         g_DBManager.unLock();
 
-        if (oldselection >= 0) {
-            cb.SetCurSel(oldselection);
+        bool found = false;
+        for (int i = 0; i < cb.GetCount(); ++i)
+        {
+            unsigned int data = cb.GetItemData(i);
+            if (data == prev_selected_toon)
+            {
+                cb.SetCurSel(i);
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+        {
+            cb.SetCurSel(0);
         }
     }
 
@@ -260,6 +273,13 @@ namespace PatternMatcher {
     LRESULT FilterPanel::onBnClickedCompletable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
     {
         signalSettingsChanged();
+        return 0;
+    }
+
+
+    LRESULT FilterPanel::OnCbnDropdown(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+    {
+        updateCharList();
         return 0;
     }
 

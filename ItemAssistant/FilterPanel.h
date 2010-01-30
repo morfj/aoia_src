@@ -43,6 +43,7 @@ namespace PatternMatcher {
             COMMAND_HANDLER(IDC_COMPLETABLE, BN_CLICKED, onBnClickedCompletable)
             COMMAND_HANDLER(IDC_DIMENSION_COMBO, CBN_SELCHANGE, onDimensionComboSelection)
             COMMAND_HANDLER(IDC_CHARCOMBO, CBN_SELCHANGE, onCbnSelchangeCharcombo)
+            COMMAND_HANDLER(IDC_CHARCOMBO, CBN_DROPDOWN, OnCbnDropdown)
             COMMAND_HANDLER(IDC_EXCLUDE_ASSEMBLED, BN_CLICKED, onExcludeAssembledPatternsClicked)
             DEFAULT_REFLECTION_HANDLER()
         END_MSG_MAP()
@@ -62,6 +63,7 @@ namespace PatternMatcher {
         LRESULT onBnClickedShowAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
         LRESULT onBnClickedShowPartials(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
         LRESULT onBnClickedCompletable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+        LRESULT OnCbnDropdown(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
         LRESULT onExcludeAssembledPatternsClicked(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
     private:
