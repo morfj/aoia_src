@@ -136,6 +136,40 @@ LRESULT FindView::OnCbnSelChangeCharcombo(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 }
 
 
+LRESULT FindView::OnCbnDropdown(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+    CComboBox cb = GetDlgItem(IDC_DIMENSION_COMBO);
+    int item;
+    if ((item = cb.GetCurSel()) != CB_ERR)
+    {
+        unsigned int dimension_id = (unsigned int)cb.GetItemData(item);
+
+        CComboBox toon_combo = GetDlgItem(IDC_CHARCOMBO);
+        unsigned int char_id = toon_combo.GetItemData(toon_combo.GetCurSel());
+
+        updateCharList(dimension_id);
+
+        bool found = false;
+        for (int i = 0; i < toon_combo.GetCount(); ++i)
+        {
+            unsigned int data = toon_combo.GetItemData(i);
+            if (data == char_id)
+            {
+                toon_combo.SetCurSel(i);
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+        {
+            toon_combo.SetCurSel(0);
+        }
+    }
+    return 0;
+}
+
+
 LRESULT FindView::OnTimer(UINT wParam, TIMERPROC lParam)
 {
     if (wParam == 1)
