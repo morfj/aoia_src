@@ -79,4 +79,6 @@ private:
     CCommandBarCtrl            m_CmdBar;
 
     bool m_minimized;
+
+    CRect m_windowRect;
 };
