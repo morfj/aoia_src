@@ -51,6 +51,10 @@ have contributed either directly or indirectly include:
 
 Change Log:
 ===========
+Version 1.0.0                                       Release Date: ?/?/2010
+    * Fixed issue 2947010. Generating the script with items for ingame display
+      now use the correct linebreak tag.
+
 Version 0.9.7                                       Release Date: 26/1/2010
     * Fixed org city output for CharacterParser integration. Does not dump
       contract message on zone since it doesn't contain anything useful anyway.
