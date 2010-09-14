@@ -54,6 +54,7 @@ static std::map<unsigned short, unsigned char> s_effectkeys = map_list_of
 (0x61,   2) // AO: cast nano, id, chance to cast
 (0x64,   0) // AO: open bank
 (0x6c,   1) // AO: equip monster weapon, 4byteid
+(0x70,	 0)	// ??: Unknown text string
 (0x71,   3) // AO: remove nanos under x ncu [ncumax, school, count]
 (0x73,   1) // AO: script [id]
 (0x75,   0) // AO: Create OR enter apartment
@@ -108,6 +109,7 @@ static std::map<unsigned short, unsigned char> s_effectkeys = map_list_of
 (0xe6,   4) // 
 (0xe7,   4) // 
 (0xe8,   2) // ??: AddDefProc-Self <%chance, AOID>
+(0xe9,   0) // ??: AOID = 283789
 (0xea,   3) // ??: SpawnQuest-Self <quest-id, unknown, unknown>
 (0xeb,   2) //
 (0xec,   1) // ??: PlayfieldNano-Self <AOID>
@@ -119,6 +121,7 @@ static std::map<unsigned short, unsigned char> s_effectkeys = map_list_of
 (0xf2,   0) // 18.0.1 : ?? 
 (0xf3,   3) // 18.1.0 : ?? Instanced City Guest Key Generator
 (0xf4,   1) // 18.0.0 : ?? AOID = 280162
+(0xf8,	 0) // 18.3.x : ?? AOID = 202260
 ;
 
 AOItemParser::AOItemParser(char* pBuffer, unsigned int bufSize)
@@ -301,7 +304,7 @@ AOItemParser::AOItemParser(char* pBuffer, unsigned int bufSize)
                     {
                         this->name = std::string(p, lname);
                     }
-                    catch (std::exception &e)
+                    catch (std::exception &/*e*/)
                     {
                         throw std::exception("Error extracting item name string.");
                     }
@@ -309,7 +312,7 @@ AOItemParser::AOItemParser(char* pBuffer, unsigned int bufSize)
                     {
                         this->description = std::string(p+lname, linfo);
                     }
-                    catch (std::exception &e)
+                    catch (std::exception &/*e*/)
                     {
                         throw std::exception("Error extracting item description string.");
                     }
@@ -545,7 +548,14 @@ char* AOItemParser::ParseFunctions(char* pBuffer, unsigned int bufSize, unsigned
         p += 4;   // skip one (MKF: This is probably the number of seconds the text should be visible for?)
         break;
 
-    case 0x7b : // unknown2 text, length, text
+	case 0x70:	// Unknown text. Looks like named event or something?
+		{
+			p = ParseString(p, REMAINING, eff.text);
+			p += 4;	// Skip
+		}
+		break;
+
+	case 0x7b : // unknown2 text, length, text
         p = ParseString(p, REMAINING, eff.text);
         p += 4*2; // skip two
         break;
