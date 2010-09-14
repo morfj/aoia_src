@@ -13,7 +13,7 @@
 
 namespace bfs = boost::filesystem;
 
-#define CURRENT_DB_VERSION 4
+#define CURRENT_DB_VERSION 5
 
 /*********************************************************/
 /* DB Manager Implementation                             */
@@ -698,6 +698,22 @@ void DBManager::updateDBVersion(unsigned int fromVersion) const
         }
         // Dropthrough
 
+	case 4: // Updates from v4: Added credits column in the toons table.
+		{
+			Begin();
+			Exec(_T("CREATE TABLE tToons2 (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0', dimensionid INTEGER DEFAULT '0', credits INTEGER DEFAULT '0')"));
+			Exec(_T("INSERT INTO tToons2 (charid, charname, shopid) SELECT charid, charname, shopid FROM tToons"));
+			Exec(_T("DROP TABLE tToons"));
+			Exec(_T("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0', dimensionid INTEGER DEFAULT '0', credits INTEGER DEFAULT '0')"));
+			Exec(_T("INSERT INTO tToons (charid, charname, shopid) SELECT charid, charname, shopid FROM tToons2"));
+			Exec(_T("DROP TABLE tToons2"));
+			Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));
+			Exec(_T("DROP VIEW vSchemeVersion"));
+			Exec(_T("CREATE VIEW vSchemeVersion AS SELECT '5' AS Version"));
+			Commit();
+		}
+		// Dropthrough
+
     default:
         break;
     }
@@ -713,7 +729,7 @@ void DBManager::createDBScheme() const
     Exec(_T("CREATE VIEW vInvItems AS SELECT * FROM tItems WHERE parent=2"));
     Exec(_T("CREATE INDEX iOwner ON tItems (owner)"));
     Exec(_T("CREATE INDEX iParent ON tItems (parent)"));
-    Exec(_T("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0', dimensionid INTEGER DEFAULT '0')"));
+    Exec(_T("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0', dimensionid INTEGER DEFAULT '0', credits INTEGER DEFAULT '0')"));
     Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));
     Exec(_T("CREATE TABLE tDimensions (dimensionid INTEGER NOT NULL PRIMARY KEY UNIQUE, dimensionname VARCHAR)"));
     Exec(_T("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (11, 'Atlantean (Rubi-Ka 1)')"));
