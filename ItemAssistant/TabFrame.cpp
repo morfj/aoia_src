@@ -78,6 +78,10 @@ LRESULT TabFrame::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandl
 
     DWORD style = WS_CHILD | /*WS_VISIBLE |*/ WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 
+    m_summaryView.Create(*this, defRect, 0, style);
+    AddTab(m_summaryView, _T("Summary"));
+    m_viewPlugins.push_back(&m_summaryView);
+
     m_InventoryView.Create(*this, defRect, 0, style);
     AddTab(m_InventoryView, _T("Inventory"));
     m_viewPlugins.push_back(&m_InventoryView);
@@ -102,7 +106,7 @@ LRESULT TabFrame::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandl
     m_viewPlugins.push_back(&m_MsgView);
 #endif
 
-    DisplayTab(m_InventoryView);
+    DisplayTab(m_summaryView);
 
     return 0;
 }

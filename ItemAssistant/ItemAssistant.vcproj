@@ -202,18 +202,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\AoMsgView.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\Application.cpp"
 				>
 			</File>
@@ -234,43 +222,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\FilterPanel.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\FindPanel.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IdentifyListDataModel.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IdentifyView.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\InfoPanel.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\InjectionSupport.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\InventoryView.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\InvTreeItems.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\ItemAssistant.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ItemListDataModel.cpp"
 				>
 			</File>
 			<File
@@ -286,27 +242,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\PatternMatchView.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\PatternReport.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\PlayershopView.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\ProgressDialog.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\PsmTreeItems.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\PsmTreeView.cpp"
 				>
 			</File>
 			<File
@@ -360,10 +296,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\AoMsgView.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Application.h"
 				>
 			</File>
@@ -384,43 +316,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\FilterPanel.h"
-				>
-			</File>
-			<File
-				RelativePath=".\FindPanel.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IdentifyListDataModel.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IdentifyView.h"
-				>
-			</File>
-			<File
-				RelativePath=".\InfoPanel.h"
-				>
-			</File>
-			<File
 				RelativePath=".\InjectionSupport.h"
 				>
 			</File>
 			<File
-				RelativePath=".\InventoryView.h"
-				>
-			</File>
-			<File
-				RelativePath=".\InvTreeItems.h"
-				>
-			</File>
-			<File
 				RelativePath=".\ItemAssistant.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ItemListDataModel.h"
 				>
 			</File>
 			<File
@@ -436,27 +336,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\PatternMatchView.h"
-				>
-			</File>
-			<File
-				RelativePath=".\PatternReport.h"
-				>
-			</File>
-			<File
-				RelativePath=".\PlayershopView.h"
-				>
-			</File>
-			<File
 				RelativePath=".\ProgressDialog.h"
-				>
-			</File>
-			<File
-				RelativePath=".\PsmTreeItems.h"
-				>
-			</File>
-			<File
-				RelativePath=".\PsmTreeView.h"
 				>
 			</File>
 			<File
@@ -541,6 +421,191 @@
 			</File>
 			<File
 				RelativePath=".\res\WTL_Test.ico"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Plugins"
+			>
+			<Filter
+				Name="IdentifyView"
+				>
+				<File
+					RelativePath=".\IdentifyListDataModel.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\IdentifyListDataModel.h"
+					>
+				</File>
+				<File
+					RelativePath=".\IdentifyView.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\IdentifyView.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="PlayerShopMonitor"
+				>
+				<File
+					RelativePath=".\PlayershopView.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\PlayershopView.h"
+					>
+				</File>
+				<File
+					RelativePath=".\PsmTreeItems.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\PsmTreeItems.h"
+					>
+				</File>
+				<File
+					RelativePath=".\PsmTreeView.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\PsmTreeView.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="SummaryView"
+				>
+				<File
+					RelativePath=".\DataModel.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\DataModel.h"
+					>
+				</File>
+				<File
+					RelativePath=".\SummaryView.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\SummaryView.h"
+					>
+				</File>
+				<Filter
+					Name="Resources"
+					>
+					<File
+						RelativePath=".\res\template.htm"
+						DeploymentContent="true"
+						>
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="Inventory"
+				>
+				<File
+					RelativePath=".\FindPanel.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\FindPanel.h"
+					>
+				</File>
+				<File
+					RelativePath=".\InfoPanel.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\InfoPanel.h"
+					>
+				</File>
+				<File
+					RelativePath=".\InventoryView.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\InventoryView.h"
+					>
+				</File>
+				<File
+					RelativePath=".\InvTreeItems.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\InvTreeItems.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ItemListDataModel.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\ItemListDataModel.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="PatternMatcher"
+				>
+				<File
+					RelativePath=".\FilterPanel.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\FilterPanel.h"
+					>
+				</File>
+				<File
+					RelativePath=".\PatternMatchView.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\PatternMatchView.h"
+					>
+				</File>
+				<File
+					RelativePath=".\PatternReport.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\PatternReport.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Debug"
+				>
+				<File
+					RelativePath=".\AoMsgView.cpp"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\AoMsgView.h"
+					>
+				</File>
+			</Filter>
+		</Filter>
+		<Filter
+			Name="Common"
+			>
+			<File
+				RelativePath=".\WebView.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\WebView.h"
 				>
 			</File>
 		</Filter>

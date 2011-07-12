@@ -1,5 +1,4 @@
 #include "StdAfx.h"
-
 #include "PatternMatchView.h"
 #include "DBManager.h"
 #include "PatternReport.h"
@@ -16,6 +15,7 @@ PatternMatchView::PatternMatchView(void)
     , m_toonid(0) 
     , m_sortDesc(true)
     , m_sortColumn(1)
+    , m_webview(STREAM2STR("http://ia-help.frellu.net/?topic=patternmatcher&version=" << g_versionNumber))
 {
     m_availCalc.SetOwner(this);
 }
@@ -36,7 +36,6 @@ LRESULT PatternMatchView::OnCreate(LPCREATESTRUCT createStruct)
     m_filterPanel.Create(m_hWnd);
     m_filterPanel.ShowWindow(SW_SHOWNOACTIVATE);
 
-    m_webview.SetParent(this);
     m_webview.Create(m_hWnd);
     m_webview.ShowWindow(SW_SHOWNOACTIVATE);
 
@@ -460,118 +459,6 @@ int PatternMatchView::CompareStr(LPARAM param1, LPARAM param2, LPARAM sort)
     pThis->m_listview.GetItemText(param2, col, name2, sizeof(name2) - 1);
 
     return pThis->m_sortDesc ? StrCmpI(name2, name1) : StrCmpI(name1, name2);
-}
-
-
-/*************************************************/
-/** Web View                                    **/
-/*************************************************/
-
-
-LRESULT WebView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
-{
-    CWindow wndPlaceholder = GetDlgItem ( IDC_IE_PLACEHOLDER );
-    CRect rc;
-
-    // Get the rect of the placeholder group box, then destroy 
-    // that window because we don't need it anymore.
-    wndPlaceholder.GetWindowRect ( rc );
-    ScreenToClient ( rc );
-    wndPlaceholder.DestroyWindow();
-
-    // Create the AX host window.
-    m_wndIE.Create ( *this, rc, _T(""), WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN );
-
-    CComPtr<IUnknown> punkCtrl;
-    CComVariant v;    // empty VARIANT
-
-    // Create the browser control using its GUID.
-    //m_wndIE.CreateControlEx ( L"{8856F961-340A-11D0-A96B-00C04FD705A2}", NULL, NULL, &punkCtrl );
-    m_wndIE.CreateControlEx ( L"Shell.Explorer", NULL, NULL, &punkCtrl );
-
-    // Get an IWebBrowser2 interface on the control and navigate to a page.
-    m_pWB2 = punkCtrl;
-    if (m_pWB2) {
-        m_pWB2->Navigate(CComBSTR(STREAM2STR("http://ia-help.frellu.net/?topic=patternmatcher&version=" << g_versionNumber).c_str()), &v, &v, &v, &v);
-    }
-
-    return 0;
-}
-
-
-LRESULT WebView::OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
-{
-    LPMSG pMsg = (LPMSG)lParam;
-    return this->PreTranslateMsg(pMsg);
-}
-
-
-LRESULT WebView::OnSize(UINT wParam, CSize newSize)
-{
-    m_wndIE.SetWindowPos(NULL, 0, 0, newSize.cx, newSize.cy, SWP_NOZORDER | SWP_NOACTIVATE | SWP_DEFERERASE | SWP_NOSENDCHANGING);
-    return 0;
-}
-
-
-void WebView::SetParent(PatternMatchView* parent)
-{
-    m_pParent = parent;
-}
-
-
-BOOL WebView::PreTranslateMsg(MSG* pMsg)
-{
-    return IsDialogMessage(pMsg);
-}
-
-
-void WebView::Navigate(std::tstring const& url)
-{
-    if (!m_pWB2) {
-        return;
-    }
-
-    CComVariant v;    // empty VARIANT
-    m_pWB2->Navigate( CComBSTR(url.c_str()), &v, &v, &v, &v );
-}
-
-
-void WebView::SetHTML(std::tstring const& html)
-{
-    if (!m_pWB2) {
-        return;
-    }
-
-    LPDISPATCH pDisp = NULL;
-    m_pWB2->get_Document(&pDisp);
-
-    IHTMLDocument2* pIDoc = NULL;
-    pDisp->QueryInterface(IID_IHTMLDocument2, (void**)&pIDoc);
-
-
-    pIDoc->clear();
-
-    SAFEARRAY *sfArray = SafeArrayCreateVector(VT_VARIANT, 0, 1);
-
-    CComBSTR bstr( html.c_str() );
-
-
-    if (sfArray)
-    {
-        VARIANT *param;
-        SafeArrayAccessData(sfArray,(LPVOID*) & param);
-        param->vt = VT_BSTR;
-        param->bstrVal = bstr;
-        SafeArrayUnaccessData(sfArray);
-        pIDoc->writeln(sfArray);
-    }
-
-    SafeArrayDestroy(sfArray);
-
-    pIDoc->close();
-
-    pIDoc->Release();
-    pDisp->Release();
 }
 
 

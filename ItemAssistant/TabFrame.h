@@ -6,6 +6,7 @@
 #include "PatternMatchView.h"
 #include "PlayershopView.h"
 #include "IdentifyView.h"
+#include "SummaryView.h"
 
 #ifdef _DEBUG
 #include "AoMsgView.h"
@@ -51,9 +52,10 @@ private:
     PatternMatchView    m_PatternView;
     PlayershopView      m_PlayershopView;
     IdentifyView        m_identifyView;
+    aoia::sv::SummaryView m_summaryView;
 
-    WTL::CReBarCtrl m_rebarControl;
-    WTL::CToolBarCtrl m_activeViewToolbar;
+    WTL::CReBarCtrl     m_rebarControl;
+    WTL::CToolBarCtrl   m_activeViewToolbar;
     WTL::CStatusBarCtrl m_statusBar;
 
     bool m_toobarVisibility;
