@@ -122,6 +122,8 @@ static std::map<unsigned short, unsigned char> s_effectkeys = map_list_of
 (0xf3,   3) // 18.1.0 : ?? Instanced City Guest Key Generator
 (0xf4,   1) // 18.0.0 : ?? AOID = 280162
 (0xf8,	 0) // 18.3.x : ?? AOID = 202260
+(0xfa,   1) // 18.4.6 : CastNano? AOID = 290265
+(0xfc,   0) // Text string
 ;
 
 AOItemParser::AOItemParser(char* pBuffer, unsigned int bufSize)
@@ -594,6 +596,11 @@ char* AOItemParser::ParseFunctions(char* pBuffer, unsigned int bufSize, unsigned
             eff.values.push_back(v);    // StartY
             p = ParseString(p, REMAINING, eff.text);
         }
+        break;
+
+    case 0xfc:  // Textstring. Looks like something related to the 10th anniversary? 
+        // "The Desert Rider has arrived! Hurry to coordinates..."
+        p = ParseString(p, REMAINING, eff.text);
         break;
     }
 
