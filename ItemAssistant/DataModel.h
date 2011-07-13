@@ -2,14 +2,18 @@
 #define DATAMODEL_H
 
 #include "DataGridModel.h"
+#include <Shared/SQLite.h>
 
 namespace aoia { namespace sv {
 
+    /**
+     * Queries all summary data for all toons in the specified dimension.
+     */
     class DataModel
         : public DataGridModel
     {
     public:
-        DataModel();
+        DataModel(unsigned int dimensionid);
         virtual ~DataModel();
 
         virtual unsigned int getColumnCount() const;
@@ -19,6 +23,8 @@ namespace aoia { namespace sv {
 
     private:
         std::map<unsigned int, std::tstring> m_columns;
+        unsigned int m_dimensionid;
+        SQLite::TablePtr m_result;
     };
 
     typedef boost::shared_ptr<DataModel> DataModelPtr;

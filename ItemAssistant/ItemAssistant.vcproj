@@ -210,14 +210,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\DataGridControl.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\DataGridModel.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\DBManager.cpp"
 				>
 			</File>
@@ -247,10 +239,6 @@
 			</File>
 			<File
 				RelativePath=".\QueryDataGridModel.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ServerSelectorDialog.cpp"
 				>
 			</File>
 			<File
@@ -304,14 +292,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\DataGridControl.h"
-				>
-			</File>
-			<File
-				RelativePath=".\DataGridModel.h"
-				>
-			</File>
-			<File
 				RelativePath=".\DBManager.h"
 				>
 			</File>
@@ -345,10 +325,6 @@
 			</File>
 			<File
 				RelativePath=".\Resource.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ServerSelectorDialog.h"
 				>
 			</File>
 			<File
@@ -487,6 +463,14 @@
 					>
 				</File>
 				<File
+					RelativePath=".\DimensionSummaryFormatter.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\DimensionSummaryFormatter.h"
+					>
+				</File>
+				<File
 					RelativePath=".\SummaryView.cpp"
 					>
 				</File>
@@ -500,6 +484,10 @@
 					<File
 						RelativePath=".\res\template.htm"
 						DeploymentContent="true"
+						>
+					</File>
+					<File
+						RelativePath=".\res\toolbarbuttons.bmp"
 						>
 					</File>
 				</Filter>
@@ -545,6 +533,14 @@
 				</File>
 				<File
 					RelativePath=".\ItemListDataModel.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ServerSelectorDialog.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\ServerSelectorDialog.h"
 					>
 				</File>
 			</Filter>
@@ -600,6 +596,22 @@
 		<Filter
 			Name="Common"
 			>
+			<File
+				RelativePath=".\DataGridControl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\DataGridControl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DataGridModel.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\DataGridModel.h"
+				>
+			</File>
 			<File
 				RelativePath=".\WebView.cpp"
 				>

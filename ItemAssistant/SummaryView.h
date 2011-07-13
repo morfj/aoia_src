@@ -2,7 +2,6 @@
 #define SUMMARYVIEW_H
 
 #include <PluginSDK/ItemAssistView.h>
-#include "DataModel.h"
 #include "WebView.h"
 
 namespace aoia { namespace sv {
@@ -11,8 +10,8 @@ namespace aoia { namespace sv {
         : public ItemAssistView<SummaryView>
     {
     public:
-        SummaryView(void);
-        virtual ~SummaryView(void);
+        SummaryView();
+        virtual ~SummaryView();
 
         BEGIN_MSG_MAP_EX(SummaryView)
             MSG_WM_CREATE(OnCreate)
@@ -21,13 +20,16 @@ namespace aoia { namespace sv {
             DEFAULT_REFLECTION_HANDLER()
         END_MSG_MAP();
 
+        // ItemAssistView overrides
+        virtual void OnActive(bool doActivation);
+
     protected:
         LRESULT OnCreate(LPCREATESTRUCT createStruct);
         LRESULT OnSize(UINT wParam, CSize newSize);
+        void UpdateSummary();
 
     private:
         aoia::WebView m_webview;
-        DataModelPtr m_datamodel;
     };
 
 }}  // end of namespace
