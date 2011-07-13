@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MFTREEVIEW_H
+#define MFTREEVIEW_H
 
 #include <string>
 #include <map>
@@ -49,3 +50,6 @@ protected:
     LRESULT OnLabelEditBegin(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
     LRESULT OnLabelEditEnd(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 };
+
+
+#endif // MFTREEVIEW_H
