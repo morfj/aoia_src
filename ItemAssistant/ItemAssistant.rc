@@ -475,7 +475,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_XYPHOS_ITEMREF_URL  "http://www.xyphos.com/aodb.php?id=%lowid%"
+    IDS_XYPHOS_ITEMREF_URL  "http://www.xyphos.com/aodb.php?id=%lowid%&ql=%ql%"
 END
 
 STRINGTABLE 
@@ -592,7 +592,7 @@ LANGUAGE LANG_NORWEGIAN, SUBLANG_NORWEGIAN_BOKMAL
 // Bitmap
 //
 
-IDB_SUMMARY_VIEW             BITMAP                  "res\\toolbarbuttons.bmp"
+IDB_SUMMARY_VIEW        BITMAP                  "res\\toolbarbuttons.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
