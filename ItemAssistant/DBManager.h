@@ -61,6 +61,9 @@ public:
     /// Retrieves the dimension a character belongs to. 0 means dimension is unknown.
     unsigned int getToonDimension(unsigned int charid) const;
 
+    /// Record the current creditbalance of a specific toon.
+    void setToonCredits(unsigned int charid, unsigned int credits);
+
     /// Retrieves all the dimension IDs and their descriptions. Returns false if query failed.
     bool getDimensions(std::map<unsigned int, std::tstring> &dimensions) const;
 
@@ -73,7 +76,6 @@ public:
 	//searches for items in containerIdToSearchIn with the same keylow and ql as the item specified
 	unsigned int findFirstItemOfSameType(unsigned int charId, unsigned int containerId, unsigned int slot, unsigned int containerIdToSearchIn);
 	
-
     /// Lock database for access.
     void lock() { m_mutex.MutexOn(); }
 
@@ -87,7 +89,6 @@ protected:
     unsigned int getDBVersion() const;
     void updateDBVersion(unsigned int fromVersion) const;
     void createDBScheme() const;
-
 private:
     Mutex m_mutex;
 };

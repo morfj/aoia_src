@@ -396,6 +396,15 @@ unsigned int DBManager::getToonDimension(unsigned int charid) const
 }
 
 
+void DBManager::setToonCredits(unsigned int charid, unsigned int credits)
+{
+    assert(charid != 0);
+    g_DBManager.Begin();
+    g_DBManager.Exec(STREAM2STR("UPDATE OR IGNORE tToons SET credits = " << credits << " WHERE charid = " << charid));
+    g_DBManager.Commit();
+}
+
+
 bool DBManager::getDimensions(std::map<unsigned int, std::tstring> &dimensions) const
 {
     SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR("SELECT dimensionid, dimensionname FROM tDimensions"));

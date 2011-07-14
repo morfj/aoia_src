@@ -2413,7 +2413,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
     case AO::MSG_FULLSYNC:
         {
-            Native::AOEquip equip((AO::Equip*)msg.start(), true);
+            Native::FullCharacterMessage equip((AO::Equip*)msg.start(), true);
             LOG(_T("MSG_FULLSYNC target=") << equip.targetId());
 
             g_DBManager.lock();
@@ -2452,6 +2452,15 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 #endif*/
             }
             g_DBManager.Commit();
+
+            // Record credits (stat #61)
+            std::map<unsigned int, unsigned int> stats2 = equip.stats2();
+            unsigned int credits = 0;
+            if (stats2.find(61) != stats2.end()) {
+                credits = stats2[61];
+            }
+            g_DBManager.setToonCredits(msg.characterId(), credits);
+
             g_DBManager.unLock();
 
             CleanupDB(equip.charid());

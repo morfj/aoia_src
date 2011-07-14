@@ -443,17 +443,72 @@ namespace Native {
     };
 
 
-    class AOEquip
+    class FullCharacterMessage
         : public AOMessageHeader
     {
     public:
-        AOEquip(AO::Equip* pRaw, bool isFromServer) : AOMessageHeader(&(pRaw->header), isFromServer), m_pRaw(pRaw) { }
+        FullCharacterMessage(AO::Equip* pRaw, bool isFromServer)
+            : AOMessageHeader(&(pRaw->header), isFromServer)
+            , m_pRaw(pRaw)
+        {
+            m_pItemPayload = ((char*)m_pRaw) + sizeof(AO::Equip);
+            m_pNanoPayload = m_pItemPayload + sizeof(AO::ContItem) * numitems();
+            m_pStatsPayload = m_pNanoPayload + sizeof(int) + sizeof(int) * numNanos() + sizeof(int) * 7;
+            m_pStatsPayload2 = m_pStatsPayload + sizeof(int) + sizeof(int) * numStats() * 2;
+            m_pStatsPayload3 = m_pStatsPayload2 + sizeof(int) + sizeof(int) * numStats2() * 2;
+            m_pStatsPayload4 = m_pStatsPayload2 + sizeof(int) + numStats3() * 2;
+        }
 
-        unsigned int numitems() const { return (_byteswap_ulong(m_pRaw->mass)-1009)/1009; }
-        AOItem item(int index) const { return AOItem((AO::ContItem*)(((char*)m_pRaw)+sizeof(AO::Equip)+sizeof(AO::ContItem)*index)); }
+        unsigned int numitems() const { 
+            return (_byteswap_ulong(m_pRaw->mass)-1009)/1009;
+        }
+        AOItem item(unsigned int index) const { 
+            return AOItem((AO::ContItem*)(((char*)m_pRaw)+sizeof(AO::Equip)+sizeof(AO::ContItem)*index));
+        }
+
+        unsigned int numNanos() const {
+            return (readUInt32(m_pNanoPayload) - 1009)/1009;
+        }
+
+        unsigned int numStats() const {
+            return (readUInt32(m_pStatsPayload) - 1009)/1009;
+        }
+
+        unsigned int numStats2() const {
+            return (readUInt32(m_pStatsPayload2) - 1009)/1009;
+        }
+        std::map<unsigned int, unsigned int> stats2() const {
+            std::map<unsigned int, unsigned int> result;
+            for (unsigned int i = 0; i < numStats2(); ++i)
+            {
+                result[readUInt32(m_pStatsPayload2 + sizeof(int) + sizeof(int) * 2 * i)] = readUInt32(m_pStatsPayload2 + sizeof(int) + sizeof(int) * 2 * i + sizeof(int));
+            }
+            return result;
+        }
+
+        unsigned int numStats3() const {
+            return (readUInt32(m_pStatsPayload3) - 1009)/1009;
+        }
+
+        unsigned int numStats4() const {
+            return (readUInt32(m_pStatsPayload4) - 1009)/1009;
+        }
 
     protected:
+        unsigned int readUInt32(const char* data) const
+        {
+            unsigned int value;
+            memcpy(&value, data, sizeof(unsigned int));
+            return _byteswap_ulong(value);
+        }
+
         AO::Equip* m_pRaw;
+        char* m_pItemPayload;
+        char* m_pNanoPayload;       // mass + vector<unsigned int>
+        char* m_pStatsPayload;      // mass + map<unsigned int, unsigned int>
+        char* m_pStatsPayload2;     // mass + map<unsigned int, unsigned int>
+        char* m_pStatsPayload3;     // mass + map<char, char>
+        char* m_pStatsPayload4;     // mass + map<char, unsigned short>
     };
 
 };	// namespace
