@@ -51,13 +51,15 @@ have contributed either directly or indirectly include:
 
 Change Log:
 ===========
-Version 1.0.0                                       Release Date: ?/?/2010
+Version 1.0.0                                       Release Date: ?/?/2011
     * Fixed bug 2947010. Generating the script with items for ingame display
       now use the correct linebreak tag.
     * Fixed bug 2802231 in the find panel and in the PB filter panel. Toon 
       list is now reloaded as it is opened.
     * Feature 2059217: The window location is now recorded and restored 
       to/from the conf file. 
+    * Opening an item using Xyphos.com will now also supply the QL of the item 
+      so the stats are shown correctly.
 
 Version 0.9.7                                       Release Date: 26/1/2010
     * Fixed org city output for CharacterParser integration. Does not dump
