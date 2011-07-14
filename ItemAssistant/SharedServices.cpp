@@ -195,6 +195,7 @@ std::map<std::tstring, std::tstring> SharedServices::GetAOItemInfo(unsigned int 
     return result;
 }
 
+
 void SharedServices::ClearTempContainerIdCache(unsigned int charId)
 {
 	//TODO: Clear cache for only 1 char (if duallogged)
@@ -204,18 +205,13 @@ void SharedServices::ClearTempContainerIdCache(unsigned int charId)
 	}
 }
 
+
 void SharedServices::UpdateTempContainerId(unsigned int charId, unsigned int tempId, unsigned int containerId)
 {
-#ifdef DEBUG
-	std::tstringstream strLog;
-    strLog << _T("UPDATE Temp Cont Id ") << tempId << _T(" / ") << containerId;
-	OutputDebugString(strLog.str().c_str());
+    TRACE("UPDATE Temp Cont Id " << tempId << " / " << containerId);
 
-#endif
-
-	
 	//__int64 key = ((__int64)charId) << 32;
- //   key += fromId;
+    //key += fromId;
 	//m_InvSlotIndexCache[key] = slotId;
 
 	if (m_containerIdCache.find(charId) == m_containerIdCache.end())
@@ -225,43 +221,47 @@ void SharedServices::UpdateTempContainerId(unsigned int charId, unsigned int tem
 	}
 
 	m_containerIdCache[charId][tempId] = containerId;
-	
-
-	
 }
 
-unsigned int SharedServices::GetContainerId(unsigned int charId, unsigned int tempId)
+
+unsigned int SharedServices::GetContainerId(unsigned int charId, unsigned int tempId) const
 {
-	if (m_containerIdCache.find(charId) != m_containerIdCache.end()
-		&& m_containerIdCache[charId].find(tempId) != m_containerIdCache[charId].end())
+    std::map< __int32, std::map<__int32, unsigned int> >::const_iterator it = m_containerIdCache.find(charId);
+	if (it != m_containerIdCache.end())
 	{
-		return (m_containerIdCache[charId][tempId]);
+        std::map<__int32, unsigned int>::const_iterator it2 = it->second.find(tempId);
+        if (it2 != it->second.end())
+        {
+            return it2->second;
+        }
 	}
 
 	return 0;
 }
 
-unsigned int SharedServices::GetItemSlotId(unsigned int charId, unsigned int itemTempId)
+
+unsigned int SharedServices::GetItemSlotId(unsigned int charId, unsigned int itemTempId) const
 {
-	if (m_invSlotForTempItemCache.find(charId) != m_invSlotForTempItemCache.end()
-		&& m_invSlotForTempItemCache[charId].find(itemTempId) != m_invSlotForTempItemCache[charId].end())
-	{
-		return (m_invSlotForTempItemCache[charId][itemTempId]);
-	}
+    std::map< __int32, std::map<__int32, unsigned int> >::const_iterator it = m_invSlotForTempItemCache.find(charId);
+    if (it != m_invSlotForTempItemCache.end())
+    {
+        std::map<__int32, unsigned int>::const_iterator it2 = it->second.find(itemTempId);
+        if (it2 != it->second.end())
+        {
+            return it2->second;
+        }
+    }
 
 	return 0;
 }
+
+
 void SharedServices::UpdateTempItemId(unsigned int charId, unsigned int itemTempId, unsigned int slotId)
 {
-	#ifdef DEBUG
-	std::tstringstream strLog;
-    strLog << _T("UPDATE Temp Item id ") << itemTempId << _T(" / ") << slotId;
-	OutputDebugString(strLog.str().c_str());
-
-#endif
+    TRACE("UPDATE Temp Item id " << itemTempId << " / " << slotId);
 
 	//__int64 key = ((__int64)charId) << 32;
- //   key += fromId;
+    //key += fromId;
 	//m_InvSlotIndexCache[key] = slotId;
 
 	if (m_invSlotForTempItemCache.find(charId) == m_invSlotForTempItemCache.end())
@@ -272,8 +272,6 @@ void SharedServices::UpdateTempItemId(unsigned int charId, unsigned int itemTemp
 
 	m_invSlotForTempItemCache[charId][itemTempId] = slotId;
 }
-
-
 
 
 std::vector<std::tstring> SharedServices::GetAccountNames() const
