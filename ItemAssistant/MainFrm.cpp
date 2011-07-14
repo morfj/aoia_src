@@ -24,7 +24,7 @@ CMainFrame::CMainFrame()
         m_windowRect.right = m_windowRect.left + boost::lexical_cast<unsigned int>(aoia::SettingsManager::instance().getValue(_T("Window.Width")));
         m_windowRect.bottom = m_windowRect.top + boost::lexical_cast<unsigned int>(aoia::SettingsManager::instance().getValue(_T("Window.Height")));
     }
-    catch(boost::bad_lexical_cast &e)
+    catch(boost::bad_lexical_cast &/*e*/)
     {
         LOG("Could not load previous window position and size. Using default.");
         m_windowRect.SetRectEmpty();
