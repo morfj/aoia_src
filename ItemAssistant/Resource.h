@@ -42,6 +42,7 @@
 #define IDD_SERVER_SELECTOR             152
 #define IDR_TEMPLATE                    153
 #define IDB_SUMMARY_VIEW                154
+#define IDB_IDENTIFY_VIEW               155
 #define IDC_EDIT2                       1001
 #define IDC_LIST1                       1002
 #define IDC_EDIT1                       1003
@@ -234,7 +235,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        155
+#define _APS_NEXT_RESOURCE_VALUE        156
 #define _APS_NEXT_COMMAND_VALUE         32838
 #define _APS_NEXT_CONTROL_VALUE         1047
 #define _APS_NEXT_SYMED_VALUE           110

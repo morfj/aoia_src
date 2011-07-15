@@ -25,6 +25,7 @@ public:
         NOTIFY_CODE_HANDLER_EX(LVN_ITEMCHANGED, onListItemChanged)
         NOTIFY_CODE_HANDLER_EX(LVN_ODSTATECHANGED, onListItemStateChanged)
         NOTIFY_CODE_HANDLER_EX(LVN_COLUMNCLICK, onColumnClick)
+        COMMAND_ID_HANDLER(ID_HELP, OnHelp)
         CHAIN_MSG_MAP(inherited)
         CHAIN_MSG_MAP(WTL::CDialogResize<IdentifyView>)
         REFLECT_NOTIFICATIONS()
@@ -50,14 +51,7 @@ protected:
     LRESULT onListItemChanged(LPNMHDR lParam);
     LRESULT onListItemStateChanged(LPNMHDR lParam);
     LRESULT onColumnClick(LPNMHDR lParam);
-
-    struct Identifyable
-    {
-        unsigned int fromId;    // HighID of the source item. (What will turn in to this identifyable item)
-        unsigned int lowId;     // LowID of destination item.
-        unsigned int highId;    // HighID of destination item.
-
-    };
+    LRESULT OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 private:
     WTL::CSplitterWindow m_splitter;

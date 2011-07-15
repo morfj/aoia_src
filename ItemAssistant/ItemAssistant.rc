@@ -592,7 +592,8 @@ LANGUAGE LANG_NORWEGIAN, SUBLANG_NORWEGIAN_BOKMAL
 // Bitmap
 //
 
-IDB_SUMMARY_VIEW        BITMAP                  "res\\toolbarbuttons.bmp"
+IDB_SUMMARY_VIEW        BITMAP                  "res\\SummaryViewToolbar.bmp"
+IDB_IDENTIFY_VIEW       BITMAP                  "res\\IdentifyViewToolbar.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //

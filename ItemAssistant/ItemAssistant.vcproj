@@ -422,6 +422,14 @@
 					RelativePath=".\IdentifyView.h"
 					>
 				</File>
+				<Filter
+					Name="Resources"
+					>
+					<File
+						RelativePath=".\res\IdentifyViewToolbar.bmp"
+						>
+					</File>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="PlayerShopMonitor"
@@ -482,12 +490,12 @@
 					Name="Resources"
 					>
 					<File
-						RelativePath=".\res\template.htm"
-						DeploymentContent="true"
+						RelativePath=".\res\SummaryViewToolbar.bmp"
 						>
 					</File>
 					<File
-						RelativePath=".\res\toolbarbuttons.bmp"
+						RelativePath=".\res\template.htm"
+						DeploymentContent="true"
 						>
 					</File>
 				</Filter>

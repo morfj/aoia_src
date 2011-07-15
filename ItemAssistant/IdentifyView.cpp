@@ -56,6 +56,26 @@ LRESULT IdentifyView::onCreate(LPCREATESTRUCT createStruct)
 
     DlgResize_Init(false);
 
+    // Build the toolbar
+    TBBUTTON buttons[1];
+    buttons[0].iBitmap = 0;
+    buttons[0].idCommand = ID_HELP;
+    buttons[0].fsState = TBSTATE_ENABLED;
+    buttons[0].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_AUTOSIZE;
+    buttons[0].dwData = NULL;
+    buttons[0].iString = (INT_PTR)_T("Help");
+
+    CImageList imageList;
+    imageList.CreateFromImage(IDB_IDENTIFY_VIEW, 16, 1, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
+
+    m_toolbar.Create(GetTopLevelWindow(), NULL, _T("IdentifyViewToolBar"), 
+        ATL_SIMPLE_TOOLBAR_PANE_STYLE | TBSTYLE_LIST, 
+        TBSTYLE_EX_MIXEDBUTTONS);
+    m_toolbar.SetButtonStructSize();
+    m_toolbar.SetImageList(imageList);
+    m_toolbar.AddButtons(ARRAYSIZE(buttons), buttons);
+    m_toolbar.AutoSize();
+
     return 0;
 }
 
@@ -155,5 +175,11 @@ LRESULT IdentifyView::onColumnClick(LPNMHDR lParam)
     ItemListDataModelPtr data_model = boost::shared_static_cast<ItemListDataModel>(m_datagrid->getModel());
     data_model->sortData(m_sortColumn, m_sortAscending);
 
+    return 0;
+}
+
+LRESULT IdentifyView::OnHelp( WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/ )
+{
+    SharedServices::ShowHelp(_T("identify"));
     return 0;
 }
