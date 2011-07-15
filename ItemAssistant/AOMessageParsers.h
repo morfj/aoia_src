@@ -456,7 +456,7 @@ namespace Native {
             m_pStatsPayload = m_pNanoPayload + sizeof(int) + sizeof(int) * numNanos() + sizeof(int) * 7;
             m_pStatsPayload2 = m_pStatsPayload + sizeof(int) + sizeof(int) * numStats() * 2;
             m_pStatsPayload3 = m_pStatsPayload2 + sizeof(int) + sizeof(int) * numStats2() * 2;
-            m_pStatsPayload4 = m_pStatsPayload2 + sizeof(int) + numStats3() * 2;
+            m_pStatsPayload4 = m_pStatsPayload3 + sizeof(int) + numStats3() * 2;
         }
 
         unsigned int numitems() const { 
@@ -470,20 +470,45 @@ namespace Native {
             return (readUInt32(m_pNanoPayload) - 1009)/1009;
         }
 
+        void getStats(std::map<unsigned int, unsigned int> &stats)
+        {
+            for (unsigned int i = 0; i < numStats(); ++i)
+            {
+                stats[readUInt32(m_pStatsPayload + sizeof(int) + sizeof(int) * 2 * i)] = readUInt32(m_pStatsPayload + sizeof(int) + sizeof(int) * 2 * i + sizeof(int));
+            }
+
+            for (unsigned int i = 0; i < numStats2(); ++i)
+            {
+                stats[readUInt32(m_pStatsPayload2 + sizeof(int) + sizeof(int) * 2 * i)] = readUInt32(m_pStatsPayload2 + sizeof(int) + sizeof(int) * 2 * i + sizeof(int));
+            }
+            
+            for (unsigned int i = 0; i < numStats3(); ++i)
+            {
+                stats[*(m_pStatsPayload3 + sizeof(int) + sizeof(char) * 2 * i)] = *(m_pStatsPayload3 + sizeof(int) + sizeof(char) * 2 * i + sizeof(char));
+            }
+
+            for (unsigned int i = 0; i < numStats4(); ++i)
+            {
+                stats[*(m_pStatsPayload4 + sizeof(int) + (sizeof(char) + sizeof(short)) * i)] = readUInt16(m_pStatsPayload4 + sizeof(int) + (sizeof(char) + sizeof(short)) * i + sizeof(char));
+            }
+        }
+
+        //std::map<unsigned int, unsigned int> stats2() const {
+        //    std::map<unsigned int, unsigned int> result;
+        //    for (unsigned int i = 0; i < numStats2(); ++i)
+        //    {
+        //        result[readUInt32(m_pStatsPayload2 + sizeof(int) + sizeof(int) * 2 * i)] = readUInt32(m_pStatsPayload2 + sizeof(int) + sizeof(int) * 2 * i + sizeof(int));
+        //    }
+        //    return result;
+        //}
+
+    protected:
         unsigned int numStats() const {
             return (readUInt32(m_pStatsPayload) - 1009)/1009;
         }
 
         unsigned int numStats2() const {
             return (readUInt32(m_pStatsPayload2) - 1009)/1009;
-        }
-        std::map<unsigned int, unsigned int> stats2() const {
-            std::map<unsigned int, unsigned int> result;
-            for (unsigned int i = 0; i < numStats2(); ++i)
-            {
-                result[readUInt32(m_pStatsPayload2 + sizeof(int) + sizeof(int) * 2 * i)] = readUInt32(m_pStatsPayload2 + sizeof(int) + sizeof(int) * 2 * i + sizeof(int));
-            }
-            return result;
         }
 
         unsigned int numStats3() const {
@@ -494,12 +519,18 @@ namespace Native {
             return (readUInt32(m_pStatsPayload4) - 1009)/1009;
         }
 
-    protected:
         unsigned int readUInt32(const char* data) const
         {
             unsigned int value;
             memcpy(&value, data, sizeof(unsigned int));
             return _byteswap_ulong(value);
+        }
+
+        unsigned int readUInt16(const char* data) const
+        {
+            unsigned short value;
+            memcpy(&value, data, sizeof(unsigned short));
+            return _byteswap_ushort(value);
         }
 
         AO::Equip* m_pRaw;

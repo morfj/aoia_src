@@ -22,6 +22,7 @@ struct OwnedItemInfo
 };
 
 typedef boost::shared_ptr<OwnedItemInfo> OwnedItemInfoPtr;
+typedef std::map<unsigned int, unsigned int> StatMap;
 
 
 class DBManager : public SQLite::Db
@@ -61,8 +62,8 @@ public:
     /// Retrieves the dimension a character belongs to. 0 means dimension is unknown.
     unsigned int getToonDimension(unsigned int charid) const;
 
-    /// Record the current creditbalance of a specific toon.
-    void setToonCredits(unsigned int charid, unsigned int credits);
+    /// Record the current stats for a specific toon.
+    void setToonStats(unsigned int charid, StatMap const& stats);
 
     /// Retrieves all the dimension IDs and their descriptions. Returns false if query failed.
     bool getDimensions(std::map<unsigned int, std::tstring> &dimensions) const;

@@ -6,6 +6,13 @@
 
 namespace aoia { namespace sv {
 
+    struct DataModelItem
+    {
+        unsigned int charid;
+        std::tstring name;
+        std::map<unsigned int, std::tstring> stats;
+    };
+
     /**
      * Queries all summary data for all toons in the specified dimension.
      */
@@ -25,9 +32,10 @@ namespace aoia { namespace sv {
         unsigned int getDimensionId() const { return m_dimensionid; }
 
     private:
-        std::map<unsigned int, std::tstring> m_columns;
+        std::map<unsigned int, std::tstring> m_columnTitles;
         unsigned int m_dimensionid;
         SQLite::TablePtr m_result;
+        std::vector<DataModelItem> m_items;
     };
 
     typedef boost::shared_ptr<DataModel> DataModelPtr;

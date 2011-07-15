@@ -2447,13 +2447,10 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
             }
             g_DBManager.Commit();
 
-            // Record credits (stat #61)
-            std::map<unsigned int, unsigned int> stats2 = equip.stats2();
-            unsigned int credits = 0;
-            if (stats2.find(61) != stats2.end()) {
-                credits = stats2[61];
-            }
-            g_DBManager.setToonCredits(msg.characterId(), credits);
+            // Record stats in the DB
+            StatMap stats;
+            equip.getStats(stats);
+            g_DBManager.setToonStats(msg.characterId(), stats);
 
             g_DBManager.unLock();
 

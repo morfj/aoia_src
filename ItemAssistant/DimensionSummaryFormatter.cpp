@@ -15,7 +15,7 @@ namespace aoia { namespace sv {
         std::tostringstream out;
 
         out << "<h2>" << m_dimensionName << "</h2>";
-        out << "<table><tr>";
+        out << "<table id=\"summarytbl\"><tr>";
 
         for (unsigned int j = 0; j < m_model->getColumnCount(); ++j)
         {
@@ -29,7 +29,13 @@ namespace aoia { namespace sv {
             out << "<tr>";
             for (unsigned int j = 0; j < m_model->getColumnCount(); ++j)
             {
-                out << "<td>" << m_model->getItemProperty(i, j) << "</td>";
+                if (j == 0) {
+                    out << "<td class=\"leftalign\">";
+                }
+                else {
+                    out << "<td class=\"rightalign\">";
+                }
+                out << m_model->getItemProperty(i, j) << "</td>";
             }
             out << "</tr>";
         }

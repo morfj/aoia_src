@@ -396,13 +396,20 @@ unsigned int DBManager::getToonDimension(unsigned int charid) const
 }
 
 
-void DBManager::setToonCredits(unsigned int charid, unsigned int credits)
+void DBManager::setToonStats(unsigned int charid, StatMap const& stats)
 {
     assert(charid != 0);
+    TRACE("Updating stats on character id " << charid);
+
     g_DBManager.Begin();
-    g_DBManager.Exec(STREAM2STR("UPDATE OR IGNORE tToons SET credits = " << credits << " WHERE charid = " << charid));
+    g_DBManager.Exec(STREAM2STR("DELETE FROM tToonStats WHERE charid = " << charid));
+    for (StatMap::const_iterator it = stats.begin(); it != stats.end(); ++it)
+    {
+        unsigned int statid = it->first;
+        unsigned int statvalue = it->second;
+        g_DBManager.Exec(STREAM2STR("INSERT OR IGNORE INTO tToonStats VALUES (" << charid << ", " << statid << ", " << statvalue << ")"));
+    }
     g_DBManager.Commit();
-    TRACE("Recorded " << credits << " credits on character id " << charid);
 }
 
 
@@ -711,14 +718,9 @@ void DBManager::updateDBVersion(unsigned int fromVersion) const
 	case 4: // Updates from v4: Added credits column in the toons table.
 		{
 			Begin();
-			Exec(_T("CREATE TABLE tToons2 (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0', dimensionid INTEGER DEFAULT '0', credits INTEGER DEFAULT '0')"));
-			Exec(_T("INSERT INTO tToons2 (charid, charname, shopid) SELECT charid, charname, shopid FROM tToons"));
-			Exec(_T("DROP TABLE tToons"));
-			Exec(_T("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0', dimensionid INTEGER DEFAULT '0', credits INTEGER DEFAULT '0')"));
-			Exec(_T("INSERT INTO tToons (charid, charname, shopid) SELECT charid, charname, shopid FROM tToons2"));
-			Exec(_T("DROP TABLE tToons2"));
-			Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));
-			Exec(_T("DROP VIEW vSchemeVersion"));
+            Exec(_T("CREATE TABLE tToonStats (charid INTEGER NOT NULL, statid INTEGER NOT NULL, statvalue INTEGER NOT NULL, FOREIGN KEY (charid) REFERENCES tToons (charid))"));
+            Exec(_T("CREATE UNIQUE INDEX charstatindex ON tToonStats (charid ASC, statid ASC)"));
+            Exec(_T("DROP VIEW vSchemeVersion"));
 			Exec(_T("CREATE VIEW vSchemeVersion AS SELECT '5' AS Version"));
 			Commit();
 		}
@@ -739,12 +741,14 @@ void DBManager::createDBScheme() const
     Exec(_T("CREATE VIEW vInvItems AS SELECT * FROM tItems WHERE parent=2"));
     Exec(_T("CREATE INDEX iOwner ON tItems (owner)"));
     Exec(_T("CREATE INDEX iParent ON tItems (parent)"));
-    Exec(_T("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0', dimensionid INTEGER DEFAULT '0', credits INTEGER DEFAULT '0')"));
+    Exec(_T("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0', dimensionid INTEGER DEFAULT '0')"));
     Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));
     Exec(_T("CREATE TABLE tDimensions (dimensionid INTEGER NOT NULL PRIMARY KEY UNIQUE, dimensionname VARCHAR)"));
     Exec(_T("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (11, 'Atlantean (Rubi-Ka 1)')"));
     Exec(_T("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (12, 'Rimor (Rubi-Ka 2)')"));
     Exec(_T("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (13, 'Die Neue Welt (German Server)')"));
+    Exec(_T("CREATE TABLE tToonStats (charid INTEGER NOT NULL, statid INTEGER NOT NULL, statvalue INTEGER NOT NULL, FOREIGN KEY (charid) REFERENCES tToons (charid))"));
+    Exec(_T("CREATE UNIQUE INDEX charstatindex ON tToonStats (charid ASC, statid ASC)"));
     Exec(STREAM2STR(_T("CREATE VIEW vSchemeVersion AS SELECT '") << CURRENT_DB_VERSION << _T("' AS Version")));
     Commit();
 }
