@@ -6,6 +6,9 @@ namespace aoia {
     WebView::WebView(std::tstring const& initialURL)
         : m_initialURL(initialURL)
     {
+        if (m_initialURL.empty()) {
+            m_initialURL = _T("about:blank");
+        }
     }
 
 

@@ -2442,14 +2442,8 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                     item.index(),
                     item.containerid().High(),
                     msg.characterId());
-/*#ifdef DEBUG
-				{
-                    // Log
-                    std::tstringstream sql;
-					sql << _T("Inv:") << item.itemid().Low() << _T("FL:\t") << item.flags();
-                    OutputDebugString(sql.str().c_str());
-                }
-#endif*/
+
+                //TRACE("Inv: " << item.itemid().Low() << "FL:\t" << item.flags());
             }
             g_DBManager.Commit();
 

@@ -2,6 +2,9 @@
 #include "SummaryView.h"
 #include "DBManager.h"
 #include "DataModel.h"
+#include "DimensionSummaryFormatter.h"
+#include <boost\algorithm\string\replace.hpp>
+
 
 namespace aoia { namespace sv {
 
@@ -70,14 +73,40 @@ namespace aoia { namespace sv {
             models.push_back(DataModelPtr(new DataModel(it->first)));
         }
 
+        std::tstringstream contentHtml;
         for (std::vector<DataModelPtr>::const_iterator it = models.begin(); it != models.end(); ++it)
         {
             if ((*it)->getItemCount() == 0) {
                 continue;   // skip empty dimensions
             }
 
-            // TODO: output HTML into template
+            DimensionSummaryFormatter formatter(*it, dimensions[(*it)->getDimensionId()]);
+            contentHtml << formatter.toString();
         }
+
+        std::tstring htmlTemplate = GetHtmlTemplate();
+        boost::replace_all(htmlTemplate, _T("%SUMMARY%"), contentHtml.str());
+
+        m_webview.SetHTML(htmlTemplate);
+    }
+
+    std::tstring SummaryView::GetHtmlTemplate()
+    {
+        if (!m_template.empty()) {
+            return m_template;
+        }
+
+        HRSRC hrsrc = ::FindResource(_Module.GetResourceInstance(), MAKEINTRESOURCE(IDR_TEMPLATE), RT_HTML);
+        DWORD size = ::SizeofResource(_Module.GetResourceInstance(), hrsrc);
+        HGLOBAL hGlobal = ::LoadResource(_Module.GetResourceInstance(), hrsrc);
+        void * pData = ::LockResource(hGlobal);
+
+        if (pData) {
+            std::string raw((char*)pData, size);
+            m_template = from_ascii_copy(raw);
+        }
+
+        return m_template;
     }
 
 }}  // end of namespace

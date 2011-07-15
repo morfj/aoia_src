@@ -402,6 +402,7 @@ void DBManager::setToonCredits(unsigned int charid, unsigned int credits)
     g_DBManager.Begin();
     g_DBManager.Exec(STREAM2STR("UPDATE OR IGNORE tToons SET credits = " << credits << " WHERE charid = " << charid));
     g_DBManager.Commit();
+    TRACE("Recorded " << credits << " credits on character id " << charid);
 }
 
 

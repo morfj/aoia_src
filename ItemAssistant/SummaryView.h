@@ -27,9 +27,11 @@ namespace aoia { namespace sv {
         LRESULT OnCreate(LPCREATESTRUCT createStruct);
         LRESULT OnSize(UINT wParam, CSize newSize);
         void UpdateSummary();
+        std::tstring SummaryView::GetHtmlTemplate();
 
     private:
         aoia::WebView m_webview;
+        std::tstring m_template;
     };
 
 }}  // end of namespace

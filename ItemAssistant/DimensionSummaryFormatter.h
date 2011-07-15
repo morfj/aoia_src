@@ -12,13 +12,13 @@ namespace aoia { namespace sv {
     class DimensionSummaryFormatter
     {
     public:
-        DimensionSummaryFormatter(DataModelPtr model);
-        ~DimensionSummaryFormatter();
+        DimensionSummaryFormatter(DataModelPtr model, std::tstring const& dimensionName);
 
         std::tstring toString() const;
 
     private:
         DataModelPtr m_model;
+        std::tstring m_dimensionName;
     };
 
 }}  // namespace

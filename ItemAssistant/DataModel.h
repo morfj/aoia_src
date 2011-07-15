@@ -16,10 +16,13 @@ namespace aoia { namespace sv {
         DataModel(unsigned int dimensionid);
         virtual ~DataModel();
 
+        // 'DataGridModel' implementation
         virtual unsigned int getColumnCount() const;
         virtual std::tstring getColumnName(unsigned int index) const;
         virtual unsigned int getItemCount() const;
         virtual std::tstring getItemProperty(unsigned int index, unsigned int column) const;
+
+        unsigned int getDimensionId() const { return m_dimensionid; }
 
     private:
         std::map<unsigned int, std::tstring> m_columns;
