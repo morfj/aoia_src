@@ -16,6 +16,8 @@ namespace aoia { namespace sv {
         BEGIN_MSG_MAP_EX(SummaryView)
             MSG_WM_CREATE(OnCreate)
             MSG_WM_SIZE(OnSize)
+            COMMAND_ID_HANDLER(ID_REFRESH, OnRefresh)
+            COMMAND_ID_HANDLER(ID_HELP, OnHelp)
             REFLECT_NOTIFICATIONS()
             DEFAULT_REFLECTION_HANDLER()
         END_MSG_MAP();
@@ -26,6 +28,9 @@ namespace aoia { namespace sv {
     protected:
         LRESULT OnCreate(LPCREATESTRUCT createStruct);
         LRESULT OnSize(UINT wParam, CSize newSize);
+        LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+        LRESULT OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
         void UpdateSummary();
         std::tstring SummaryView::GetHtmlTemplate();
 

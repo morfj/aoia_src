@@ -22,13 +22,25 @@ namespace aoia { namespace sv {
         m_webview.Create(m_hWnd);
 
         // Build the toolbar
-        TBBUTTON buttons[1];
+        TBBUTTON buttons[3];
         buttons[0].iBitmap = 0;
-        buttons[0].idCommand = ID_HELP;
+        buttons[0].idCommand = ID_REFRESH;
         buttons[0].fsState = TBSTATE_ENABLED;
         buttons[0].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_AUTOSIZE;
         buttons[0].dwData = NULL;
-        buttons[0].iString = (INT_PTR)_T("Help");
+        buttons[0].iString = (INT_PTR)_T("Refresh");
+        buttons[1].iBitmap = 3;
+        buttons[1].idCommand = 0;
+        buttons[1].fsState = 0;
+        buttons[1].fsStyle = BTNS_SEP;
+        buttons[1].dwData = NULL;
+        buttons[1].iString = NULL;
+        buttons[2].iBitmap = 1;
+        buttons[2].idCommand = ID_HELP;
+        buttons[2].fsState = TBSTATE_ENABLED;
+        buttons[2].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_AUTOSIZE;
+        buttons[2].dwData = NULL;
+        buttons[2].iString = (INT_PTR)_T("Help");
 
         CImageList imageList;
         imageList.CreateFromImage(IDB_SUMMARY_VIEW, 16, 1, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
@@ -49,6 +61,18 @@ namespace aoia { namespace sv {
         CRect r( CPoint( 0, 0 ), newSize );
         m_webview.SetWindowPos(NULL, r.left, r.top, r.Width(), r.Height(), SWP_NOZORDER | SWP_NOACTIVATE | SWP_DEFERERASE | SWP_NOSENDCHANGING);
 
+        return 0;
+    }
+
+    LRESULT SummaryView::OnRefresh( WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/ )
+    {
+        UpdateSummary();
+        return 0;
+    }
+
+    LRESULT SummaryView::OnHelp( WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/ )
+    {
+        SharedServices::ShowHelp(_T("summary"));
         return 0;
     }
 
