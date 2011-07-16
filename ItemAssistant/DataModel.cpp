@@ -18,7 +18,7 @@ namespace aoia { namespace sv {
             ;
 
         // Set ut a list of the statids each column should be bound to. (Hardcoded to skip "toon name" column further down.)
-        m_statids = boost::assign::list_of(54)(169)(263)(61);
+        m_statids = boost::assign::list_of(54)(169)(61);
 
         std::tostringstream statids;
         for (unsigned int i = 0; i < m_statids.size(); ++i) {
