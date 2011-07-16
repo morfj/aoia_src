@@ -484,12 +484,12 @@ namespace Native {
             
             for (unsigned int i = 0; i < numStats3(); ++i)
             {
-                stats[*(m_pStatsPayload3 + sizeof(int) + sizeof(char) * 2 * i)] = *(m_pStatsPayload3 + sizeof(int) + sizeof(char) * 2 * i + sizeof(char));
+                stats[*(unsigned char*)(m_pStatsPayload3 + sizeof(int) + sizeof(char) * 2 * i)] = *(unsigned char*)(m_pStatsPayload3 + sizeof(int) + sizeof(char) * 2 * i + sizeof(char));
             }
 
             for (unsigned int i = 0; i < numStats4(); ++i)
             {
-                stats[*(m_pStatsPayload4 + sizeof(int) + (sizeof(char) + sizeof(short)) * i)] = readUInt16(m_pStatsPayload4 + sizeof(int) + (sizeof(char) + sizeof(short)) * i + sizeof(char));
+                stats[*(unsigned char*)(m_pStatsPayload4 + sizeof(int) + (sizeof(char) + sizeof(short)) * i)] = readUInt16(m_pStatsPayload4 + sizeof(int) + (sizeof(char) + sizeof(short)) * i + sizeof(char));
             }
         }
 
