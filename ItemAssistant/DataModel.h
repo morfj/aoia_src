@@ -33,6 +33,7 @@ namespace aoia { namespace sv {
 
     private:
         std::map<unsigned int, std::tstring> m_columnTitles;
+        std::vector<unsigned int> m_statids;
         unsigned int m_dimensionid;
         SQLite::TablePtr m_result;
         std::vector<DataModelItem> m_items;

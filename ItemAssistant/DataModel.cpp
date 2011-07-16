@@ -14,8 +14,19 @@ namespace aoia { namespace sv {
             (0, _T("Toon"))
             (1, _T("Levels"))
             (2, _T("AI Levels"))
-            (3, _T("LE Levels"))
-            (4, _T("Credits"));
+            (3, _T("Credits"))
+            ;
+
+        // Set ut a list of the statids each column should be bound to. (Hardcoded to skip "toon name" column further down.)
+        m_statids = boost::assign::list_of(54)(169)(263)(61);
+
+        std::tostringstream statids;
+        for (unsigned int i = 0; i < m_statids.size(); ++i) {
+            if (i > 0) {
+                statids << ", ";
+            }
+            statids << m_statids.at(i);
+        }
 
         SQLite::TablePtr toons = g_DBManager.ExecTable(STREAM2STR("SELECT charid, charname FROM tToons WHERE dimensionid = " << m_dimensionid));
         for (unsigned int i = 0; i < toons->Rows(); ++i)
@@ -24,7 +35,7 @@ namespace aoia { namespace sv {
             item.charid = boost::lexical_cast<unsigned int>(toons->Data(i, 0));
             item.name = from_ascii_copy(toons->Data(i, 1));
 
-            SQLite::TablePtr stats = g_DBManager.ExecTable(STREAM2STR("SELECT statid, statvalue FROM tToonStats WHERE charid = " << item.charid << " AND statid IN(54, 169, 263, 61)"));
+            SQLite::TablePtr stats = g_DBManager.ExecTable(STREAM2STR("SELECT statid, statvalue FROM tToonStats WHERE charid = " << item.charid << " AND statid IN("<< statids.str() << ")"));
             for (unsigned int j = 0; j < stats->Rows(); ++j)
             {
                 unsigned int id = boost::lexical_cast<unsigned int>(stats->Data(j, 0));
@@ -75,7 +86,6 @@ namespace aoia { namespace sv {
 
     std::tstring DataModel::getItemProperty( unsigned int index, unsigned int column ) const
     {
-        static unsigned int statid[] = { 54, 169, 263, 61 };
         if (m_items.empty()) {
             return _T("");
         }
@@ -87,7 +97,7 @@ namespace aoia { namespace sv {
         }
         --column;
 
-        std::map<unsigned int, std::tstring>::const_iterator it = item.stats.find(statid[column]);
+        std::map<unsigned int, std::tstring>::const_iterator it = item.stats.find(m_statids.at(column));
         if (it != item.stats.end()) {
             return it->second;
         }
