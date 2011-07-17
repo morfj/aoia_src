@@ -41,6 +41,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Setup", "Setup\Setup.vcproj
 		{93E190D1-3E5B-4B19-BE87-5A820D7A8B14} = {93E190D1-3E5B-4B19-BE87-5A820D7A8B14}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ItemAssistantTests", "ItemAssistantTests\ItemAssistantTests.vcproj", "{9B460081-763A-4E1B-B587-E80876E00B4B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{370E1E96-79A9-4C9D-83B2-6E8298A90655} = {370E1E96-79A9-4C9D-83B2-6E8298A90655}
+		{D9EFFCC4-4544-4E8F-9920-2F7CD55D814B} = {D9EFFCC4-4544-4E8F-9920-2F7CD55D814B}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -82,6 +88,10 @@ Global
 		{F0BD2730-1728-411D-8936-0C8A4EB07B13}.Debug|Win32.ActiveCfg = Debug|Win32
 		{F0BD2730-1728-411D-8936-0C8A4EB07B13}.Release|Win32.ActiveCfg = Release|Win32
 		{F0BD2730-1728-411D-8936-0C8A4EB07B13}.Release|Win32.Build.0 = Release|Win32
+		{9B460081-763A-4E1B-B587-E80876E00B4B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9B460081-763A-4E1B-B587-E80876E00B4B}.Debug|Win32.Build.0 = Debug|Win32
+		{9B460081-763A-4E1B-B587-E80876E00B4B}.Release|Win32.ActiveCfg = Release|Win32
+		{9B460081-763A-4E1B-B587-E80876E00B4B}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

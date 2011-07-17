@@ -26,6 +26,10 @@ public:
     // Get the string at current position. <len><char[]><NULL>
     std::string popString() const;
 
+    // Get the 3F1 encoded counter value 
+    // counter = (x/1009)-1
+    unsigned int pop3F1Count() const;
+
     char* start() const { return m_start; }
     char* end() const { return m_end; }
     char* pos() const { return m_pos; }

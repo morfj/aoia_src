@@ -443,104 +443,104 @@ namespace Native {
     };
 
 
-    class FullCharacterMessage
-        : public AOMessageHeader
-    {
-    public:
-        FullCharacterMessage(AO::Equip* pRaw, bool isFromServer)
-            : AOMessageHeader(&(pRaw->header), isFromServer)
-            , m_pRaw(pRaw)
-        {
-            m_pItemPayload = ((char*)m_pRaw) + sizeof(AO::Equip);
-            m_pNanoPayload = m_pItemPayload + sizeof(AO::ContItem) * numitems();
-            m_pStatsPayload = m_pNanoPayload + sizeof(int) + sizeof(int) * numNanos() + sizeof(int) * 7;
-            m_pStatsPayload2 = m_pStatsPayload + sizeof(int) + sizeof(int) * numStats() * 2;
-            m_pStatsPayload3 = m_pStatsPayload2 + sizeof(int) + sizeof(int) * numStats2() * 2;
-            m_pStatsPayload4 = m_pStatsPayload3 + sizeof(int) + numStats3() * 2;
-        }
+    //class FullCharacterMessage
+    //    : public AOMessageHeader
+    //{
+    //public:
+    //    FullCharacterMessage(AO::Equip* pRaw, bool isFromServer)
+    //        : AOMessageHeader(&(pRaw->header), isFromServer)
+    //        , m_pRaw(pRaw)
+    //    {
+    //        m_pItemPayload = ((char*)m_pRaw) + sizeof(AO::Equip);
+    //        m_pNanoPayload = m_pItemPayload + sizeof(AO::ContItem) * numitems();
+    //        m_pStatsPayload = m_pNanoPayload + sizeof(int) + sizeof(int) * numNanos() + sizeof(int) * 7;
+    //        m_pStatsPayload2 = m_pStatsPayload + sizeof(int) + sizeof(int) * numStats() * 2;
+    //        m_pStatsPayload3 = m_pStatsPayload2 + sizeof(int) + sizeof(int) * numStats2() * 2;
+    //        m_pStatsPayload4 = m_pStatsPayload3 + sizeof(int) + numStats3() * 2;
+    //    }
 
-        unsigned int numitems() const { 
-            return (_byteswap_ulong(m_pRaw->mass)-1009)/1009;
-        }
-        AOItem item(unsigned int index) const { 
-            return AOItem((AO::ContItem*)(((char*)m_pRaw)+sizeof(AO::Equip)+sizeof(AO::ContItem)*index));
-        }
+    //    unsigned int numitems() const { 
+    //        return (_byteswap_ulong(m_pRaw->mass)-1009)/1009;
+    //    }
+    //    AOItem item(unsigned int index) const { 
+    //        return AOItem((AO::ContItem*)(((char*)m_pRaw)+sizeof(AO::Equip)+sizeof(AO::ContItem)*index));
+    //    }
 
-        unsigned int numNanos() const {
-            return (readUInt32(m_pNanoPayload) - 1009)/1009;
-        }
+    //    unsigned int numNanos() const {
+    //        return (readUInt32(m_pNanoPayload) - 1009)/1009;
+    //    }
 
-        void getStats(std::map<unsigned int, unsigned int> &stats)
-        {
-            for (unsigned int i = 0; i < numStats(); ++i)
-            {
-                stats[readUInt32(m_pStatsPayload + sizeof(int) + sizeof(int) * 2 * i)] = readUInt32(m_pStatsPayload + sizeof(int) + sizeof(int) * 2 * i + sizeof(int));
-            }
+    //    void getStats(std::map<unsigned int, unsigned int> &stats)
+    //    {
+    //        for (unsigned int i = 0; i < numStats(); ++i)
+    //        {
+    //            stats[readUInt32(m_pStatsPayload + sizeof(int) + sizeof(int) * 2 * i)] = readUInt32(m_pStatsPayload + sizeof(int) + sizeof(int) * 2 * i + sizeof(int));
+    //        }
 
-            for (unsigned int i = 0; i < numStats2(); ++i)
-            {
-                stats[readUInt32(m_pStatsPayload2 + sizeof(int) + sizeof(int) * 2 * i)] = readUInt32(m_pStatsPayload2 + sizeof(int) + sizeof(int) * 2 * i + sizeof(int));
-            }
-            
-            for (unsigned int i = 0; i < numStats3(); ++i)
-            {
-                stats[*(unsigned char*)(m_pStatsPayload3 + sizeof(int) + sizeof(char) * 2 * i)] = *(unsigned char*)(m_pStatsPayload3 + sizeof(int) + sizeof(char) * 2 * i + sizeof(char));
-            }
+    //        for (unsigned int i = 0; i < numStats2(); ++i)
+    //        {
+    //            stats[readUInt32(m_pStatsPayload2 + sizeof(int) + sizeof(int) * 2 * i)] = readUInt32(m_pStatsPayload2 + sizeof(int) + sizeof(int) * 2 * i + sizeof(int));
+    //        }
+    //        
+    //        for (unsigned int i = 0; i < numStats3(); ++i)
+    //        {
+    //            stats[*(unsigned char*)(m_pStatsPayload3 + sizeof(int) + sizeof(char) * 2 * i)] = *(unsigned char*)(m_pStatsPayload3 + sizeof(int) + sizeof(char) * 2 * i + sizeof(char));
+    //        }
 
-            for (unsigned int i = 0; i < numStats4(); ++i)
-            {
-                stats[*(unsigned char*)(m_pStatsPayload4 + sizeof(int) + (sizeof(char) + sizeof(short)) * i)] = readUInt16(m_pStatsPayload4 + sizeof(int) + (sizeof(char) + sizeof(short)) * i + sizeof(char));
-            }
-        }
+    //        for (unsigned int i = 0; i < numStats4(); ++i)
+    //        {
+    //            stats[*(unsigned char*)(m_pStatsPayload4 + sizeof(int) + (sizeof(char) + sizeof(short)) * i)] = readUInt16(m_pStatsPayload4 + sizeof(int) + (sizeof(char) + sizeof(short)) * i + sizeof(char));
+    //        }
+    //    }
 
-        //std::map<unsigned int, unsigned int> stats2() const {
-        //    std::map<unsigned int, unsigned int> result;
-        //    for (unsigned int i = 0; i < numStats2(); ++i)
-        //    {
-        //        result[readUInt32(m_pStatsPayload2 + sizeof(int) + sizeof(int) * 2 * i)] = readUInt32(m_pStatsPayload2 + sizeof(int) + sizeof(int) * 2 * i + sizeof(int));
-        //    }
-        //    return result;
-        //}
+    //    //std::map<unsigned int, unsigned int> stats2() const {
+    //    //    std::map<unsigned int, unsigned int> result;
+    //    //    for (unsigned int i = 0; i < numStats2(); ++i)
+    //    //    {
+    //    //        result[readUInt32(m_pStatsPayload2 + sizeof(int) + sizeof(int) * 2 * i)] = readUInt32(m_pStatsPayload2 + sizeof(int) + sizeof(int) * 2 * i + sizeof(int));
+    //    //    }
+    //    //    return result;
+    //    //}
 
-    protected:
-        unsigned int numStats() const {
-            return (readUInt32(m_pStatsPayload) - 1009)/1009;
-        }
+    //protected:
+    //    unsigned int numStats() const {
+    //        return (readUInt32(m_pStatsPayload) - 1009)/1009;
+    //    }
 
-        unsigned int numStats2() const {
-            return (readUInt32(m_pStatsPayload2) - 1009)/1009;
-        }
+    //    unsigned int numStats2() const {
+    //        return (readUInt32(m_pStatsPayload2) - 1009)/1009;
+    //    }
 
-        unsigned int numStats3() const {
-            return (readUInt32(m_pStatsPayload3) - 1009)/1009;
-        }
+    //    unsigned int numStats3() const {
+    //        return (readUInt32(m_pStatsPayload3) - 1009)/1009;
+    //    }
 
-        unsigned int numStats4() const {
-            return (readUInt32(m_pStatsPayload4) - 1009)/1009;
-        }
+    //    unsigned int numStats4() const {
+    //        return (readUInt32(m_pStatsPayload4) - 1009)/1009;
+    //    }
 
-        unsigned int readUInt32(const char* data) const
-        {
-            unsigned int value;
-            memcpy(&value, data, sizeof(unsigned int));
-            return _byteswap_ulong(value);
-        }
+    //    unsigned int readUInt32(const char* data) const
+    //    {
+    //        unsigned int value;
+    //        memcpy(&value, data, sizeof(unsigned int));
+    //        return _byteswap_ulong(value);
+    //    }
 
-        unsigned int readUInt16(const char* data) const
-        {
-            unsigned short value;
-            memcpy(&value, data, sizeof(unsigned short));
-            return _byteswap_ushort(value);
-        }
+    //    unsigned int readUInt16(const char* data) const
+    //    {
+    //        unsigned short value;
+    //        memcpy(&value, data, sizeof(unsigned short));
+    //        return _byteswap_ushort(value);
+    //    }
 
-        AO::Equip* m_pRaw;
-        char* m_pItemPayload;
-        char* m_pNanoPayload;       // mass + vector<unsigned int>
-        char* m_pStatsPayload;      // mass + map<unsigned int, unsigned int>
-        char* m_pStatsPayload2;     // mass + map<unsigned int, unsigned int>
-        char* m_pStatsPayload3;     // mass + map<char, char>
-        char* m_pStatsPayload4;     // mass + map<char, unsigned short>
-    };
+    //    AO::Equip* m_pRaw;
+    //    char* m_pItemPayload;
+    //    char* m_pNanoPayload;       // mass + vector<unsigned int>
+    //    char* m_pStatsPayload;      // mass + map<unsigned int, unsigned int>
+    //    char* m_pStatsPayload2;     // mass + map<unsigned int, unsigned int>
+    //    char* m_pStatsPayload3;     // mass + map<char, char>
+    //    char* m_pStatsPayload4;     // mass + map<char, unsigned short>
+    //};
 
 };	// namespace
 
@@ -743,6 +743,8 @@ namespace Parsers {
         unsigned int m_ql;
     };
 
+    typedef boost::shared_ptr<AOContainerItem> AOContainerItemPtr;
+
 
     class AOContainer
         : public AOMessageBase
@@ -851,6 +853,123 @@ namespace Parsers {
         std::vector<AOContainerItem> m_items;
         unsigned int m_shopid;
         unsigned int m_prices[21];     // Array of prices per shop slot
+    };
+
+    class AOFullCharacterMessage
+        : public AOMessageBase
+    {
+    public:
+        AOFullCharacterMessage(char *pRaw, unsigned int size)
+            : AOMessageBase(pRaw, size)
+        {
+            popChar();  // padding?
+            popInteger(); // flags? 0x19
+
+            // Read inventory and equip
+            unsigned int count = pop3F1Count();
+            for (unsigned int i = 0; i < count; ++i)
+            {
+                m_inventory.push_back(AOContainerItemPtr(new AOContainerItem(*this)));
+            }
+
+            // Read uploaded nano programs
+            count = pop3F1Count();
+            for (unsigned int i = 0; i < count; ++i)
+            {
+                m_nanos.push_back(popInteger());
+            }
+
+            // Unknown (but empty) collection
+            count = pop3F1Count();
+            assert(count == 0);
+
+            // 6 unknown ints
+            skip(sizeof(unsigned int) * 6);
+
+            // Stats map (32 bit id, 32 bit value)
+            count = pop3F1Count();
+            for (unsigned int i = 0; i < count; ++i)
+            {
+                unsigned int key = popInteger();
+                unsigned int val = popInteger();
+                m_stats[key] = val;
+            }
+
+            // Stats map (32 bit id, 32 bit value)
+            count = pop3F1Count();
+            for (unsigned int i = 0; i < count; ++i)
+            {
+                unsigned int key = popInteger();
+                unsigned int val = popInteger();
+                m_stats[key] = val;
+            }
+
+            // Stats map (8 bit id, 8 bit value)
+            count = pop3F1Count();
+            for (unsigned int i = 0; i < count; ++i)
+            {
+                unsigned char key = popChar();
+                unsigned char val = popChar();
+                m_stats[key] = val;
+            }
+
+            // Stats map (8 bit id, 16 bit value)
+            count = pop3F1Count();
+            for (unsigned int i = 0; i < count; ++i)
+            {
+                unsigned char key = popChar();
+                unsigned short val = popShort();
+                m_stats[key] = val;
+            }
+
+            // 2 unknown ints
+            skip(sizeof(unsigned int) * 2);
+
+            // Unknown (but empty) collection
+            count = pop3F1Count();
+            assert(count == 0);
+
+            // Unknown (but empty) collection
+            count = pop3F1Count();
+            assert(count == 0);
+
+            // Unknown collection of 16 byte structs.
+            // Probably perk information of some sort?
+            count = pop3F1Count();
+            skip(count * 16);
+
+            unsigned short marker = popShort();
+            assert(marker == 0xfdfd);
+        }
+
+        unsigned int numitems() const
+        {
+            return m_inventory.size();
+        }
+
+        AOContainerItemPtr getItem(unsigned int index) const
+        {
+            if (index < m_inventory.size())
+            {
+                return m_inventory.at(index);
+            }
+            return AOContainerItemPtr();
+        }
+
+        void getAllItems(std::vector<AOContainerItemPtr> &items) const
+        {
+            items.insert(items.begin(), m_inventory.begin(), m_inventory.end());
+        }
+
+        void getStats(std::map<unsigned int, unsigned int> &stats) const
+        {
+            stats.insert(m_stats.begin(), m_stats.end());
+        }
+
+    private:
+        std::vector<AOContainerItemPtr> m_inventory;
+        std::vector<unsigned int> m_nanos;
+        std::map<unsigned int, unsigned int> m_stats;
     };
 
 };  // namespace Parsers

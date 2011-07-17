@@ -1049,10 +1049,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
 			TRACE(npcAccept.print());
 
-			
-
-
-			//move rejected stuff back to inv:
+            //move rejected stuff back to inv:
 			unsigned int count = npcAccept.itemCount();
 			unsigned int newParent = AO::INV_TOONINV;
 			unsigned int shopContainer = AO::INV_TRADE;
@@ -1108,8 +1105,6 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
 			g_DBManager.Commit();
 			g_DBManager.unLock();
-
-
 		}
 		break;
 
@@ -1470,7 +1465,8 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
 		}
 		break;
-	case AO::MSG_SHOP_TRANSACTION: //0x36284f6e 
+
+    case AO::MSG_SHOP_TRANSACTION: //0x36284f6e 
 		{
             LOG(_T("MSG_SHOP_TRANSACTION"));
 
@@ -1953,7 +1949,8 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
 		}
 		break;
-	case AO::MSG_ITEM_BOUGHT: //0x052e2f0c: 
+
+    case AO::MSG_ITEM_BOUGHT: //0x052e2f0c: 
 		{
             LOG(_T("MSG_ITEM_BOUGHT"));
 
@@ -1981,7 +1978,8 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
             g_DBManager.unLock();
 		}
 		break;
-	case AO::MSG_SPAWN_REWARD:
+
+    case AO::MSG_SPAWN_REWARD:
 		{
             LOG(_T("MSG_SPAWN_REWARD"));
 
@@ -2413,34 +2411,36 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
     case AO::MSG_FULLSYNC:
         {
-            Native::FullCharacterMessage equip((AO::Equip*)msg.start(), true);
-            LOG(_T("MSG_FULLSYNC target=") << equip.targetId());
+            Parsers::AOFullCharacterMessage parser(msg.start(), msg.size());
+            LOG(_T("MSG_FULLSYNC CharacterID=") << parser.characterId());
 
             g_DBManager.lock();
             g_DBManager.Begin();
             {
                 // Remove old contents from DB (inventory, trade, remote trade and overflow win.
                 std::tstringstream sql;
-                sql << _T("DELETE FROM tItems WHERE (parent = 2 or parent >= 4 and parent <= 8) AND owner = ") << equip.charid();
+                sql << _T("DELETE FROM tItems WHERE (parent = 2 or parent >= 4 and parent <= 8) AND owner = ") << parser.characterId();
                 g_DBManager.Exec(sql.str());
             }
 
-            ServicesSingleton::Instance()->ClearTempContainerIdCache(equip.charid());
+            ServicesSingleton::Instance()->ClearTempContainerIdCache(parser.characterId());
 
             // Register items
-            for (unsigned int i = 0; i < equip.numitems(); i++)
+            std::vector<AOContainerItemPtr> items;
+            parser.getAllItems(items);
+            for (std::vector<AOContainerItemPtr>::const_iterator it = items.begin(); it != items.end(); ++it)
             {
-                Native::AOItem item = equip.item(i);
+                Parsers::AOContainerItemPtr item = *it;
 
                 g_DBManager.insertItem(
-                    item.itemid().Low(),
-                    item.itemid().High(),
-                    item.ql(),
-                    item.flags(),
-                    item.stack(),
+                    item->itemId().low(),
+                    item->itemId().high(),
+                    item->ql(),
+                    item->flags(),
+                    item->stack(),
                     2,             // parent 2 = equip
-                    item.index(),
-                    item.containerid().High(),
+                    item->index(),
+                    item->containerId().high(),
                     msg.characterId());
 
                 //TRACE("Inv: " << item.itemid().Low() << "FL:\t" << item.flags());
@@ -2449,12 +2449,12 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
             // Record stats in the DB
             StatMap stats;
-            equip.getStats(stats);
+            parser.getStats(stats);
             g_DBManager.setToonStats(msg.characterId(), stats);
 
             g_DBManager.unLock();
 
-            CleanupDB(equip.charid());
+            CleanupDB(msg.characterId());
         }
         break;
 

@@ -64,3 +64,10 @@ std::string Parser::popString() const
     m_pos += len + 1;
     return retval;
 }
+
+
+unsigned int Parser::pop3F1Count() const
+{
+    unsigned int val = popInteger();
+    return (val / 1009) - 1;
+}
