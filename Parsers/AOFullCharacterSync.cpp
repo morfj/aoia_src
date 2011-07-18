@@ -6,7 +6,7 @@ namespace Parsers {
         : AOMessageBase(pRaw, size)
     {
         popChar();  // padding?
-        popInteger(); // flags? 0x19
+        popInteger(); // version field (0x19)
 
         // Read inventory and equip
         unsigned int count = pop3F1Count();
@@ -26,8 +26,19 @@ namespace Parsers {
         count = pop3F1Count();
         assert(count == 0);
 
-        // 6 unknown ints
-        skip(sizeof(unsigned int) * 6);
+        // unknown ints (perk timers?)
+        for (unsigned int i = 0; i < 3; ++i)
+        {
+            unsigned int key = popInteger();
+            unsigned int val = popInteger();
+            for (unsigned int j = 0; j < val; ++j)
+            {
+                //00 00 00 01 00 00 d6 f3 00 00 01 cd 00 00 00 5a
+                //00 00 00 50 00 00 00 01 00 00 d6 f3 00 00 01 91
+                //00 00 00 f0 00 00 00 ed
+                skip(sizeof(unsigned int) * 5);
+            }
+        }
 
         // Stats map (32 bit id, 32 bit value)
         count = pop3F1Count();
@@ -65,8 +76,15 @@ namespace Parsers {
             m_stats[key] = val;
         }
 
-        // 2 unknown ints
-        skip(sizeof(unsigned int) * 2);
+        // Unknown array (resetting absorb AC?)
+        count = popInteger();
+        for (unsigned int i = 0; i < count; ++i) {
+            unsigned int key = popInteger();
+            unsigned int val = popInteger();
+        }
+
+        // unknown int
+        skip(sizeof(unsigned int));
 
         // Unknown (but empty) collection
         count = pop3F1Count();
@@ -81,8 +99,7 @@ namespace Parsers {
         count = pop3F1Count();
         skip(count * 16);
 
-        unsigned short marker = popShort();
-        assert(marker == 0xfdfd);
+        assert(pos() == end());
     }
 
 
