@@ -88,7 +88,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="$(OutDir)\$(ProjectName).exe"
+				CommandLine="xcopy /Y /R &quot;$(ProjectDir)*.bin&quot; &quot;$(SolutionDir)$(ConfigurationName)&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -191,10 +191,6 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath=".\AOFullCharacterMessageTestsData.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"

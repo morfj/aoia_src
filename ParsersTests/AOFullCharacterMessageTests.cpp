@@ -4,50 +4,58 @@
 #include <ItemAssistantCore/Logger.h>
 #include <Parsers/AOFullCharacterSync.h>
 #include <boost/test/unit_test.hpp>
-#include "AOFullCharacterMessageTestsData.h"
+#include <iostream>
+#include <boost/filesystem.hpp>
 
+namespace bfs = boost::filesystem;
 
 struct AOFullCharacterMessageTestFixture
 {
-    AOFullCharacterMessageTestFixture()
-    {
-        LoadTestData(testdata1, m_testData1);
-        LoadTestData(testdata2, m_testData2);
-    }
+    AOFullCharacterMessageTestFixture() { }
 
-    void LoadTestData(const char* data, std::vector<unsigned int> &output)
+    std::vector<char> LoadBinaryData(const char* filename)
     {
-        std::istringstream is(data);
-        while (is.good())
-        {
-            unsigned int val;
-            is >> std::hex >> val;
-            output.push_back(_byteswap_ulong(val));
+        bfs::path path(filename);
+        if (!bfs::exists(path)) {
+            throw new std::exception("file not found!");
         }
-    }
 
-    std::vector<unsigned int> m_testData1;
-    std::vector<unsigned int> m_testData2;
+        std::vector<char> result;
+
+        std::ifstream ifs;
+        ifs.open(filename, std::ios::in | std::ios::binary | std::ios::ate);
+
+        if (ifs.is_open())
+        {
+            int size = ifs.tellg();
+            ifs.seekg(0);
+
+            char* buffer = new char[size];
+            ifs.read(buffer, size);
+            result.insert(result.end(), buffer, buffer + size);
+            delete buffer;
+        }
+
+        return result;
+    }
 };
 
 BOOST_FIXTURE_TEST_SUITE(AOFullCharacterMessageTests, AOFullCharacterMessageTestFixture);
 
-BOOST_AUTO_TEST_CASE(ParseTest1)
+BOOST_AUTO_TEST_CASE(XplorerFullyBuffedTest)
 {
-    Parsers::AOFullCharacterMessage parser((char*)&*(m_testData1.begin()), m_testData1.size() * sizeof(unsigned int));
+    std::vector<char> data = LoadBinaryData("fullsync_xplorer_entering_shop_buffed.bin");
+    BOOST_REQUIRE(data.size() > 0);
 
-    std::vector<Parsers::AOContainerItemPtr> items;
-    parser.getAllItems(items);
-    BOOST_CHECK_EQUAL(items.size(), parser.numitems());
+    Parsers::AOFullCharacterMessage parser(&*data.begin(), data.size());
 }
 
-BOOST_AUTO_TEST_CASE(ParseTest2)
+BOOST_AUTO_TEST_CASE(XplorerZoningWithPerkLockTimerTest)
 {
-    Parsers::AOFullCharacterMessage parser((char*)&*(m_testData2.begin()), m_testData2.size() * sizeof(unsigned int));
+    std::vector<char> data = LoadBinaryData("fullsync_xplorer_perk_timers.bin");
+    BOOST_REQUIRE(data.size() > 0);
 
-    std::vector<Parsers::AOContainerItemPtr> items;
-    parser.getAllItems(items);
-    BOOST_CHECK_EQUAL(items.size(), parser.numitems());
+    Parsers::AOFullCharacterMessage parser(&*data.begin(), data.size());
 }
 
 BOOST_AUTO_TEST_SUITE_END();
