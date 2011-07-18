@@ -3,6 +3,7 @@
 namespace AO {
 
 #pragma pack(push, 1)
+
     struct AoObjectId
     {
         unsigned int low;
@@ -105,7 +106,6 @@ namespace AO {
 		MoveData		moveData;
 	};
 
-
 	/*struct OpenBackpackOperation
 	{
 		ClientHeader header;
@@ -159,7 +159,6 @@ namespace AO {
 		unsigned int	unknown2;//00 00 00 00
 	};
 
-
 	struct NPCTradeAcceptBase
 	{
 		Header header;
@@ -180,8 +179,6 @@ namespace AO {
 	{
 		unsigned int	unknown1;//00 00 00 00
 	};
-
-
 
 	struct ServerCharacterAction
 	{
@@ -293,7 +290,6 @@ namespace AO {
         unsigned int	nullval;
     };
 
-
     struct ContEnd
     {
         AoObjectId		containerId;
@@ -309,15 +305,6 @@ namespace AO {
         unsigned int   mass;          // 1009*items+1009
     };
 
-
-    //struct Equip
-    //{
-    //    Header         header;
-    //    unsigned int   unknown1;      // 0x00000000 ??
-    //    char           unknown2[1];   // 0x12 ??
-    //    unsigned int   mass;          // 1009*items+1009
-    //};
-
     struct AoString
     {
         unsigned char   strLen;         // Number of bytes allocated to 'str'
@@ -332,188 +319,5 @@ namespace AO {
     };
 
 #pragma pack(pop)
-
-	enum InventoryIds
-    {
-		INV_BANK		= 1,
-		INV_TOONINV		= 2,
-		INV_PLAYERSHOP	= 3,
-		INV_TRADE		= 4,//The stuff I put on the table in a trade
-		INV_TRADEPARTNER= 5,//The stuff a tradepartner adds to a trade.
-		INV_OVERFLOW	= 6,
-		INV_HOTSWAPTEMP	= 7,//used by IA when hotswapping as temp storage.
-		INV_OTHER_PLAYERSHOP= 8, //Current playershop in trade.
-		//remember to update MSG_FULLSYNC to clear the inv you want cleared on zone.
-	};
-
-	enum CharacterActionIds
-	{
-		CHAR_ACTION_RUN_NANO	= 0x13,
-
-		CHAR_ACTION_DELETE_TEMP_ITEM  = 0x2f,
-
-		CHAR_ACTION_SPLITSTACK	= 0x34,
-		CHAR_ACTION_JOINSTACKS	= 0x35,
-		CHAR_ACTION_DELETEITEM	= 0x70,
-		CHAR_ACTION_PLAYERSHOP	= 0xb4,
-
-		CHAR_ACTION_UKNOWN3		= 0xce,//item.high contains a number
-
-		
-
-		CHAR_ACTION_LE_PROC1	= 0xB1,
-		CHAR_ACTION_LE_PROC2	= 0x50,
-		CHAR_ACTION_RUN_PERK	= 0xB3,
-		CHAR_ACTION_NANO_RAN	= 0x6b,//itemId contains 1/nanoitemid
-		CHAR_ACTION_UNKNOWN1	= 0x69,
-		CHAR_ACTION_UNKNOWN2    = 0x62,//unknown, something to do with other players I think
-		CHAR_ACTION_TRADESKILL	= 0x51,
-		CHAR_ACTION_LOGOFF1		= 0xd2,
-		CHAR_ACTION_LOGOFF2		= 0x78,
-		CHAR_ACTION_SNEAK_LEAVE1= 0xaa,
-		CHAR_ACTION_SNEAK_LEAVE2= 0xa1,
-		CHAR_ACTION_SNEAK_ENTER	= 0xa2,
-		CHAR_ACTION_SNEAK		= 0xa3,
-		CHAR_ACTION_SKILL_AVAIL	= 0xa4,
-		CHAR_ACTION_ZONE		= 0xa7,//when starting to zone
-		CHAR_ACTION_ZONE_DATA	= 0xb4,//MANY of these when entering new pf
-		CHAR_ACTION_ZONED		= 0xb5,//after all xb4 messages.
-		CHAR_ACTION_UNABLE_SKILL_LOCKED	= 0x84,
-		CHAR_ACTION_JUMP		= 0x92,
-		CHAR_ACTION_MOVED		= 0x89,//sidestep
-		CHAR_ACTION_STAND		= 0x57,
-		
-
-		//0xdd = add/remove from Tradeskill window
-		//opId == 0x80 => use an elevator
-		//opId == 0x18 => leave team.
-		//opId == 0x41 => cancel running nano.
-		//0x57 ??? All zeroes, when you stand up
-
-	};
-
-
-    enum ToonAtribIds
-    {
-        // TOON 
-        BREED                      = 4,
-        SIDE                       = 33,
-        TITLE_LEVEL                = 37,
-        LEVEL                      = 54,
-        GENDER                     = 59,
-        PROFESSION                 = 60,
-        CLAN_TOKENS                = 62,
-        OMNI_TOKENS                = 75,
-
-        // FACTION VALUES
-        FACTION_OMNI_AF            = 560,
-        FACTION_SENTINELS          = 561,
-        FACTION_OMNI_MED           = 562,
-        FACTION_GAIA               = 563,
-        FACTION_OMNI_TRANS         = 564,
-        FACTION_VANGUARDS          = 565,
-        FACTION_GUARDIAN_OF_SHADOWS = 566,
-        FACTION_FOLLOWERS          = 567,
-        FACTION_OPERATORS          = 568,
-        FACTION_UNREDEEMED         = 569,
-        FACTION_DEVOTED            = 570,
-        FACTION_CONSERVERS         = 571,
-        FACTION_REDEEMED           = 572,
-
-        // ABILITIES
-        STRENGTH                   = 16,
-        AGILITY                    = 17,
-        STAMINA                    = 18,
-        INTELLIGENCE               = 19,
-        SENSE                      = 20,
-        PSYCHIC                    = 21,
-        BODY_DEVELOPMENT           = 152,
-        NANO_ENERGY_POOL           = 132,
-
-        // BODY
-        MARTIAL_ARTS               = 100,
-        BRAWL                      = 142,
-        DIMACH                     = 144,
-        RIPOSTE                    = 143,
-        ADVENTURING                = 137,
-        SWIM                       = 138,
-
-        // MELEE
-        BLUNT_WEAPONS_1H           = 102,
-        EDGED_WEAPONS_1H           = 103,
-        PIERCING                   = 106,
-        EDGED_WEAPONS_2H           = 105,
-        BLUNT_WEAPONS_2H           = 107,
-        MELEE_ENERGY               = 104,
-        PARRY                      = 145,
-        SNEAK_ATTACK               = 146,
-        MULTI_MELEE                = 101,
-        FAST_ATTACK                = 147,
-
-        // MISC WEAPONS
-        THROWING_KNIFE             = 108,
-        GRENADE                    = 109,
-        HEAVY_WEAPONS              = 110,
-
-        // RANGED
-        BOW                        = 111,
-        PISTOL                     = 112,
-        ASSAULT_RIFLE              = 116,
-        SUBMACHINE_GUN             = 114,
-        SHOTGUN                    = 115,
-        RIFLE                      = 113,
-        RANGED_ENERGY              = 133,
-        FLING_SHOT                 = 150,
-        AIMED_SHOT                 = 151,
-        BURST                      = 148,
-        FULL_AUTO                  = 167,
-        BOW_SPECIAL_ATTACK         = 121,
-        MULTI_RANGED               = 134,
-
-        // SPEED
-        MELEE_INITIATIVE           = 118,
-        RANGED_INITIATIVE          = 119,
-        PHYSICAL_INITIATIVE        = 120,
-        NANOC_INIT                 = 149,
-        DODGE_RNG                  = 154,
-        EVADE_CLSC                 = 155,
-        DUCK_EXP                   = 153,
-        NANO_RESIST                = 168,
-        RUN_SPEED                  = 156,
-
-        // TRADE & REPAIR
-        MECHANICAL_ENGINEERING     = 125,
-        ELECTRICAL_ENGINEERING     = 126,
-        FIELD_QUANTUM_PHYSICS      = 157,
-        WEAPON_SMITHING            = 158,
-        PHARMACEUTICALS            = 159,
-        NANO_PROGRAMMING           = 160,
-        COMPUTER_LITERACY          = 161,
-        PSYCHOLOGY                 = 162,
-        CHEMISTRY                  = 163,
-        TUTORING                   = 141,
-
-        // NANO & AIDING
-        MATERIAL_METAMORPHOSE      = 127,
-        BIOLOGICAL_METAMORPHOSE    = 128,
-        PSYCHOLOGICAL_MODIFICATION = 129,
-        MATERIAL_CREATION          = 130,
-        TIME_AND_SPACE             = 131,
-        SENSE_IMPROVEMENT          = 122,
-        FIRST_AID                  = 123,
-        TREATMENT                  = 124,
-
-        // SPYING
-        CONCEALMENT                = 164,
-        BREAKING_ENTRY             = 165,
-        TRAP_DISARM                = 135,
-        PERCEPTION                 = 136,
-
-        // NAVIGATION
-        VEHICLE_AIR                = 139,
-        VEHICLE_GROUND             = 166,
-        VEHICLE_WATER              = 117,
-        MAP_NAVIGATION             = 140,
-    };
 
 };	// namespace

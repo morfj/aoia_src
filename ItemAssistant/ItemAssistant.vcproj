@@ -280,6 +280,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\AOCharacterActionIDs.h"
+				>
+			</File>
+			<File
 				RelativePath=".\AOMessageIDs.h"
 				>
 			</File>
@@ -301,6 +305,10 @@
 			</File>
 			<File
 				RelativePath=".\InjectionSupport.h"
+				>
+			</File>
+			<File
+				RelativePath=".\InventoryIDs.h"
 				>
 			</File>
 			<File
