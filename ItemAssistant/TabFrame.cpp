@@ -135,9 +135,12 @@ PluginViewInterface* TabFrame::GetActivePluginView()
 
 void TabFrame::OnAOServerMessage(AOMessageBase &msg)
 {
+    GetActivePluginView()->OnAOServerMessage(msg);
     for (unsigned int i = 0; i < m_viewPlugins.size(); i++)
     {
-        m_viewPlugins[i]->OnAOServerMessage(msg);
+        if (m_viewPlugins[i] != GetActivePluginView()) {
+            m_viewPlugins[i]->OnAOServerMessage(msg);
+        }
     }
 }
 
