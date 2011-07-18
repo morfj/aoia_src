@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="ItemAssistantTests"
+	Name="ParsersTests"
 	ProjectGUID="{9B460081-763A-4E1B-B587-E80876E00B4B}"
 	RootNamespace="ItemAssistantTests"
 	Keyword="Win32Proj"
