@@ -280,6 +280,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\AOMessageIDs.h"
+				>
+			</File>
+			<File
 				RelativePath=".\AOMessageParsers.h"
 				>
 			</File>

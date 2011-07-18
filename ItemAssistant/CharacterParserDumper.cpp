@@ -2,9 +2,11 @@
 #include "CharacterParserDumper.h"
 #include "DBManager.h"
 #include "AOMessageParsers.h"
+#include "AOMessageIDs.h"
 
 namespace bfs = boost::filesystem;
 using namespace Parsers;
+
 
 CharacterParserDumper::CharacterParserDumper(std::tstring const& folder_name)
   : m_folder(folder_name)

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include "DBManager.h"
+#include "AOMessageIDs.h"
 
 
 AoMsgView::AoMsgView(void)

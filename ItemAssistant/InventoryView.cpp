@@ -14,6 +14,7 @@
 #include <Parsers/AOFullCharacterSync.h>
 #include <Parsers/AOPlayerShopInfo.h>
 #include <Parsers/AOPlayerShopContent.h>
+#include "AOMessageIDs.h"
 
 using namespace WTL;
 using namespace aoia;
