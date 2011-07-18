@@ -52,6 +52,7 @@ public:
         MESSAGE_HANDLER(WM_PAINT, OnPaint)
         MSG_WM_SIZE(OnSize)
         COMMAND_ID_HANDLER(ID_EDIT_CLEAR, OnClear)
+        COMMAND_ID_HANDLER(ID_FILE_SAVE, OnSave)
         CHAIN_MSG_MAP(inherited)
         DEFAULT_REFLECTION_HANDLER()
     END_MSG_MAP()
@@ -59,6 +60,7 @@ public:
     LRESULT OnCreate(LPCREATESTRUCT createStruct);
     LRESULT OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
     LRESULT OnClear(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+    LRESULT OnSave(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnSize(UINT wParam, CSize newSize);
 
     virtual void OnAOServerMessage(AOMessageBase &msg);

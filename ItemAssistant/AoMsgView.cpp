@@ -46,13 +46,20 @@ LRESULT AoMsgView::OnCreate(LPCREATESTRUCT createStruct)
     m_listview.ModifyStyle(0, LVS_REPORT, SWP_NOACTIVATE);
     m_listview.AddColumn(_T("Message ID"), 0);
     m_listview.AddColumn(_T("Size"), 1);
-    TBBUTTON buttons[1];
+    TBBUTTON buttons[2];
     buttons[0].iBitmap = 0;
     buttons[0].idCommand = ID_EDIT_CLEAR;
     buttons[0].fsState = TBSTATE_ENABLED;
     buttons[0].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_AUTOSIZE;
     buttons[0].dwData = NULL;
     buttons[0].iString = (INT_PTR)_T("Clear");
+    buttons[1].iBitmap = 1;
+    buttons[1].idCommand = ID_FILE_SAVE;
+    buttons[1].fsState = TBSTATE_ENABLED;
+    buttons[1].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_AUTOSIZE;
+    buttons[1].dwData = NULL;
+    buttons[1].iString = (INT_PTR)_T("Save Message");
+
     CImageList imageList;
     imageList.CreateFromImage(IDB_AOMESSAGE_VIEW, 16, 1, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
     m_toolbar.Create(GetTopLevelWindow(), NULL, _T("AOMessageViewToolBar"),
@@ -74,7 +81,29 @@ LRESULT AoMsgView::OnSize(UINT wParam, CSize newSize)
 
 LRESULT AoMsgView::OnClear(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-    m_listview.DeleteAllItems();
+    while (m_listview.GetItemCount()) {
+        DWORD_PTR data = m_listview.GetItemData(0);
+        free((void*)data);
+        m_listview.DeleteItem(0);
+    }
+    return 0;
+}
+
+LRESULT AoMsgView::OnSave(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+    int selection = m_listview.GetSelectedIndex();
+    if (selection < 0) {
+        return 0;
+    }
+
+    DWORD_PTR data = m_listview.GetItemData(selection);
+    Parsers::AOMessageBase headerParser((char*)data, 28);    // We don't know size, but assume header size as minimum. Only used to parse size field.
+    Parsers::AOMessageBase parser((char*)data, headerParser.size());
+
+    std::ofstream ofs;
+    ofs.open("c:\\temp\\message.bin", std::ios_base::out | std::ios_base::binary | std::ios_base::app);
+    DumpMessageToStream(ofs, parser);
+
     return 0;
 }
 
