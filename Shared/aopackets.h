@@ -438,11 +438,10 @@ namespace AO {
 		MSG_GIVE_TO_NPC	=	0x3a1b2c0c,//give or remove from npc trade win
 		MSG_ACCEPT_NPC_TRADE = 0x2d212407,//From server when accepting trade, contains items npc didnt want..
 		MSG_END_NPC_TRADE = 0x55682b24,//From client when ending trade, contains accept or cancel
-		MSG_CHAR_INFO = 0x4d38242e,
+		MSG_CHAR_INFO   =   0x4d38242e,
 		MSG_ORG_CONTRACT = 0x64582a07,
 		MSG_ORG_CITY_P1 = 0x365e555b,
 		MSG_ORG_CITY_P2 = 0x5f4b442a,
-
 		/*
 		followed by a move slotId0 from overflow each!
 		spiked food sack: (id 0187C4)
@@ -468,6 +467,14 @@ E6000002	1C000F42	4F000000	00716F00	001B9700
 //Also TODO: mish items deleted when mish deleted not auto
 
 		*/
+
+        /*
+        Sent to client when a nano program terminated.
+        Ex: Body Boost (29091 / 0x71A3) terminated:
+        2AB4000A 00010027 00000BDE AB106B4D 39343C68
+        0000C350 AB106B4D 00000000 00CF1B00 0071A3FD <-- ID almost at the end.
+        */
+        MSG_PROGRAM_TERMINATED = 0x39343c68,    
 	};
 
     enum ToonAtribIds
