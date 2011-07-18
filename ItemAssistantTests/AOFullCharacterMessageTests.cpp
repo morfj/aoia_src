@@ -2,7 +2,7 @@
 #include <tchar.h>
 #include <shared/UnicodeSupport.h>
 #include <ItemAssistantCore/Logger.h>
-#include "ItemAssistant/AOMessageParsers.h"
+#include <Parsers/AOFullCharacterSync.h>
 #include <boost/test/unit_test.hpp>
 #include "AOFullCharacterMessageTestsData.h"
 

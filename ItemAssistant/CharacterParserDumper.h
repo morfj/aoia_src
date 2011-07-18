@@ -1,8 +1,8 @@
 #ifndef CHARACTERPARSERDUMPER_H
 #define CHARACTERPARSERDUMPER_H
 
-#include "AOMessageParsers.h"
 #include <boost/filesystem.hpp>
+#include <Parsers/AOMessageBase.h>
 
 class CharacterParserDumper
 {

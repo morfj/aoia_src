@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "CharacterParserDumper.h"
 #include "DBManager.h"
+#include "AOMessageParsers.h"
 
 namespace bfs = boost::filesystem;
 using namespace Parsers;

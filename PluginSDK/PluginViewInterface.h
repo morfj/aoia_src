@@ -3,7 +3,9 @@
 
 #include <boost/smart_ptr.hpp>
 #include <boost/signal.hpp>
-#include <ItemAssistant/AOMessageParsers.h> // Todo, move parsers into the SDK
+#include <Parsers/AOMessageBase.h>
+#include <Parsers/AOClientMessageBase.h>
+
 using namespace Parsers;
 
 struct PluginViewInterface

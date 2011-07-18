@@ -11,7 +11,9 @@
 #include "ItemListDataModel.h"
 #include "ServerSelectorDialog.h"
 #include <ItemAssistantCore/SettingsManager.h>
-
+#include <Parsers/AOFullCharacterSync.h>
+#include <Parsers/AOPlayerShopInfo.h>
+#include <Parsers/AOPlayerShopContent.h>
 
 using namespace WTL;
 using namespace aoia;

@@ -66,7 +66,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
-				AdditionalDependencies="shared.lib tinyxml.lib sqlite3.lib ItemAssistantCore.lib"
+				AdditionalDependencies="shared.lib tinyxml.lib sqlite3.lib ItemAssistantCore.lib Parsers.lib"
 				OutputFile="$(OutDir)/ItemAssistant.exe"
 				AdditionalLibraryDirectories="&quot;$(SolutionDir)$(ConfigurationName)&quot;;&quot;$(SolutionDir)Externals\SQLite\&quot;;&quot;$(SolutionDir)Externals\boost_bin\&quot;"
 				EnableUAC="true"
@@ -150,7 +150,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
-				AdditionalDependencies="shared.lib tinyxml.lib sqlite3.lib ItemAssistantCore.lib"
+				AdditionalDependencies="shared.lib tinyxml.lib sqlite3.lib ItemAssistantCore.lib Parsers.lib"
 				OutputFile="$(OutDir)/ItemAssistant.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(SolutionDir)$(ConfigurationName)&quot;;&quot;$(SolutionDir)Externals\SQLite\&quot;;&quot;$(SolutionDir)Externals\boost_bin\&quot;"

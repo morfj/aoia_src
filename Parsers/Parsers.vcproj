@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="ItemAssistantTests"
-	ProjectGUID="{9B460081-763A-4E1B-B587-E80876E00B4B}"
-	RootNamespace="ItemAssistantTests"
+	Name="Parsers"
+	ProjectGUID="{85CB52A8-5C89-459C-9175-2D55E93A5375}"
+	RootNamespace="Parsers"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -20,7 +20,7 @@
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
+			ConfigurationType="4"
 			CharacterSet="1"
 			>
 			<Tool
@@ -41,14 +41,15 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(SolutionDir)"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)&quot;"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
+				ProgramDataBaseFileName="$(IntDir)\$(ProjectName).pdb"
 				WarningLevel="3"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -60,19 +61,10 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="shared.lib Parsers.lib"
-				LinkIncremental="2"
-				AdditionalLibraryDirectories="$(SolutionDir)$(ConfigurationName)"
-				GenerateDebugInformation="true"
-				SubSystem="1"
-				TargetMachine="1"
+				Name="VCLibrarianTool"
 			/>
 			<Tool
 				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -84,18 +76,14 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="$(OutDir)\$(ProjectName).exe"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
+			ConfigurationType="4"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -118,11 +106,12 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="$(SolutionDir)"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)&quot;"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
+				ProgramDataBaseFileName="$(IntDir)\$(ProjectName).pdb"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -136,21 +125,10 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="shared.lib Parsers.lib"
-				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(SolutionDir)$(ConfigurationName)"
-				GenerateDebugInformation="true"
-				SubSystem="1"
-				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
-				TargetMachine="1"
+				Name="VCLibrarianTool"
 			/>
 			<Tool
 				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -160,9 +138,6 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -178,11 +153,35 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\AOFullCharacterMessageTests.cpp"
+				RelativePath=".\AOClientMessageBase.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\main.cpp"
+				RelativePath=".\AOContainer.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\AOContainerItem.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\AOFullCharacterSync.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\AOMessageBase.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\AOObjectID.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\AOPlayerShopContent.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\AOPlayerShopInfo.cpp"
 				>
 			</File>
 		</Filter>
@@ -192,15 +191,37 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\AOFullCharacterMessageTestsData.h"
+				RelativePath=".\AOClientMessageBase.h"
 				>
 			</File>
-		</Filter>
-		<Filter
-			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
-			>
+			<File
+				RelativePath=".\AOContainer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AOContainerItem.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AOFullCharacterSync.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AOMessageBase.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AOObjectID.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AOPlayerShopContent.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AOPlayerShopInfo.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>
