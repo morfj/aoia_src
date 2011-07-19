@@ -46,7 +46,9 @@ BOOST_AUTO_TEST_CASE(XplorerFullyBuffedTest)
     std::vector<char> data = LoadBinaryData("fullsync_xplorer_entering_shop_buffed.bin");
     BOOST_REQUIRE(data.size() > 0);
 
-    Parsers::AOFullCharacterMessage parser(&*data.begin(), data.size());
+    Parsers::AOFullCharacterMessage msg(&*data.begin(), data.size());
+    BOOST_CHECK_EQUAL(msg.characterId(), 0x3256A372);
+    BOOST_CHECK_EQUAL(msg.entityId(), 0x3256A372);
 }
 
 BOOST_AUTO_TEST_CASE(XplorerZoningWithPerkLockTimerTest)
@@ -54,7 +56,9 @@ BOOST_AUTO_TEST_CASE(XplorerZoningWithPerkLockTimerTest)
     std::vector<char> data = LoadBinaryData("fullsync_xplorer_perk_timers.bin");
     BOOST_REQUIRE(data.size() > 0);
 
-    Parsers::AOFullCharacterMessage parser(&*data.begin(), data.size());
+    Parsers::AOFullCharacterMessage msg(&*data.begin(), data.size());
+    BOOST_CHECK_EQUAL(msg.characterId(), 0x3256A372);
+    BOOST_CHECK_EQUAL(msg.entityId(), 0x3256A372);
 }
 
 BOOST_AUTO_TEST_SUITE_END();
