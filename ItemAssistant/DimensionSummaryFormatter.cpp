@@ -13,6 +13,9 @@ namespace aoia { namespace sv {
     std::tstring DimensionSummaryFormatter::toString() const
     {
         std::tostringstream out;
+		__int64 totalCredits = 0;
+		int totalLevels = 0;
+		int totalAiLevels = 0;
 
         out << "<h2>" << m_dimensionName << "</h2>";
         out << "<table id=\"summarytbl\"><tr>";
@@ -35,10 +38,61 @@ namespace aoia { namespace sv {
                 else {
                     out << "<td class=\"rightalign\">";
                 }
+				if (j == 1) {
+					// levels
+					try{
+						totalLevels += boost::lexical_cast<unsigned int>(m_model->getItemProperty(i, j));
+					}
+					catch(boost::bad_lexical_cast &)
+					{
+						// no credits, continue to next toon
+					}
+				}
+				if (j == 2) {
+					// AI levels
+					try{
+						totalAiLevels += boost::lexical_cast<unsigned int>(m_model->getItemProperty(i, j));
+					}
+					catch(boost::bad_lexical_cast &)
+					{
+						// no credits, continue to next toon
+					}
+				}
+				if (j == 3) {
+					// credits
+					try{
+						totalCredits += boost::lexical_cast<unsigned int>(m_model->getItemProperty(i, j));
+					}
+					catch(boost::bad_lexical_cast &)
+					{
+						// no credits, continue to next toon
+					}
+				}
                 out << m_model->getItemProperty(i, j) << "</td>";
             }
             out << "</tr>";
         }
+
+        out << "<tr>";
+        for (unsigned int j = 0; j < m_model->getColumnCount(); ++j)
+        {
+            if (j == 0) {
+				out << "<td class=\"leftalign\">SUM</td>";
+			}
+			else if(j ==1){
+				// Level
+				out << "<td class=\"rightalign\">" << totalLevels << "</td>";
+			}
+			else if(j == 2){
+				// AI level
+				out << "<td class=\"rightalign\">" << totalAiLevels << "</td>";
+			}
+			else if(j == 3){
+				// AI level
+				out << "<td class=\"rightalign\">" << totalCredits << "</td>";
+			}
+		}
+		out << "</tr>";
 
         out << "</table>";
 
