@@ -10,13 +10,14 @@ using namespace boost::assign;
 const std::string c_scheme_sql =
     "CREATE TABLE tblAO ("
     "   [aoid] INTEGER NOT NULL PRIMARY KEY UNIQUE,"
-    "   [name] TEXT  NOT NULL,"
-    "   [ql] INTEGER  NULL,"
-    "   [type] TEXT  NOT NULL,"
-    "   [description] VARCHAR(256)  NULL,"
-    "   [flags] INTEGER  NULL,"
-    "   [properties] INTEGER  NULL,"
-    "   [icon] INTEGER  NULL"
+    "   [name] TEXT NOT NULL,"
+    "   [ql] INTEGER NULL,"
+    "   [type] TEXT NOT NULL,"
+    "   [description] VARCHAR(256) NULL,"
+    "   [flags] INTEGER NULL,"
+    "   [properties] INTEGER NULL,"
+    "   [icon] INTEGER NULL,"
+	"   [islot] INTEGER NULL"
     "   );"
 
     "CREATE TABLE tblItemReqs ("
@@ -61,6 +62,16 @@ const std::string c_scheme_sql =
     "   );"
 
 	"CREATE INDEX tblItemEffects_aoid_idx ON tblItemEffects (aoid);"
+
+	"CREATE INDEX tblItemReqs_aoid_idx ON tblItemReqs (aoid);"
+
+	"CREATE INDEX tblAO_aoid_idx ON tblAO (aoid);"
+
+	"CREATE INDEX tblAO_islot_idx ON tblAO (islot);"
+
+	"CREATE INDEX tblAO_type_idx ON tblAO (type);"
+
+	"CREATE INDEX tblAO_name_idx ON tblAO (name);"
     ;
 
 
@@ -158,11 +169,12 @@ void AODatabaseWriter::WriteItem(boost::shared_ptr<ao_item> item)
     std::string desc = boost::algorithm::replace_all_copy(item->description, "'", "''");
 
     std::ostringstream sql;
-    sql << "INSERT INTO tblAO (aoid, name, ql, type, description, flags, properties, icon) VALUES ("
+    sql << "INSERT INTO tblAO (aoid, name, ql, type, islot, description, flags, properties, icon) VALUES ("
         << item->aoid << ", "
         << "'" << name << "', "
         << item->ql << ", "
         << "'" << s_ItemTypeMap[item->type] << "', "
+		<< item->slot << ", "
         << "'" << desc << "', "
         << item->flags << ", "
         << item->props << ", "
