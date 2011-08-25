@@ -13,9 +13,11 @@
         <Projects Include="**/tinyxmlSTL.vcproj" />
         <Projects Include="**/PluginSDK.vcproj" />
         <Projects Include="**/Detours.vcproj" />
+        <Projects Include="**/Parsers.vcproj" />
         <Projects Include="**/ItemAssistantCore.vcproj" />
         <Projects Include="**/ItemAssistantHook.vcproj" />
         <Projects Include="**/ItemAssistant.vcproj" />
+        <Projects Include="**/ParsersTests.vcproj" />
     </ItemGroup>
 
     <Target Name="clean">
