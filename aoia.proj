@@ -1,107 +1,113 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
 
-    <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
+	<Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
+	<Import Project="$(MSBuildExtensionsPath)\MSBuildTeamCityTasks\MSBuild.TeamCity.Tasks.Targets"/>
 
-    <PropertyGroup>
-        <Version>0.0.0.0</Version>
-        <Version Condition="'$(BUILD_NUMBER)'!=''">$(BUILD_NUMBER)</Version>
-    </PropertyGroup>
+	<PropertyGroup>
+		<Version>0.0.0.0</Version>
+		<Version Condition="'$(BUILD_NUMBER)'!=''">$(BUILD_NUMBER)</Version>
+	</PropertyGroup>
 
-    <ItemGroup>
-        <Projects Include="**/shared.vcproj" />
-        <Projects Include="**/tinyxmlSTL.vcproj" />
-        <Projects Include="**/PluginSDK.vcproj" />
-        <Projects Include="**/Detours.vcproj" />
-        <Projects Include="**/Parsers.vcproj" />
-        <Projects Include="**/ItemAssistantCore.vcproj" />
-        <Projects Include="**/ItemAssistantHook.vcproj" />
-        <Projects Include="**/ItemAssistant.vcproj" />
-        <Projects Include="**/ParsersTests.vcproj" />
-    </ItemGroup>
+	<ItemGroup>
+		<Projects Include="**/shared.vcproj" />
+		<Projects Include="**/tinyxmlSTL.vcproj" />
+		<Projects Include="**/PluginSDK.vcproj" />
+		<Projects Include="**/Detours.vcproj" />
+		<Projects Include="**/Parsers.vcproj" />
+		<Projects Include="**/ItemAssistantCore.vcproj" />
+		<Projects Include="**/ItemAssistantHook.vcproj" />
+		<Projects Include="**/ItemAssistant.vcproj" />
+		<Projects Include="**/ParsersTests.vcproj" />
+	</ItemGroup>
 
-    <Target Name="clean">
-        <Message Text="Cleaning" />
-        <VCBuild
+	<Target Name="clean">
+		<Message Text="Cleaning" />
+		<VCBuild
             Projects="@(Projects)"
             Configuration="Release|Win32"
             SolutionFile="ItemAssistant.sln"
             Clean="true" />
-    </Target>
+	</Target>
 
-    <Target Name="prepare_build">
-        <Message Text="Preparing" />
-        <ItemGroup>
-            <OldOutputFiles Include="Release/ItemAssistant*.zip" />
-        </ItemGroup>
-        <Delete Files="@(OldOutputFiles)" />
-    </Target>
+	<Target Name="prepare_build">
+		<Message Text="Preparing" />
+		<ItemGroup>
+			<OldOutputFiles Include="Release/ItemAssistant*.zip" />
+		</ItemGroup>
+		<Delete Files="@(OldOutputFiles)" />
+	</Target>
 
-    <!--<Target Name="revert_modified_files">
+	<!--<Target Name="revert_modified_files">
         <ItemGroup>
             <ModifiedFiles Include="ItemAssistant/*.rc" />
             <ModifiedFiles Include="ItemAssistant/Version.h" />
         </ItemGroup>
         <Exec Command="svn revert %(ModifiedFiles.Identity)" />
     </Target>-->
-    
-    <Target Name="update_version_resource">
-        <Message Text="Updating Version Resource" />
-        <ItemGroup>
-            <ResourceFile Include="ItemAssistant/*.rc" />
-        </ItemGroup>
-        <FileUpdate Files="@(ResourceFile)"
+
+	<Target Name="update_version_resource">
+		<Message Text="Updating Version Resource" />
+		<ItemGroup>
+			<ResourceFile Include="ItemAssistant/*.rc" />
+		</ItemGroup>
+		<FileUpdate Files="@(ResourceFile)"
                     Encoding="ASCII"
                     Regex="VERSION +\d+, ?\d+, ?\d+, ?\d+"
                     ReplacementText="VERSION $(Version)" />
-        <FileUpdate Files="@(ResourceFile)"
+		<FileUpdate Files="@(ResourceFile)"
                     Encoding="ASCII"
                     Regex="VERSION (\d+)\.(\d+)\.(\d+)\.(\d+)"
                     ReplacementText="VERSION $1,$2,$3,$4" />
-        <FileUpdate Files="@(ResourceFile)"
+		<FileUpdate Files="@(ResourceFile)"
                     Encoding="ASCII"
                     Regex="&quot;\d+, ?\d+, ?\d+, ?\d+&quot;"
                     ReplacementText="&quot;$(Version)&quot;" />
-        <FileUpdate Files="@(ResourceFile)"
+		<FileUpdate Files="@(ResourceFile)"
                     Encoding="ASCII"
                     Regex="&quot;(\d+)\.(\d+)\.(\d+)\.(\d+)&quot;"
                     ReplacementText="&quot;$1, $2, $3, $4&quot;" />
-    </Target>
+	</Target>
 
-    <Target Name="update_version">
-        <Message Text="Updating Version" />
-        <ItemGroup>
-            <VersionFile Include="ItemAssistant/Version.h" />
-        </ItemGroup>
-        <WriteLinesToFile
+	<Target Name="update_version">
+		<Message Text="Updating Version" />
+		<ItemGroup>
+			<VersionFile Include="ItemAssistant/Version.h" />
+		</ItemGroup>
+		<WriteLinesToFile
             File="@(VersionFile)"
             Lines="#pragma once;;const std::tstring g_versionNumber = _T(&quot;$(Version)&quot;)%3b;"
             Overwrite="true" />
-    </Target>
+	</Target>
 
-    <Target Name="build">
-        <Message Text="Building" />
-        <VCBuild
+	<Target Name="build">
+		<Message Text="Building" />
+		<VCBuild
             Projects="@(Projects)"
             Configuration="Release|Win32"
             SolutionFile="ItemAssistant.sln" 
             Rebuild="true" />
-    </Target>
+	</Target>
 
-    <Target Name="package" DependsOnTargets="prepare_build;update_version;update_version_resource;build">
-        <Message Text="Packaging" />
-        <ItemGroup>
-            <Files Include="Release/ItemAssistant.exe" />
-            <Files Include="Release/ItemAssistantCore.dll" />
-            <Files Include="Release/ItemAssistantHook.dll" />
-            <Files Include="Release/sqlite3.dll" />
-            <Files Include="Release/*.manifest" />
-            <Files Include="Release/msvc*.dll" />
-            <Files Include="Release/README.txt" />
-        </ItemGroup>
-        <Zip Files="@(Files)" 
+	<Target Name="test">
+		<Message Text="Testing" />
+		<RunGoogleTests TestExePath="Release/ParsersTests.exe" />
+	</Target>
+
+	<Target Name="package" DependsOnTargets="prepare_build;update_version;update_version_resource;build">
+		<Message Text="Packaging" />
+		<ItemGroup>
+			<Files Include="Release/ItemAssistant.exe" />
+			<Files Include="Release/ItemAssistantCore.dll" />
+			<Files Include="Release/ItemAssistantHook.dll" />
+			<Files Include="Release/sqlite3.dll" />
+			<Files Include="Release/*.manifest" />
+			<Files Include="Release/msvc*.dll" />
+			<Files Include="Release/README.txt" />
+		</ItemGroup>
+		<Zip Files="@(Files)" 
              WorkingDirectory="Release"
              ZipFileName="Release/ItemAssistant-$(Version).zip" />
-    </Target>
-    
+	</Target>
+
 </Project>
