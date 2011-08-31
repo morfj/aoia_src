@@ -2,13 +2,13 @@
 #include <tchar.h>
 #include <shared/UnicodeSupport.h>
 #include <Parsers/AOFullCharacterSync.h>
-#include <boost/test/unit_test.hpp>
+#include <gtest/gtest.h>
 #include <iostream>
 #include <boost/filesystem.hpp>
 
 namespace bfs = boost::filesystem;
 
-struct AOFullCharacterMessageTestFixture
+struct AOFullCharacterMessageTestFixture : public testing::Test
 {
     AOFullCharacterMessageTestFixture() { }
 
@@ -39,26 +39,22 @@ struct AOFullCharacterMessageTestFixture
     }
 };
 
-BOOST_FIXTURE_TEST_SUITE(AOFullCharacterMessageTests, AOFullCharacterMessageTestFixture);
-
-BOOST_AUTO_TEST_CASE(XplorerFullyBuffedTest)
+TEST_F(AOFullCharacterMessageTestFixture, XplorerFullyBuffedTest)
 {
     std::vector<char> data = LoadBinaryData("fullsync_xplorer_entering_shop_buffed.bin");
-    BOOST_REQUIRE(data.size() > 0);
+    EXPECT_GT(data.size(), (unsigned)0);
 
     Parsers::AOFullCharacterMessage msg(&*data.begin(), data.size());
-    BOOST_CHECK_EQUAL(msg.characterId(), 0x3256A372);
-    BOOST_CHECK_EQUAL(msg.entityId(), 0x3256A372);
+    EXPECT_EQ(msg.characterId(), 0x3256A372);
+    EXPECT_EQ(msg.entityId(), 0x3256A372);
 }
 
-BOOST_AUTO_TEST_CASE(XplorerZoningWithPerkLockTimerTest)
+TEST_F(AOFullCharacterMessageTestFixture, XplorerZoningWithPerkLockTimerTest)
 {
     std::vector<char> data = LoadBinaryData("fullsync_xplorer_perk_timers.bin");
-    BOOST_REQUIRE(data.size() > 0);
+    EXPECT_GT(data.size(), (unsigned)0);
 
     Parsers::AOFullCharacterMessage msg(&*data.begin(), data.size());
-    BOOST_CHECK_EQUAL(msg.characterId(), 0x3256A372);
-    BOOST_CHECK_EQUAL(msg.entityId(), 0x3256A372);
+    EXPECT_EQ(msg.characterId(), 0x3256A372);
+    EXPECT_EQ(msg.entityId(), 0x3256A372);
 }
-
-BOOST_AUTO_TEST_SUITE_END();

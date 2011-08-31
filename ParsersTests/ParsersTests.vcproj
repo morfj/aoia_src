@@ -21,6 +21,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
+			InheritedPropertySheets="..\Externals\gtest\msvc\gtest.vsprops"
 			CharacterSet="1"
 			>
 			<Tool
@@ -97,6 +98,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
+			InheritedPropertySheets="..\Externals\gtest\msvc\gtest.vsprops"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -184,7 +186,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\main.cpp"
+				RelativePath="..\Externals\gtest\src\gtest_main.cc"
 				>
 			</File>
 		</Filter>
