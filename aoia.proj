@@ -97,9 +97,10 @@
 			<Files Include="Release/msvc*.dll" />
 			<Files Include="Release/README.txt" />
 		</ItemGroup>
-		<Zip Files="@(Files)" 
-             WorkingDirectory="Release"
-             ZipFileName="Release/ItemAssistant-$(Version).zip" />
+		<Zip
+			Files="@(Files)" 
+			WorkingDirectory="Release"
+			ZipFileName="Release/ItemAssistant-$(Version).zip" />
 	</Target>
 
 </Project>
