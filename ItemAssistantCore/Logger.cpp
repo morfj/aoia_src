@@ -67,3 +67,8 @@ void Logger::log(std::tstring const& msg)
         m_out << to_ascii_copy(msg) << LB << std::flush;
     }
 }
+
+std::ostream& Logger::stream()
+{
+    return m_out;
+}

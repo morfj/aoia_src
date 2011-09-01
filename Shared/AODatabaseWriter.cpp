@@ -2,7 +2,6 @@
 #include "AODatabaseWriter.h"
 #include <boost/assign.hpp>
 #include <boost/algorithm/string.hpp>
-#include <ItemAssistantCore/Logger.h>
 
 using namespace boost::algorithm;
 using namespace boost::assign;
@@ -118,7 +117,8 @@ const std::vector<std::string> c_datatransformation_sql = list_of
     ;
 
 
-AODatabaseWriter::AODatabaseWriter(std::string const& filename)
+AODatabaseWriter::AODatabaseWriter(std::string const& filename, std::ostream &log)
+:   m_log(log)
 {
     m_db.Init(from_ascii_copy(filename));
     m_db.Exec("PRAGMA journal_mode=MEMORY");
@@ -160,7 +160,7 @@ void AODatabaseWriter::WriteItem(boost::shared_ptr<ao_item> item)
 
     // Special case for getting item 212334 into the DB. Looks fubar'ed by funcom in 17.1 patch.
     if (item->aoid != 212334 && item->ql == 0) {
-        Logger::instance().log(STREAM2STR(_T("Skipped item with QL zero. AOID: ") << item->aoid));
+        m_log << "Skipped item with QL zero. AOID: " << item->aoid << std::endl;
         return;
     }
 
@@ -264,7 +264,7 @@ void AODatabaseWriter::PostProcessData()
     for (std::vector<std::string>::const_iterator it = c_datatransformation_sql.begin(); it != c_datatransformation_sql.end(); ++it) {
         if (!m_db.Exec(*it)) {
             assert(false);
-            Logger::instance().log(_T("Error while postprocessing data."));
+            m_log << "Error while postprocessing data." << std::endl;
         }
     }
 }

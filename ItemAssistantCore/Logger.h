@@ -17,6 +17,7 @@ public:
     void init(std::tstring const& filename, std::tstring const& versioninfo);
     void destroy();
     void log(std::tstring const& msg);
+    std::ostream& stream();
 
 private:
     std::ofstream m_out;

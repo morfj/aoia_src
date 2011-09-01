@@ -66,7 +66,7 @@ int _tmain(int argc, _TCHAR* argv[])
         return 4;
     }
 
-	return 0;
+    return 0;
 }
 
 
@@ -87,7 +87,7 @@ bool RippIt(std::string const& input_folder, std::string const& output_file, boo
         AODatabaseParser aodb(original_files);
 
         // Set up writer
-        AODatabaseWriter writer(output_file);
+        AODatabaseWriter writer(output_file, std::cout);
 
         // Extract items
         unsigned int itemcount = 0;

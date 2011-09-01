@@ -6,14 +6,12 @@
 #include <string>
 #include <Shared/AODB.h>
 
-
 #define CURRENT_AODB_VERSION 4
-
 
 class AODatabaseWriter
 {
 public:
-    AODatabaseWriter(std::string const& filename);
+	AODatabaseWriter(std::string const& filename, std::ostream &log);
     ~AODatabaseWriter();
 
     void BeginWrite();
@@ -28,6 +26,7 @@ protected:
 
 private:
     SQLite::Db m_db;
+	std::ostream &m_log;
 };
 
 #endif // AODatabaseWriter_h__

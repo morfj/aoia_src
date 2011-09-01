@@ -143,7 +143,7 @@ bool DBManager::syncLocalItemsDB(std::tstring const& localfile, std::tstring con
 
         std::vector<std::string> original_files = boost::assign::list_of(original.string())(original.string()+".001");
         AODatabaseParser aodb(original_files);
-        AODatabaseWriter writer(tmpfile.string());
+        AODatabaseWriter writer(tmpfile.string(), Logger::instance().stream());
 
         CProgressDialog dlg(itemCount + nanoCount, itemCount);
         dlg.SetWindowText(_T("Progress Dialog - Item Assistant"));
