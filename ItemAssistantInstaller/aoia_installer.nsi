@@ -2,7 +2,11 @@ SetCompressor /SOLID lzma
 
 Name "Item Assistant Installer"
 
-OutFile "aoia_setup.exe"
+!ifdef BuildNumber
+	OutFile "aoia_setup-${BuildNumber}.exe"
+!else
+	OutFile "aoia_setup.exe"
+!endif
 
 InstallDir "c:\aoia"
 
