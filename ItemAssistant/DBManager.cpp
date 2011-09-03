@@ -715,7 +715,7 @@ void DBManager::updateDBVersion(unsigned int fromVersion) const
         }
         // Dropthrough
 
-	case 4: // Updates from v4: Added credits column in the toons table.
+	case 4: // Updates from v4: Added toon-stats table.
 		{
 			Begin();
             Exec(_T("CREATE TABLE tToonStats (charid INTEGER NOT NULL, statid INTEGER NOT NULL, statvalue INTEGER NOT NULL, FOREIGN KEY (charid) REFERENCES tToons (charid))"));
