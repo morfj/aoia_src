@@ -104,7 +104,7 @@
 	</Target>
 
 	<Target Name="installer">
-		<Exec command="$(NSISDIR)\makensis.exe ItemAssistantInstaller\aoia_installer.nsi" WorkingDirectory="ItemAssistantInstaller" /> 
+		<Exec command="&quot;$(NSISDIR)\makensis.exe&quot; aoia_installer.nsi" WorkingDirectory="ItemAssistantInstaller" /> 
 	</Target>
 	
 </Project>
