@@ -1,3 +1,10 @@
+--------------------------------------------------------------------------------
+
+                         ANARCHY ONLINE ITEM ASSISTANT
+                             http://ia.frellu.net
+
+--------------------------------------------------------------------------------
+
 Installation:
 =============
 Unzip and run from your location of choice. To avoid possible issues, extract 
@@ -58,8 +65,11 @@ Version 1.0.0                                       Release Date: ?/?/2011
       list is now reloaded as it is opened.
     * Feature 2059217: The window location is now recorded and restored 
       to/from the conf file. 
-    * Opening an item using Xyphos.com will now also supply the QL of the item 
+    * Opening an item using Xyphos.com will now also supply the QL of the item
       so the stats are shown correctly.
+	* Improved ripping of items database so it supports newer version of AO.
+	* New summary view shows levels and amount of credits for all registered 
+	  toons.
 
 Version 0.9.7                                       Release Date: 26/1/2010
     * Fixed org city output for CharacterParser integration. Does not dump
@@ -72,7 +82,7 @@ Version 0.9.6										Release Date: 16/1/2010
 	* Updated SQLite to version 3.6.22 to resolve some issues.
 	* Fixed database parser bugs. The symptom was that the application was 
 	  unable to track certain items.
-	* Application now outputs files that can be opened with the CharacterParser 
+	* Application now outputs files that can be opened with the CharacterParser
 	  application.
 
 Version 0.9.5                                       Release Date: 3/6/2009
@@ -102,12 +112,14 @@ Version 0.9.3                                        Release Date: 4/5/2009
     * Now parsing the 18.0.1 database correctly.
     * Find panel now filters on dimension as well.
     * Added support for Xyphos.com for item stats/links.
-    * The report in the Pattern Matcher now links to the loot table for the boss.
-    * It is now possible to export all items (excluding backpacks) from a toon by 
-      right-clicking the toon name in the tree-view.
+    * The report in the Pattern Matcher now links to the loot table for the 
+      boss.
+    * It is now possible to export all items (excluding backpacks) from a toon
+      by right-clicking the toon name in the tree-view.
     * Improved performance when ripping the AODB.
     * Bug Fix: Identify view will now sort (right hand side list).
-    * Bug Fix: Toonlist in the find-panel and pattern-matcher should now be sorted.
+    * Bug Fix: Toonlist in the find-panel and pattern-matcher should now be 
+      sorted.
 
 Version 0.9.2                                       Release Date: 20/2/2009
     * Enhanced the player-shop monitor to refresh the view when something 
