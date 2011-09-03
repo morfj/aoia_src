@@ -103,4 +103,8 @@
 			ZipFileName="Release/ItemAssistant-$(Version).zip" />
 	</Target>
 
+	<Target Name="installer">
+		<Exec command="$(NSISDIR)\makensis.exe ItemAssistantInstaller\aoia_installer.nsi" WorkingDirectory="ItemAssistantInstaller" /> 
+	</Target>
+	
 </Project>
