@@ -35,7 +35,9 @@ Section
 	File ..\Release\*.manifest
 	File ..\Release\msvc*.dll
 	
-#	CreateShortCut "$SMPROGRAMS\ItemAssistant.lnk" "$INSTDIR\ItemAssistant.exe"
+	# Create the startmenu shortcut
+	CreateDirectory "$SMPROGRAMS\Item Assistant"
+	CreateShortCut	"$SMPROGRAMS\Item Assistant\ItemAssistant.lnk" "$INSTDIR\ItemAssistant.exe"
 
 
 	# Register uninstaller in "add/remove programs".
@@ -86,7 +88,9 @@ Section "uninstall"
 	# Do _NOT_ use /r option for this folder incase something else has been installed. Witout /r only an empty folder will be deleted.
 	RMDir "$INSTDIR"
 	
-#	Delete "$SMPROGRAMS\ItemAssistant.lnk"
+	# Delete the startmenu shortcut
+	Delete "$SMPROGRAMS\Item Assistant\ItemAssistant.lnk"
+	RMDir "$SMPROGRAMS\Item Assistant"
 
 	# Remove from "add/remove programs".
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ItemAssistant"
