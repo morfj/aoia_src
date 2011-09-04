@@ -34,6 +34,7 @@
 		<Message Text="Preparing" />
 		<ItemGroup>
 			<OldOutputFiles Include="Release/ItemAssistant*.zip" />
+			<OldOutputFiles Include="Release/ItemAssistant*.exe" />
 		</ItemGroup>
 		<Delete Files="@(OldOutputFiles)" />
 	</Target>
