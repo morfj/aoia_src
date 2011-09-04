@@ -38,37 +38,43 @@ namespace aoia { namespace sv {
                 else {
                     out << "<td class=\"rightalign\">";
                 }
-				if (j == 1) {
-					// levels
-					try{
-						totalLevels += boost::lexical_cast<unsigned int>(m_model->getItemProperty(i, j));
-					}
-					catch(boost::bad_lexical_cast &)
-					{
-						// no credits, continue to next toon
-					}
-				}
-				if (j == 2) {
-					// AI levels
-					try{
-						totalAiLevels += boost::lexical_cast<unsigned int>(m_model->getItemProperty(i, j));
-					}
-					catch(boost::bad_lexical_cast &)
-					{
-						// no credits, continue to next toon
-					}
-				}
-				if (j == 3) {
-					// credits
-					try{
-						totalCredits += boost::lexical_cast<unsigned int>(m_model->getItemProperty(i, j));
-					}
-					catch(boost::bad_lexical_cast &)
-					{
-						// no credits, continue to next toon
-					}
-				}
-                out << m_model->getItemProperty(i, j) << "</td>";
+
+                std::tstring propertyValue = m_model->getItemProperty(i, j);
+                out << propertyValue << "</td>";
+
+                if (propertyValue.compare(_T("-")) != 0)
+                {
+                    if (j == 1) {
+                        // levels
+                        try {
+                            totalLevels += boost::lexical_cast<unsigned int>(m_model->getItemProperty(i, j));
+                        }
+                        catch(boost::bad_lexical_cast &)
+                        {
+                            // no credits, continue to next toon
+                        }
+                    }
+                    else if (j == 2) {
+                        // AI levels
+                        try{
+                            totalAiLevels += boost::lexical_cast<unsigned int>(m_model->getItemProperty(i, j));
+                        }
+                        catch(boost::bad_lexical_cast &)
+                        {
+                            // no credits, continue to next toon
+                        }
+                    }
+                    else if (j == 3) {
+                        // credits
+                        try{
+                            totalCredits += boost::lexical_cast<unsigned int>(m_model->getItemProperty(i, j));
+                        }
+                        catch(boost::bad_lexical_cast &)
+                        {
+                            // no credits, continue to next toon
+                        }
+                    }
+                }
             }
             out << "</tr>";
         }
