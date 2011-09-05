@@ -38,7 +38,7 @@ bool Application::init(std::tstring const& cmdLine)
     }
 
     if (!g_DBManager.init(dbfile)) {
-        LOG(_T("Failed to insitialize DB Manager. Aborting!"));
+        LOG(_T("Failed to initialize DB Manager. Aborting!"));
         return false;
     }
 
