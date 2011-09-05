@@ -56,6 +56,10 @@ LRESULT InfoView::OnButtonClicked(WORD commandID, WORD buttonID, HWND hButton, B
         server = InventoryView::SERVER_AUNO;
         break;
 
+    case IDC_XYPHOS:
+        server = InventoryView::SERVER_XYPHOS;
+        break;
+
     default:
         assert(false);  // Wrong button ID?
         return 0;
