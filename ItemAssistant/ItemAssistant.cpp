@@ -42,6 +42,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
     try
     {
         if (!App::Instance()->init( lpCmdLine )) {
+            MessageBox( NULL, _T("Unable to start the application from the current location!"), 
+                _T("Error - AO Item Assistant"), MB_OK | MB_ICONERROR);
             return 0;
         }
 
