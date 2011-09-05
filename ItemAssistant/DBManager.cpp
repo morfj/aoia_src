@@ -21,6 +21,7 @@ namespace bfs = boost::filesystem;
 
 
 DBManager::DBManager(void)
+:   SQLite::Db(Logger::instance().stream())
 {
 }
 
@@ -34,6 +35,7 @@ bool DBManager::init(std::tstring dbfile)
 {
     std::tstring aofolder = AOManager::instance().getAOFolder();
     if (aofolder.empty()) {
+        LOG("DBManager::init: Not a valid AO folder.");
         return false;
     }
 
@@ -44,6 +46,7 @@ bool DBManager::init(std::tstring dbfile)
     bool dbfileExists = bfs::exists(bfs::tpath(dbfile));
 
     if (!SQLite::Db::Init(dbfile)) {
+        LOG("DBManager::init: Unable to " << (dbfileExists ? "open" : "create") << " database. [" << dbfile << "]");
         return false;
     }
 
@@ -600,7 +603,7 @@ OwnedItemInfoPtr DBManager::getOwnedItemInfo(unsigned int itemID)
 unsigned int DBManager::getAODBSchemeVersion(std::tstring const& filename) const
 {
     unsigned int retval = 0;
-    SQLite::Db db;
+    SQLite::Db db(Logger::instance().stream());
 
     if (db.Init(filename)) {
         try {

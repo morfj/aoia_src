@@ -119,6 +119,7 @@ const std::vector<std::string> c_datatransformation_sql = list_of
 
 AODatabaseWriter::AODatabaseWriter(std::string const& filename, std::ostream &log)
 :   m_log(log)
+,   m_db(log)
 {
     m_db.Init(from_ascii_copy(filename));
     m_db.Exec("PRAGMA journal_mode=MEMORY");

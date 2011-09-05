@@ -68,7 +68,7 @@ namespace SQLite {
             QueryFailedException(std::tstring const& msg) : std::exception(to_ascii_copy(msg).c_str()) {}
         };
 
-        Db();
+        Db(std::ostream &log);
         virtual ~Db();
 
         bool Init(std::tstring const& filename = _T("init.db"));
@@ -86,6 +86,7 @@ namespace SQLite {
 
     private:
         sqlite3 *m_pDb;
+        std::ostream &m_log;
     };
 
 }  // namespace SQLite

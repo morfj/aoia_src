@@ -1,11 +1,13 @@
 #include "stdafx.h"
 #include "SQLite.h"
 #include <SQLite/sqlite3.h>
+#include <iostream>
 
 namespace SQLite {
 
-    Db::Db()
+    Db::Db(std::ostream &log)
         : m_pDb(NULL)
+        , m_log(log)
     {
     }
 
@@ -18,7 +20,10 @@ namespace SQLite {
 
     bool Db::Init(std::tstring const& filename)
     {
-        if (SQLITE_OK != sqlite3_open(to_ascii_copy(filename).c_str(), &m_pDb)) {
+        int err = sqlite3_open(to_ascii_copy(filename).c_str(), &m_pDb);
+        if (SQLITE_OK != err)
+        {
+            m_log << "Db::Init: failed to open file [" << to_ascii_copy(filename) << "]. Error " << err << ", " << sqlite3_errmsg(m_pDb) << std::endl;
             sqlite3_close(m_pDb);
             m_pDb = NULL;
             return false;
@@ -50,24 +55,24 @@ namespace SQLite {
         int nrow;
         int ncol;
 
-        int retval = sqlite3_get_table(m_pDb, 
+        int err = sqlite3_get_table(m_pDb, 
             sql.c_str(), 
             &result,          /* Result written to a char *[]  that this points to */
             &nrow,            /* Number of result rows written here */
             &ncol,            /* Number of result columns written here */
             NULL);
 
-        if (SQLITE_OK == retval)
+        if (SQLITE_OK != err)
         {
-            pRes = TablePtr(new Table(nrow, ncol, result));
-        }
-        else {
             assert(false);
-            std::tstring msg = STREAM2STR("Query Failed with error code " << retval);
+            m_log << "Db::ExecTable: Failed to execute query [" << sql << "]. Error: " << err << ", " << sqlite3_errmsg(m_pDb) << std::endl;
+            std::tstring msg = STREAM2STR("Query Failed with error code " << err);
             throw QueryFailedException(msg);
         }
 
+        pRes = TablePtr(new Table(nrow, ncol, result));
         sqlite3_free_table(result);
+
         return pRes;
     }
 
@@ -80,7 +85,12 @@ namespace SQLite {
 
     bool Db::Exec(std::string const& sql) const
     {
-        return (SQLITE_OK == sqlite3_exec(m_pDb, sql.c_str(), NULL, NULL, NULL)) ? true : false;
+        int err = sqlite3_exec(m_pDb, sql.c_str(), NULL, NULL, NULL);
+        if (SQLITE_OK != err) {
+            m_log << "Db::Exec: Failed to execute query [" << sql << "]. Error: " << err << ", " << sqlite3_errmsg(m_pDb) << std::endl;
+            return false;
+        }
+        return true;
     }
 
 
