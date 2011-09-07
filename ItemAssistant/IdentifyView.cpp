@@ -80,31 +80,7 @@ LRESULT IdentifyView::onCreate(LPCREATESTRUCT createStruct)
 }
 
 
-//LRESULT IdentifyView::onListItemChanging(LPNMHDR lParam)
-//{
-//    // Check that it is an event from the correct child window.
-//    if (lParam->hwndFrom == m_identifyList->m_hWnd)
-//    {
-//        LPNMLISTVIEW pItem = (LPNMLISTVIEW)lParam;
-//
-//        // Check to see if the change is a selection event.
-//        if ( !(pItem->uOldState & LVIS_SELECTED) && (pItem->uNewState & LVIS_SELECTED) )
-//        {
-//            std::set<unsigned int> aoids;
-//            aoids.insert(m_identifyListModel->getItemId(pItem->iItem));
-//
-//            ItemListDataModelPtr data(new ItemListDataModel(aoids));
-//
-//            m_datagrid->setModel(data);
-//            m_datagrid->autosizeColumnsUseData();
-//        }
-//    }
-//
-//    return FALSE;
-//}
-
-
-// Normal singleselect change notifications
+// Normal single select change notifications
 LRESULT IdentifyView::onListItemChanged(LPNMHDR lParam)
 {
     // Check that it is an event from the correct child window.
@@ -177,6 +153,7 @@ LRESULT IdentifyView::onColumnClick(LPNMHDR lParam)
 
     return 0;
 }
+
 
 LRESULT IdentifyView::OnHelp( WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/ )
 {

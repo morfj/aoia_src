@@ -21,7 +21,6 @@ public:
 
     BEGIN_MSG_MAP_EX(IdentifyView)
         MSG_WM_CREATE(onCreate)
-        //NOTIFY_CODE_HANDLER_EX(LVN_ITEMCHANGING, onListItemChanging)
         NOTIFY_CODE_HANDLER_EX(LVN_ITEMCHANGED, onListItemChanged)
         NOTIFY_CODE_HANDLER_EX(LVN_ODSTATECHANGED, onListItemStateChanged)
         NOTIFY_CODE_HANDLER_EX(LVN_COLUMNCLICK, onColumnClick)
@@ -41,13 +40,10 @@ public:
 
     BEGIN_DLGRESIZE_MAP(IdentifyView)
         DLGRESIZE_CONTROL(IDW_SPLITTER, DLSZ_SIZE_X | DLSZ_SIZE_Y)
-        //DLGRESIZE_CONTROL(IDC_IDENTLIST, DLSZ_SIZE_Y)
-        //DLGRESIZE_CONTROL(IDC_DATAGRID, DLSZ_SIZE_X | DLSZ_SIZE_Y)
     END_DLGRESIZE_MAP()
 
 protected:
     LRESULT onCreate(LPCREATESTRUCT createStruct);
-    //LRESULT onListItemChanging(LPNMHDR lParam);
     LRESULT onListItemChanged(LPNMHDR lParam);
     LRESULT onListItemStateChanged(LPNMHDR lParam);
     LRESULT onColumnClick(LPNMHDR lParam);
