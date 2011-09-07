@@ -54,7 +54,7 @@ LRESULT IdentifyView::onCreate(LPCREATESTRUCT createStruct)
     m_identifyList->setModel(m_identifyListModel);
     m_identifyList->autosizeColumnsUseData();
 
-    DlgResize_Init(false);
+    DlgResize_Init(false, false);
 
     // Build the toolbar
     TBBUTTON buttons[1];
