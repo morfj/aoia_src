@@ -280,18 +280,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\AOCharacterActionIDs.h"
-				>
-			</File>
-			<File
-				RelativePath=".\AOMessageIDs.h"
-				>
-			</File>
-			<File
-				RelativePath=".\AOMessageParsers.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Application.h"
 				>
 			</File>
@@ -638,6 +626,22 @@
 			</File>
 			<File
 				RelativePath=".\WebView.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="AOProtocol"
+			>
+			<File
+				RelativePath=".\AOCharacterActionIDs.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AOMessageIDs.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AOMessageParsers.h"
 				>
 			</File>
 		</Filter>
