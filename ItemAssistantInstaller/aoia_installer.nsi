@@ -11,9 +11,9 @@ Name "Item Assistant Installer"
 # Add-Remove-Programs registry key
 !define ARP_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\ItemAssistant"
 
-OutFile "ItemAssistant-installer-${BUILD_NUMBER}.exe"
+OutFile "ItemAssistant-${BUILD_NUMBER}-installer.exe"
 
-InstallDir "c:\aoia"
+InstallDir "$PROGRAMFILES\ItemAssistant"
 
 RequestExecutionLevel admin
 
@@ -41,7 +41,7 @@ Section
 
 
 	# Register uninstaller in "add/remove programs".
-	WriteRegStr HKLM 	"${ARP_KEY}" "DisplayName"			"Anarchy Online Item Assistant"
+	WriteRegStr HKLM 	"${ARP_KEY}" "DisplayName"			"Item Assistant"
 	WriteRegStr HKLM 	"${ARP_KEY}" "UninstallString"		"$\"$INSTDIR\ItemAssistant-uninstaller.exe$\""
 	WriteRegStr HKLM 	"${ARP_KEY}" "QuietUninstallString"	"$\"$INSTDIR\ItemAssistant-uninstaller.exe$\" /S"
 	WriteRegStr HKLM 	"${ARP_KEY}" "HelpLink"				"http://ia-help.frellu.net"
@@ -54,6 +54,9 @@ Section
 	${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
 	IntFmt $0 "0x%08X" $0
 	WriteRegDWORD HKLM "${ARP_KEY}" "EstimatedSize" "$0"
+	
+	# Give "All Users" "Full Control" of the installed folder so the app will be able to write to its folder.
+	AccessControl::GrantOnFile "$INSTDIR" "(S-1-5-32-545)" "FullAccess"
 SectionEnd
 
 #Section "Start Automatically"
@@ -78,7 +81,6 @@ Section "uninstall"
 
 	# Delete generated files & folders
 	Delete "$INSTDIR\aoitems.db"
-	Delete "$INSTDIR\ItemAssistant.db"
 	Delete "$INSTDIR\ItemAssistant.conf"
 	RMDir /r "$INSTDIR\binfiles"
 
