@@ -25,21 +25,22 @@ Online help system is available at http://ia-help.frellu.net
 
 Known Issues:
 =============
-   * If you have copied your AO installation to a new directory and is now
-     playing from the new location, Item Assistant will not be able to detect
-     that the old installation is not valid any more.
-     To fix this you need to open the file called ItemAssistant.conf and either
-     - Change the AOPath setting to the new location of your AO installation, or
-     - Delete the AOPath setting. Item Assistant will then ask you to specify
-       the location on the next startup.
-   * Your toons may show up under incorrect dimension nodes.
-   * AOIA needs to run with the same, or higher, level of privileges on your 
-     computer as the AO client itself is running with. If you run the AO client
-     as administrator, you have to do the same with AOIA.
-   * Sorting items on the "Backpack" column generates weird results.
-   * Moving a backpack or item while AOIA is _not_ running, can result in 
-     duplicate items in the AOIA database. Re-open all affected backpacks to 
-     rescan the content and fix the sync issue.
+    * If you have copied your AO installation to a new directory and is now
+      playing from the new location, Item Assistant will not be able to detect
+      that the old installation is not valid any more.
+      To fix this you need to open the file called ItemAssistant.conf and either
+      - Change the AOPath setting to the new location of your AO installation,
+        or,
+      - Delete the AOPath setting. Item Assistant will then ask you to specify
+        the location on the next startup.
+    * Your toons may show up under incorrect dimension nodes.
+    * AOIA needs to run with the same, or higher, level of privileges on your 
+      computer as the AO client itself is running with. If you run the AO client
+      as administrator, you have to do the same with AOIA.
+    * Sorting items on the "Backpack" column generates weird results.
+    * Moving a backpack or item while AOIA is _not_ running, can result in 
+      duplicate items in the AOIA database. Re-open all affected backpacks to 
+      rescan the content and fix the sync issue.
 
 Aknowledgements:
 ================
@@ -58,7 +59,7 @@ have contributed either directly or indirectly include:
 
 Change Log:
 ===========
-Version 1.0.0                                       Release Date: ?/?/2011
+Version 1.0.0                                       Release Date: 10/9/2011
     * Fixed bug 2947010. Generating the script with items for ingame display
       now use the correct linebreak tag.
     * Fixed bug 2802231 in the find panel and in the PB filter panel. Toon 
@@ -70,6 +71,7 @@ Version 1.0.0                                       Release Date: ?/?/2011
 	* Improved ripping of items database so it supports newer version of AO.
 	* New summary view shows levels and amount of credits for all registered 
 	  toons.
+    * Created a basic installer.
 
 Version 0.9.7                                       Release Date: 26/1/2010
     * Fixed org city output for CharacterParser integration. Does not dump
@@ -85,7 +87,7 @@ Version 0.9.6										Release Date: 16/1/2010
 	* Application now outputs files that can be opened with the CharacterParser
 	  application.
 
-Version 0.9.5                                       Release Date: 3/6/2009
+Version 0.9.5                                       Release Date: 3/7/2009
     * Fixed database parser so the app will run on Windows XP again.
     * Fixed message handler so the app once again connects to the AO client 
       and can track items.
