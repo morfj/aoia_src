@@ -32,14 +32,14 @@ void PluginManager::AddLibraries(std::tstring const& path)
         return;
     }
 
-    for (bfs::wdirectory_iterator it(dir); it != bfs::wdirectory_iterator(); ++it) {
+    for (bfs::directory_iterator it(dir); it != bfs::directory_iterator(); ++it) {
         bfs::wpath dirEntry = *it;
         if (bfs::is_directory(dirEntry)) {
             continue;
         }
-        if (ba::iends_with(dirEntry.leaf(), ".dll")) {
+        if (ba::iends_with(dirEntry.leaf().native(), _T(".dll"))) {
             // Try loading this DLL
-            HMODULE hDll = ::LoadLibrary(dirEntry.string().c_str());
+            HMODULE hDll = ::LoadLibrary(dirEntry.c_str());
             if (!hDll) {
                 continue;
             }

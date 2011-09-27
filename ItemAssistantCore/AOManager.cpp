@@ -60,10 +60,10 @@ std::tstring AOManager::getAOFolder() const
             }
 
             // Store the new AO directory in the settings
-            SettingsManager::instance().setValue(_T("AOPath"), AODir.string());
+            SettingsManager::instance().setValue(_T("AOPath"), AODir.native());
         }
 
-        m_aofolder = AODir.string();
+        m_aofolder = AODir.native();
     }
 
     return m_aofolder;
@@ -93,7 +93,7 @@ std::vector<std::tstring> AOManager::getAccountNames() const
         bfs::directory_iterator end_itr; // default construction yields past-the-end
         for (bfs::directory_iterator itr(path); itr != end_itr; ++itr ) {
             if (bfs::is_directory(itr->status())) {
-                result.push_back(from_ascii_copy(itr->leaf()));
+                result.push_back(itr->path().leaf().c_str());
             }
         }
     }

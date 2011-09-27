@@ -113,8 +113,8 @@ std::vector<PsmTreeViewItem*> AccountTreeViewItem::GetChildren() const
 {
     std::vector<PsmTreeViewItem*> result;
 
-    path accountPath(to_ascii_copy(AOManager::instance().getAOFolder()), boost::filesystem::native);
-    accountPath = accountPath / "Prefs" / to_ascii_copy(m_label);
+    path accountPath(AOManager::instance().getAOFolder(), boost::filesystem::native);
+    accountPath = accountPath / _T("Prefs") / m_label;
 
     directory_iterator character(accountPath), filesEnd;
     for (; character != filesEnd; ++character)
@@ -125,11 +125,11 @@ std::vector<PsmTreeViewItem*> AccountTreeViewItem::GetChildren() const
 
         try
         {
-            std::string subfolderName = (*character).leaf();
+            std::tstring subfolderName = character->path().leaf().native();
             if (subfolderName.length() < 5) {
                 continue;   // No point parsing this folder since it cant have a valid 'Char123123' type of name anyway.
             }
-            if (subfolderName.compare("Browser") == 0) {
+            if (subfolderName.compare(_T("Browser")) == 0) {
                 continue;   // Skip the "Browser" subfolder
             }
             unsigned int charID = boost::lexical_cast<unsigned int>(subfolderName.substr(4));
@@ -344,11 +344,11 @@ std::vector<PsmTreeViewItem*> PlayershopTreeRoot::GetChildren() const
 
     std::tstring filename;
     filename = STREAM2STR( AOManager::instance().getAOFolder() << _T("\\Prefs") );
-    if(filename.empty()){
+    if(filename.empty()) {
         return result;
     }
-    boost::filesystem::path p(boost::filesystem::path(to_utf8_copy(filename), boost::filesystem::native));
 
+    boost::filesystem::path p(filename, boost::filesystem::native);
     boost::filesystem::directory_iterator account(p), dir_end;
 
     if(!is_directory(p))
@@ -362,7 +362,7 @@ std::vector<PsmTreeViewItem*> PlayershopTreeRoot::GetChildren() const
         if (is_directory(acc))
         {
             // we found an account ?
-            result.push_back(new AccountTreeViewItem(m_pOwner, from_ascii_copy(acc.leaf())));
+            result.push_back(new AccountTreeViewItem(m_pOwner, acc.leaf().native()));
         }
     }
 
