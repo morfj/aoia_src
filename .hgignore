@@ -1,0 +1,7 @@
+syntax: glob
+[Dd]ebug
+*.ncb
+*.suo
+*.user
+*.filters
+ipch
