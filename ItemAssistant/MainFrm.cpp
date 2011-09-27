@@ -255,7 +255,7 @@ LRESULT CMainFrame::OnAOMessage(HWND wnd, PCOPYDATASTRUCT pData)
 }
 
 
-LRESULT CMainFrame::OnTimer(UINT wParam, TIMERPROC lParam)
+LRESULT CMainFrame::OnTimer(UINT wParam)
 {
     static bool first_injection_try = true;
 

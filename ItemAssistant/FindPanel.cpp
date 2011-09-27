@@ -170,7 +170,7 @@ LRESULT FindView::OnCbnDropdown(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 }
 
 
-LRESULT FindView::OnTimer(UINT wParam, TIMERPROC lParam)
+LRESULT FindView::OnTimer(UINT wParam)
 {
     if (wParam == 1)
     {

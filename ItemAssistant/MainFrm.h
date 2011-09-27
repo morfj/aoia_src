@@ -63,7 +63,7 @@ public:
     LRESULT OnCheckForUpdates(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnSupportForum(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnAOMessage(HWND wnd, PCOPYDATASTRUCT pData);
-    LRESULT OnTimer(UINT wParam, TIMERPROC lParam);
+    LRESULT OnTimer(UINT wParam);
     LRESULT OnEraseBkgnd(HDC dc) { return 1; }
     LRESULT OnTrayIcon(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
     void OnSysCommand(UINT wParam, CPoint mousePos);
