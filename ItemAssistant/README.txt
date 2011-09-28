@@ -54,11 +54,15 @@ have contributed either directly or indirectly include:
                       message hooking as well as all the item-transfer message 
                       decoding.
     * Gremlin       - For being a guinea pig.
-    * Mordwin		- Integration with CharacterParser.
+    * Mordwin		- Integration with CharacterParser and bugfixes.
     * Everyone else that has provided feedback and done testing.
 
 Change Log:
 ===========
+Version 1.0.1										Release Date: 16/9/2011
+    * Added DB index to fix issue with speed and CPU usage while searching for
+	  items.
+	
 Version 1.0.0                                       Release Date: 10/9/2011
     * Fixed bug 2947010. Generating the script with items for ingame display
       now use the correct linebreak tag.

@@ -13,7 +13,7 @@
 
 namespace bfs = boost::filesystem;
 
-#define CURRENT_DB_VERSION 5
+#define CURRENT_DB_VERSION 6
 
 /*********************************************************/
 /* DB Manager Implementation                             */
@@ -729,6 +729,16 @@ void DBManager::updateDBVersion(unsigned int fromVersion) const
 		}
 		// Dropthrough
 
+    case 5: // Updates from v5: Added index to tItems
+        {
+            Begin();
+            Exec("CREATE INDEX idx_titems_keylow ON tItems (keylow ASC)");
+            Exec("DROP VIEW vSchemeVersion");
+            Exec("CREATE VIEW vSchemeVersion AS SELECT '6' AS Version");
+            Commit();
+        }
+        // Dropthrough
+
     default:
         break;
     }
@@ -739,6 +749,7 @@ void DBManager::createDBScheme() const
 {
     Begin();
     Exec(_T("CREATE TABLE tItems (itemidx INTEGER NOT NULL PRIMARY KEY ON CONFLICT REPLACE AUTOINCREMENT UNIQUE DEFAULT '1', keylow INTEGER, keyhigh INTEGER, ql INTEGER, flags INTEGER DEFAULT '0', stack INTEGER DEFAULT '1', parent INTEGER NOT NULL DEFAULT '2', slot INTEGER, children INTEGER, owner INTEGER NOT NULL)"));
+    Exec("CREATE INDEX idx_titems_keylow ON tItems (keylow ASC)");
     Exec(_T("CREATE VIEW vBankItems AS SELECT * FROM tItems WHERE parent=1"));
     Exec(_T("CREATE VIEW vContainers AS SELECT * FROM tItems WHERE children > 0"));
     Exec(_T("CREATE VIEW vInvItems AS SELECT * FROM tItems WHERE parent=2"));
