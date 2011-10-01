@@ -9,25 +9,12 @@
 		<Version Condition="'$(BUILD_NUMBER)'!=''">$(BUILD_NUMBER)</Version>
 	</PropertyGroup>
 
-	<ItemGroup>
-		<Projects Include="**/shared.vcproj" />
-		<Projects Include="**/tinyxmlSTL.vcproj" />
-		<Projects Include="**/PluginSDK.vcproj" />
-		<Projects Include="**/Detours.vcproj" />
-		<Projects Include="**/Parsers.vcproj" />
-		<Projects Include="**/ItemAssistantCore.vcproj" />
-		<Projects Include="**/ItemAssistantHook.vcproj" />
-		<Projects Include="**/ItemAssistant.vcproj" />
-		<Projects Include="**/ParsersTests.vcproj" />
-	</ItemGroup>
-
 	<Target Name="clean">
 		<Message Text="Cleaning" />
-		<VCBuild
-            Projects="@(Projects)"
-            Configuration="Release|Win32"
-            SolutionFile="ItemAssistant.sln"
-            Clean="true" />
+		<MSBuild
+            Projects="ItemAssistant.sln"
+            Properties="Configuration=Release"
+            Targets="Clean" />
 	</Target>
 
 	<Target Name="prepare_build">
@@ -75,11 +62,10 @@
 
 	<Target Name="build">
 		<Message Text="Building" />
-		<VCBuild
-            Projects="@(Projects)"
-            Configuration="Release|Win32"
-            SolutionFile="ItemAssistant.sln" 
-            Rebuild="true" />
+		<MSBuild
+            Projects="ItemAssistant.sln"
+            Properties="Configuration=Release"
+            Targets="Rebuild" />
 	</Target>
 
 	<Target Name="test">
