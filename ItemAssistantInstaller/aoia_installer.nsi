@@ -11,6 +11,9 @@ Name "Item Assistant Installer"
 # Add-Remove-Programs registry key
 !define ARP_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\ItemAssistant"
 
+# VisualC++ redist directory
+!define CRT_REDIST_DIR "$%VS100COMNTOOLS%..\..\VC\redist\x86\Microsoft.VC100.CRT\"
+
 OutFile "ItemAssistant-${BUILD_NUMBER}-installer.exe"
 
 InstallDir "$PROGRAMFILES\ItemAssistant"
@@ -31,8 +34,8 @@ Section
 	File ..\Release\ItemAssistant.exe
 	File ..\Release\ItemAssistant*.dll
 	File ..\Release\README.txt
-	File ..\Release\*.manifest
-	File ..\Release\msvc*.dll
+#	File ..\Release\*.manifest
+	File "${CRT_REDIST_DIR}*.dll"
 
 	# Create the startmenu shortcut
 	CreateDirectory "$SMPROGRAMS\Item Assistant"
