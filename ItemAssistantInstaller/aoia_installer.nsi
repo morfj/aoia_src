@@ -31,14 +31,12 @@ Section
 	File ..\Release\ItemAssistant.exe
 	File ..\Release\ItemAssistant*.dll
 	File ..\Release\README.txt
-	File ..\Release\sqlite3.dll
 	File ..\Release\*.manifest
 	File ..\Release\msvc*.dll
-	
+
 	# Create the startmenu shortcut
 	CreateDirectory "$SMPROGRAMS\Item Assistant"
 	CreateShortCut	"$SMPROGRAMS\Item Assistant\ItemAssistant.lnk" "$INSTDIR\ItemAssistant.exe"
-
 
 	# Register uninstaller in "add/remove programs".
 	WriteRegStr HKLM 	"${ARP_KEY}" "DisplayName"			"Item Assistant"
@@ -75,7 +73,6 @@ Section "uninstall"
 	Delete "$INSTDIR\ItemAssistant*.dll"
 	Delete "$INSTDIR\ItemAssistant.exe"
 	Delete "$INSTDIR\README.txt"
-	Delete "$INSTDIR\sqlite3.dll"
 	Delete "$INSTDIR\*.manifest"
 	Delete "$INSTDIR\msvc*.dll"
 
