@@ -3,6 +3,5 @@ syntax: glob
 *.ncb
 *.suo
 *.user
-*.filters
 ipch
 [Rr]elease
