@@ -28,6 +28,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AORipper", "AORipper\AORipp
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ItemAssistantCore", "ItemAssistantCore\ItemAssistantCore.vcxproj", "{D9EFFCC4-4544-4E8F-9920-2F7CD55D814B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A3A84737-5017-4577-B8A2-79429A25B8B6} = {A3A84737-5017-4577-B8A2-79429A25B8B6}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Parsers", "Parsers\Parsers.vcxproj", "{85CB52A8-5C89-459C-9175-2D55E93A5375}"
 EndProject
@@ -45,6 +48,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gtest-md", "..\deps\gtest-1.6.0\msvc\gtest-md.vcxproj", "{C8F6C172-56F2-4E76-B5FA-C3B423B31BE8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Detours", "..\deps\Detours\Detours.vcxproj", "{A91EC33D-AC2C-4833-BA5C-5124CEA3B83B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QItemAssistant", "QItemAssistant\QItemAssistant.vcxproj", "{4ABD1503-B48B-4093-B95B-848CA04C2DDA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -100,6 +105,10 @@ Global
 		{A91EC33D-AC2C-4833-BA5C-5124CEA3B83B}.Debug|Win32.Build.0 = Debug|Win32
 		{A91EC33D-AC2C-4833-BA5C-5124CEA3B83B}.Release|Win32.ActiveCfg = Release|Win32
 		{A91EC33D-AC2C-4833-BA5C-5124CEA3B83B}.Release|Win32.Build.0 = Release|Win32
+		{4ABD1503-B48B-4093-B95B-848CA04C2DDA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4ABD1503-B48B-4093-B95B-848CA04C2DDA}.Debug|Win32.Build.0 = Debug|Win32
+		{4ABD1503-B48B-4093-B95B-848CA04C2DDA}.Release|Win32.ActiveCfg = Release|Win32
+		{4ABD1503-B48B-4093-B95B-848CA04C2DDA}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

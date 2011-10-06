@@ -66,7 +66,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAsManaged>false</CompileAsManaged>
     </ClCompile>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)Externals\WTL\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -105,6 +106,7 @@
       <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAsManaged>false</CompileAsManaged>
     </ClCompile>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)Externals\WTL\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -140,6 +142,7 @@
     <ClCompile Include="InjectionSupport.cpp" />
     <ClCompile Include="ItemAssistant.cpp" />
     <ClCompile Include="MainFrm.cpp" />
+    <ClCompile Include="mdump.cpp" />
     <ClCompile Include="MFTreeView.cpp" />
     <ClCompile Include="NTRAY.CPP" />
     <ClCompile Include="ProgressDialog.cpp" />
@@ -183,6 +186,7 @@
     <ClInclude Include="InventoryIDs.h" />
     <ClInclude Include="ItemAssistant.h" />
     <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="mdump.h" />
     <ClInclude Include="MFTreeView.h" />
     <ClInclude Include="NTRAY.H" />
     <ClInclude Include="ProgressDialog.h" />

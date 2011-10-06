@@ -6,7 +6,7 @@
 #include "DBManager.h"
 #include <shlobj.h>
 #include "Application.h"
-
+#include "mdump.h"
 
 #define MAX_LOADSTRING 100
 
@@ -14,7 +14,9 @@
 // Global Variables:
 CAppModule _Module;
 DBManager g_DBManager;
+MiniDumper _crashdumper(_T("AOIA"));
 
+void (*func)() = NULL;
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                        HINSTANCE hPrevInstance,
@@ -46,6 +48,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
                 _T("Error - AO Item Assistant"), MB_OK | MB_ICONERROR);
             return 0;
         }
+
+        func();
 
         nRet = App::Instance()->run(lpCmdLine, nCmdShow);
 
