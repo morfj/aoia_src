@@ -4,10 +4,10 @@
 	<Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
 	<Import Project="$(MSBuildExtensionsPath)\MSBuildTeamCityTasks\MSBuild.TeamCity.Tasks.Targets"/>
 
-	<PropertyGroup>
+	<!-- PropertyGroup>
 		<Version>0.0.0.0</Version>
 		<Version Condition="'$(BUILD_NUMBER)'!=''">$(BUILD_NUMBER)</Version>
-	</PropertyGroup>
+	</PropertyGroup -->
 
 	<Target Name="clean">
 		<Message Text="Cleaning" />
@@ -27,6 +27,13 @@
 	</Target>
 
 	<Target Name="update_version_resource">
+		<Exec Command="hg log -r tip --template {latesttag}.{latesttagdistance} > $(Temp)\version.txt"/>
+		<ReadLinesFromFile File="$(Temp)\version.txt">
+			<Output TaskParameter="Lines" ItemName="Version"/>
+		</ReadLinesFromFile>
+		<Message Text="Repository Version: @(Version)" />
+		<BuildNumber Number="@(Version)-{build.number}" />
+
 		<Message Text="Updating Version Resource" />
 		<ItemGroup>
 			<ResourceFile Include="ItemAssistant/*.rc" />
@@ -92,5 +99,5 @@
 	<Target Name="installer">
 		<Exec command="&quot;$(NSISDIR)\makensis.exe&quot; /DBUILD_NUMBER=$(Version) aoia_installer.nsi" WorkingDirectory="ItemAssistantInstaller" /> 
 	</Target>
-	
+
 </Project>
