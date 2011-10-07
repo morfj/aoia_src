@@ -439,7 +439,8 @@ LRESULT InventoryView::OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND 
 
     std::tstring itemTemplate = _T("%lowid%,%hiid%,%ql%,\"%itemname%\",%itemlocation%,");
     itemTemplate += GetServerItemURLTemplate(server);
-    std::tstring prefix = _T("LowID,HighID,QL,Name,Location,Link\n");
+    itemTemplate += _T(",%containerid%");
+    std::tstring prefix = _T("LowID,HighID,QL,Name,Location,Link,ContainerID\n");
     std::tstring separator = _T("\n");
 
     // Ask user for name of CSV file
@@ -481,6 +482,7 @@ LRESULT InventoryView::OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND 
         boost::replace_all(itemStr, _T("%ql%"), pItemInfo->itemql);
         boost::replace_all(itemStr, _T("%itemname%"), pItemInfo->itemname);
         boost::replace_all(itemStr, _T("%itemlocation%"), itemlocation);
+        boost::replace_all(itemStr, _T("%containerid%"), pItemInfo->containerid);
 
         ofs << itemStr;
     }
@@ -2694,7 +2696,7 @@ void InventoryView::exportToCSV(std::tstring const& where)
         }
         ofs << data->getColumnName(column_index);
     }
-    ofs << _T(",LowID,HighID,Link") << separator;
+    ofs << _T(",LowID,HighID,Link,ContainerID") << separator;
 
     // Write one row for each item to export.
     g_DBManager.lock();
@@ -2733,7 +2735,7 @@ void InventoryView::exportToCSV(std::tstring const& where)
         boost::replace_all(itemURL, _T("%hiid%"), pItemInfo->itemhiid);
         boost::replace_all(itemURL, _T("%ql%"), pItemInfo->itemql);
 
-        ofs << _T(",") << itemURL;
+        ofs << _T(",") << itemURL << _T(",") << pItemInfo->containerid;
     }
     g_DBManager.unLock();
 }
