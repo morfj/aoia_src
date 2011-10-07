@@ -4,10 +4,10 @@
 	<Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
 	<Import Project="$(MSBuildExtensionsPath)\MSBuildTeamCityTasks\MSBuild.TeamCity.Tasks.Targets"/>
 
-	<!-- PropertyGroup>
+	<PropertyGroup>
 		<Version>0.0.0.0</Version>
 		<Version Condition="'$(BUILD_NUMBER)'!=''">$(BUILD_NUMBER)</Version>
-	</PropertyGroup -->
+	</PropertyGroup>
 
 	<Target Name="clean">
 		<Message Text="Cleaning" />
@@ -26,14 +26,16 @@
 		<Delete Files="@(OldOutputFiles)" />
 	</Target>
 
-	<Target Name="update_version_resource">
+	<Target Name="get_repo_version">
 		<Exec Command="hg log -r tip --template {latesttag}.{latesttagdistance} > $(Temp)\version.txt"/>
 		<ReadLinesFromFile File="$(Temp)\version.txt">
-			<Output TaskParameter="Lines" ItemName="Version"/>
+			<Output TaskParameter="Lines" PropertyName="Version"/>
 		</ReadLinesFromFile>
-		<Message Text="Repository Version: @(Version)" />
-		<BuildNumber Number="@(Version)-{build.number}" />
-
+		<Message Text="Repository Version: $(Version)" />
+		<BuildNumber Number="$(Version)-{build.number}" />
+	</Target>
+	
+	<Target Name="update_version_resource" DependsOnTargets="get_repo_version">
 		<Message Text="Updating Version Resource" />
 		<ItemGroup>
 			<ResourceFile Include="ItemAssistant/*.rc" />
@@ -56,7 +58,7 @@
                     ReplacementText="&quot;$1, $2, $3, $4&quot;" />
 	</Target>
 
-	<Target Name="update_version">
+	<Target Name="update_version" DependsOnTargets="get_repo_version">
 		<Message Text="Updating Version" />
 		<ItemGroup>
 			<VersionFile Include="ItemAssistant/Version.h" />
