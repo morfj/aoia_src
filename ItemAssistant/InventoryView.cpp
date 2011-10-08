@@ -2696,7 +2696,7 @@ void InventoryView::exportToCSV(std::tstring const& where)
         }
         ofs << data->getColumnName(column_index);
     }
-    ofs << _T(",LowID,HighID,Link,ContainerID") << separator;
+    ofs << _T(",LowID,HighID,ContainerID,Link") << separator;
 
     // Write one row for each item to export.
     g_DBManager.lock();
@@ -2729,13 +2729,16 @@ void InventoryView::exportToCSV(std::tstring const& where)
         // Append columns with high-id and low-id
         ofs << _T(",") << pItemInfo->itemloid << _T(",") << pItemInfo->itemhiid;
 
+        // Append column with container ID
+        ofs << _T(",") << pItemInfo->containerid;
+
         // Append a column with the item URL
         std::tstring itemURL = itemURLTemplate;
         boost::replace_all(itemURL, _T("%lowid%"), pItemInfo->itemloid);
         boost::replace_all(itemURL, _T("%hiid%"), pItemInfo->itemhiid);
         boost::replace_all(itemURL, _T("%ql%"), pItemInfo->itemql);
 
-        ofs << _T(",") << itemURL << _T(",") << pItemInfo->containerid;
+        ofs << _T(",") << itemURL;
     }
     g_DBManager.unLock();
 }
