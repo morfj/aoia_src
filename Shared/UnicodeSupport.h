@@ -10,10 +10,11 @@ namespace std {
    typedef basic_string<TCHAR> tstring;
    typedef basic_stringstream<TCHAR> tstringstream;
    typedef basic_ostringstream<TCHAR> tostringstream;
+   typedef basic_ostream<TCHAR> tostream;
 }
 
 
-/// Typedef a character independant path class as tpath.
+/// Typedef a character independent path class as tpath.
 namespace boost { namespace filesystem {
 #ifdef UNICODE
     typedef wpath tpath;
@@ -24,7 +25,7 @@ namespace boost { namespace filesystem {
 }}  // namespace boost::filesystem
 
 
-/// Typedef a character independant format class as tformat.
+/// Typedef a character independent format class as tformat.
 namespace boost {
     typedef basic_format<TCHAR> tformat;
 }
