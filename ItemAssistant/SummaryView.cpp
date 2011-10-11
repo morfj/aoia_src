@@ -86,7 +86,7 @@ namespace aoia { namespace sv {
     void SummaryView::UpdateSummary()
     {
         std::map<unsigned int, std::tstring> dimensions;
-        if (!g_DBManager.getDimensions(dimensions)) {
+        if (!g_DBManager.GetDimensions(dimensions)) {
             LOG("SummaryView::UpdateSummary() : Unable to get dimensional info.");
             return;
         }

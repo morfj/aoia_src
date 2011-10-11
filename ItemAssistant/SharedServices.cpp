@@ -133,9 +133,9 @@ std::tstring SharedServices::MakeContainerName(unsigned int charid, unsigned int
     std::tstring result;
 
     // Lets find the item description for the specified container.
-    g_DBManager.lock();
+    g_DBManager.Lock();
     SQLite::TablePtr pT2 = g_DBManager.ExecTable( STREAM2STR( "SELECT keylow from tItems WHERE children = " << containerid ));
-    g_DBManager.unLock();
+    g_DBManager.UnLock();
 
     if (pT2 != NULL && pT2->Rows())
     {
@@ -174,9 +174,9 @@ std::map<std::tstring, std::tstring> SharedServices::GetAOItemInfo(unsigned int 
     std::tstringstream sql;
     sql << _T("SELECT aoid, ql, type, name, description, flags, properties, icon FROM tblAO WHERE aoid = ") << lowkey;
 
-    g_DBManager.lock();
+    g_DBManager.Lock();
     SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());
-    g_DBManager.unLock();
+    g_DBManager.UnLock();
 
     if (pT != NULL)
     {

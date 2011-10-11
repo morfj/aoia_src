@@ -280,9 +280,9 @@ void FindView::updateCharList(unsigned int dimension_id)
     boost::format sql("SELECT DISTINCT owner FROM tItems I JOIN tToons T ON I.owner = T.charid WHERE dimensionid = %1% ORDER BY T.charname");
     sql % dimension_id;
 
-    g_DBManager.lock();
+    g_DBManager.Lock();
     SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());
-    g_DBManager.unLock();
+    g_DBManager.UnLock();
 
     if (pT != NULL)
     {
@@ -292,9 +292,9 @@ void FindView::updateCharList(unsigned int dimension_id)
             {
                 unsigned int id = boost::lexical_cast<unsigned int>(pT->Data(i,0));
 
-                g_DBManager.lock();
-                std::tstring name = g_DBManager.getToonName(id);
-                g_DBManager.unLock();
+                g_DBManager.Lock();
+                std::tstring name = g_DBManager.GetToonName(id);
+                g_DBManager.UnLock();
 
                 if (name.empty())
                 {
@@ -325,10 +325,10 @@ void FindView::updateDimensionList()
     cb.ResetContent();
 
     std::map<unsigned int, std::tstring> dimensionNames;
-    g_DBManager.lock();
-    g_DBManager.getDimensions(dimensionNames);
+    g_DBManager.Lock();
+    g_DBManager.GetDimensions(dimensionNames);
     SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT DISTINCT dimensionid FROM tToons"));
-    g_DBManager.unLock();
+    g_DBManager.UnLock();
 
     // Add named dimensions.
     for (std::map<unsigned int, std::tstring>::iterator it = dimensionNames.begin(); it != dimensionNames.end(); ++it)

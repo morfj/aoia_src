@@ -55,9 +55,9 @@ void Application::destroy()
     // Save user settings.
     aoia::SettingsManager::instance().writeSettings(_T("ItemAssistant.conf"));
 
-    g_DBManager.lock();
+    g_DBManager.Lock();
     g_DBManager.destroy();
-    g_DBManager.unLock();
+    g_DBManager.UnLock();
 
     Logger::instance().destroy();
 }

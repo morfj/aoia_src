@@ -127,9 +127,9 @@ bool ContainerTreeViewItem::HasChildren() const
             sql << _T(" AND ") << m_constraints;
         }
 
-        g_DBManager.lock();
+        g_DBManager.Lock();
         SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());
-        g_DBManager.unLock();
+        g_DBManager.UnLock();
 
         if (pT != NULL)
         {
@@ -155,9 +155,9 @@ std::vector<MFTreeViewItem*> ContainerTreeViewItem::GetChildren() const
             sql << _T(" AND ") << m_constraints;
         }
 
-        g_DBManager.lock();
+        g_DBManager.Lock();
         SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());
-        g_DBManager.unLock();
+        g_DBManager.UnLock();
 
         if (pT != NULL)
         {
@@ -192,7 +192,7 @@ bool ContainerTreeViewItem::HandleMenuCmd(unsigned int commandID, WTL::CTreeItem
         {
         case SqlTreeViewItemBase::CMD_DELETE:
             {
-                g_DBManager.lock();
+                g_DBManager.Lock();
                 g_DBManager.Begin();
                 std::tstringstream sql;
                 sql << _T("DELETE FROM tItems WHERE parent = ") << m_containerid << _T("; DELETE FROM tItems WHERE children = ") << m_containerid;
@@ -204,7 +204,7 @@ bool ContainerTreeViewItem::HandleMenuCmd(unsigned int commandID, WTL::CTreeItem
                 {
                     g_DBManager.Rollback();
                 }
-                g_DBManager.unLock();
+                g_DBManager.UnLock();
             }
             break;
         default:
@@ -227,9 +227,9 @@ CharacterTreeViewItem::CharacterTreeViewItem(InventoryView* pOwner, unsigned int
     : m_charid(charid)
     , SqlTreeViewItemBase(pOwner)
 {
-    g_DBManager.lock();
-    m_label = g_DBManager.getToonName(charid);
-    g_DBManager.unLock();
+    g_DBManager.Lock();
+    m_label = g_DBManager.GetToonName(charid);
+    g_DBManager.UnLock();
 
     if (m_label.empty())
     {
@@ -261,9 +261,9 @@ bool CharacterTreeViewItem::CanEdit() const
 
 std::tstring CharacterTreeViewItem::GetLabel() const
 {
-    g_DBManager.lock();
-    std::tstring result = g_DBManager.getToonName(m_charid);
-    g_DBManager.unLock();
+    g_DBManager.Lock();
+    std::tstring result = g_DBManager.GetToonName(m_charid);
+    g_DBManager.UnLock();
 
     if (result.empty())
     {
@@ -278,9 +278,9 @@ std::tstring CharacterTreeViewItem::GetLabel() const
 
 void CharacterTreeViewItem::SetLabel(std::tstring const& newLabel)
 {
-    g_DBManager.lock();
-    g_DBManager.setToonName(m_charid, newLabel);
-    g_DBManager.unLock();
+    g_DBManager.Lock();
+    g_DBManager.SetToonName(m_charid, newLabel);
+    g_DBManager.UnLock();
 }
 
 
@@ -328,7 +328,7 @@ bool CharacterTreeViewItem::HandleMenuCmd(unsigned int commandID, WTL::CTreeItem
         case SqlTreeViewItemBase::CMD_DELETE:
             {
                 bool ok = true;
-                g_DBManager.lock();
+                g_DBManager.Lock();
                 g_DBManager.Begin();
                 {
                     std::tstringstream sql;
@@ -349,7 +349,7 @@ bool CharacterTreeViewItem::HandleMenuCmd(unsigned int commandID, WTL::CTreeItem
                 {
                     g_DBManager.Rollback();
                 }
-                g_DBManager.unLock();
+                g_DBManager.UnLock();
             }
             break;
 
@@ -400,9 +400,9 @@ std::vector<MFTreeViewItem*> DimensionNode::GetChildren() const
     std::vector<MFTreeViewItem*> result;
 
     // Get list of toons for this dimension from the DB
-    g_DBManager.lock();
+    g_DBManager.Lock();
     SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR("SELECT charid FROM tToons WHERE dimensionid=" << m_dimensionid));
-    g_DBManager.unLock();
+    g_DBManager.UnLock();
 
     if (pT != NULL)
     {
@@ -419,9 +419,9 @@ std::vector<MFTreeViewItem*> DimensionNode::GetChildren() const
 
 bool DimensionNode::HasChildren() const
 {
-    g_DBManager.lock();
+    g_DBManager.Lock();
     SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR("SELECT COUNT(charid) FROM tToons WHERE dimensionid=" << m_dimensionid));
-    g_DBManager.unLock();
+    g_DBManager.UnLock();
 
     if (pT != NULL && pT->Rows() > 0)
     {

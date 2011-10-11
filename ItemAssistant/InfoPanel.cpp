@@ -66,9 +66,9 @@ LRESULT InfoView::OnButtonClicked(WORD commandID, WORD buttonID, HWND hButton, B
     }
     std::tstring url = InventoryView::GetServerItemURLTemplate(server);
 
-    g_DBManager.lock();
-    OwnedItemInfoPtr pItemInfo = g_DBManager.getOwnedItemInfo(m_currentItem);
-    g_DBManager.unLock();
+    g_DBManager.Lock();
+    OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo(m_currentItem);
+    g_DBManager.UnLock();
 
     boost::replace_all(url, _T("%lowid%"), pItemInfo->itemloid);
     boost::replace_all(url, _T("%hiid%"), pItemInfo->itemhiid);
@@ -91,9 +91,9 @@ void InfoView::SetCurrentItem(unsigned int item)
     std::tstringstream sql;
     sql << _T("SELECT * FROM tItems WHERE itemidx = ") << item;
 
-    g_DBManager.lock();
+    g_DBManager.Lock();
     SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());
-    g_DBManager.unLock();
+    g_DBManager.UnLock();
 
     if (pT)
     {
