@@ -76,7 +76,7 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
     <Link>
-      <AdditionalDependencies>shared.lib;tinyxmlstl.lib;sqlite.lib;ItemAssistantCore.lib;Parsers.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>datagrid.lib;shared.lib;tinyxmlstl.lib;sqlite.lib;ItemAssistantCore.lib;Parsers.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)ItemAssistant.exe</OutputFile>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Configuration);$(BOOSTDIR)lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <EnableUAC>true</EnableUAC>
@@ -115,7 +115,7 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
     <Link>
-      <AdditionalDependencies>shared.lib;tinyxmlstl.lib;sqlite.lib;ItemAssistantCore.lib;Parsers.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>datagrid.lib;shared.lib;tinyxmlstl.lib;sqlite.lib;ItemAssistantCore.lib;Parsers.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)ItemAssistant.exe</OutputFile>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Configuration);$(BOOSTDIR)lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <EnableUAC>true</EnableUAC>
@@ -138,7 +138,6 @@
     <ClCompile Include="AboutDlg.cpp" />
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="CharacterParserDumper.cpp" />
-    <ClCompile Include="CSVDataModel.cpp" />
     <ClCompile Include="DBManager.cpp" />
     <ClCompile Include="InjectionSupport.cpp" />
     <ClCompile Include="ItemAssistant.cpp" />
@@ -153,7 +152,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="CSVExporter.cpp" />
     <ClCompile Include="TabFrame.cpp" />
     <ClCompile Include="IdentifyListDataModel.cpp" />
     <ClCompile Include="IdentifyView.cpp" />
@@ -175,15 +173,12 @@
     <ClCompile Include="AoMsgView.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="DataGridControl.cpp" />
-    <ClCompile Include="DataGridModel.cpp" />
     <ClCompile Include="WebView.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AboutDlg.h" />
     <ClInclude Include="Application.h" />
     <ClInclude Include="CharacterParserDumper.h" />
-    <ClInclude Include="CSVDataModel.h" />
     <ClInclude Include="DBManager.h" />
     <ClInclude Include="IDBManager.h" />
     <ClInclude Include="InjectionSupport.h" />
@@ -199,7 +194,6 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SharedServices.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="CSVExporter.h" />
     <ClInclude Include="TabFrame.h" />
     <ClInclude Include="Version.h" />
     <ClInclude Include="IdentifyListDataModel.h" />
@@ -220,8 +214,6 @@
     <ClInclude Include="PatternMatchView.h" />
     <ClInclude Include="PatternReport.h" />
     <ClInclude Include="AoMsgView.h" />
-    <ClInclude Include="DataGridControl.h" />
-    <ClInclude Include="DataGridModel.h" />
     <ClInclude Include="WebView.h" />
     <ClInclude Include="AOCharacterActionIDs.h" />
     <ClInclude Include="AOMessageIDs.h" />

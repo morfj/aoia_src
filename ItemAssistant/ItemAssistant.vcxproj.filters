@@ -141,12 +141,6 @@
     <ClCompile Include="PatternReport.cpp">
       <Filter>Plugins\PatternMatcher</Filter>
     </ClCompile>
-    <ClCompile Include="DataGridControl.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="DataGridModel.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="WebView.cpp">
       <Filter>Common</Filter>
     </ClCompile>
@@ -155,12 +149,6 @@
     </ClCompile>
     <ClCompile Include="mdump.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CSVExporter.cpp">
-      <Filter>Plugins\Inventory</Filter>
-    </ClCompile>
-    <ClCompile Include="CSVDataModel.cpp">
-      <Filter>Plugins\Inventory</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -266,12 +254,6 @@
     <ClInclude Include="PatternReport.h">
       <Filter>Plugins\PatternMatcher</Filter>
     </ClInclude>
-    <ClInclude Include="DataGridControl.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="DataGridModel.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="WebView.h">
       <Filter>Common</Filter>
     </ClInclude>
@@ -289,12 +271,6 @@
     </ClInclude>
     <ClInclude Include="mdump.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CSVExporter.h">
-      <Filter>Plugins\Inventory</Filter>
-    </ClInclude>
-    <ClInclude Include="CSVDataModel.h">
-      <Filter>Plugins\Inventory</Filter>
     </ClInclude>
     <ClInclude Include="IDBManager.h">
       <Filter>Header Files</Filter>
