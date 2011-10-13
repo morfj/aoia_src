@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <shared/IContainerManager.h>
 
 
 // Puts the hex value of the specified char into a string
@@ -21,12 +22,15 @@
 class CTrayNotifyIcon;
 
 class SharedServices
+    : public aoia::IContainerManager
 {
 public:
     SharedServices();
     virtual ~SharedServices(void);
 
-    std::tstring GetContainerName(unsigned int charid, unsigned int containerid) const;
+    // Implementation of \e IContainerManager
+    virtual std::tstring GetContainerName(unsigned int character_id, unsigned int container_id) const;
+
     std::map<std::tstring, std::tstring> GetAOItemInfo(unsigned int lowkey) const;
 
     void ShowTrayIconBalloon(std::tstring const& message) const;
