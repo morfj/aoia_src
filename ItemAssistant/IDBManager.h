@@ -1,8 +1,6 @@
 #ifndef IDBMANAGER_H
 #define IDBMANAGER_H
 
-#include "ITable.h"
-
 
 struct OwnedItemInfo
 {
