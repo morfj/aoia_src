@@ -59,6 +59,10 @@ have contributed either directly or indirectly include:
 
 Change Log:
 ===========
+Version 1.1.0                                       Release Date: ??
+    * Added a new column called ContainerID to the CSV export.
+    * Unified all CSV exports to have the same format.
+
 Version 1.0.1										Release Date: 16/9/2011
     * Added DB index to fix issue with speed and CPU usage while searching for
 	  items.
