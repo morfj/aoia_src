@@ -79,7 +79,7 @@
 
 	<Target Name="test">
 		<Message Text="Testing" />
-		<RunGoogleTests TestExePath="Release/ParsersTests.exe" />
+		<RunGoogleTests TestExePath="Release/*Tests.exe" />
 	</Target>
 
 	<Target Name="package" DependsOnTargets="prepare_build;update_version;update_version_resource;build">
