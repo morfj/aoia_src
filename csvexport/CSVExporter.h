@@ -1,7 +1,8 @@
 #ifndef CSVEXPORTER_H
 #define CSVEXPORTER_H
 
-#include "DataGridModel.h"
+#include <datagrid/IDataGridModel.h>
+
 
 namespace aoia
 {
@@ -11,7 +12,7 @@ namespace aoia
         CSVExporter();
         ~CSVExporter();
 
-        void DoExport(std::tostream &os, DataGridModelPtr data) const;
+        void DoExport(std::tostream &os, IDataGridModelPtr data) const;
 
     protected:
         std::tstring EnsureEncapsulation(std::tstring const& field) const;

@@ -1,15 +1,17 @@
-#include "StdAfx.h"
 #include "CSVDataModel.h"
-#include "DBManager.h"
+#include <assert.h>
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/replace.hpp>
 
 
 namespace aoia {
 
-    CSVDataModel::CSVDataModel(IDBManagerPtr db, std::tstring const& predicate, std::tstring const& link_template)
+    CSVDataModel::CSVDataModel(IDBManagerPtr db, IContainerManagerPtr bp, std::tstring const& predicate, std::tstring const& link_template)
         : m_db(db)
+        , m_bp(bp)
         , m_linkTemplate(link_template)
     {
-        ASSERT(m_db);
+        assert(m_db);
         runQuery(predicate);
     }
 
@@ -59,7 +61,7 @@ namespace aoia {
             sql += predicate;
         }
 
-        m_result = m_db.ExecTable(sql);
+        m_result = m_db->ExecTable(sql);
         m_lastPredicate = predicate;
     }
 
@@ -137,7 +139,7 @@ namespace aoia {
                     return _T("");
                 }
                 unsigned int charid = boost::lexical_cast<unsigned int>(m_result->Data(index, COL_COUNT));
-                return ServicesSingleton::Instance()->GetContainerName(charid, id);
+                return m_bp->GetContainerName(charid, id);
             }
             catch (boost::bad_lexical_cast &/*e*/)
             {

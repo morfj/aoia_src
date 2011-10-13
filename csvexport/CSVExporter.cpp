@@ -1,5 +1,5 @@
-#include "StdAfx.h"
 #include "CSVExporter.h"
+#include <boost/algorithm/string.hpp>
 
 namespace aoia
 {
@@ -13,7 +13,7 @@ namespace aoia
     }
 
 
-    void CSVExporter::DoExport(std::tostream &os, DataGridModelPtr data) const
+    void CSVExporter::DoExport(std::tostream &os, IDataGridModelPtr data) const
     {
         std::tstring separator = _T("\n");
 
