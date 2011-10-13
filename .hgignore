@@ -5,3 +5,9 @@ syntax: glob
 *.user
 ipch
 [Rr]elease
+*.exe
+*.*sdf
+GeneratedFiles
+*.aps
+*.ilk
+*.pdb
