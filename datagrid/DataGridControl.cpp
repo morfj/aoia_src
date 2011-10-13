@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "DataGridControl.h"
 #include <boost/bind.hpp>
 
@@ -15,7 +14,7 @@ namespace aoia {
     }
 
 
-    void DataGridControl::setModel(DataGridModelPtr model)
+    void DataGridControl::setModel(IDataGridModelPtr model)
     {
         // Clean out any previous data
         while (m_listView.GetHeader().GetItemCount())

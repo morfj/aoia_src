@@ -1,7 +1,12 @@
 #ifndef DATAGRIDCONTROL_H
 #define DATAGRIDCONTROL_H
 
-#include "DataGridModel.h"
+#include <atlbase.h>
+#include <atlapp.h>
+#include <atlwin.h>
+#include <atlctrls.h>
+
+#include <datagrid/IDataGridModel.h>
 #include <set>
 
 
@@ -11,7 +16,8 @@ namespace aoia {
      * \brief This is a list-view control implemented using the standard Win32 
      * control set up as a virtual list-view control.
      *
-     * Data is provided through a data-model deriving from DataGridModel class.
+     * Data is provided through a data-model deriving from the IDataGridModel 
+     * interface.
      *
      * \note
      * If you are embedding this control in your window or dialog, remember to 
@@ -33,8 +39,8 @@ namespace aoia {
             //REFLECTED_NOTIFY_CODE_HANDLER(LVN_ODFINDITEM, onFindItem)
         END_MSG_MAP()
 
-        void setModel(DataGridModelPtr model);
-        DataGridModelPtr getModel() const { return m_model; }
+        void setModel(IDataGridModelPtr model);
+        IDataGridModelPtr getModel() const { return m_model; }
 
         void autosizeColumnsUseHeader();
         void autosizeColumnsUseData(bool onlyVisible = true);
@@ -56,7 +62,7 @@ namespace aoia {
         void updateColumns();
 
     private:
-        DataGridModelPtr m_model;
+        IDataGridModelPtr m_model;
         mutable WTL::CListViewCtrl m_listView;  // This is mutable because WTL is fucked up when it comes to const methods.
 
         boost::signals::connection m_addSignalConnection;
