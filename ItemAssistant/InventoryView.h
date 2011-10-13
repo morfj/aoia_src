@@ -8,7 +8,7 @@
 #include <vector>
 #include "MFTreeView.h"
 #include "InvTreeItems.h"
-#include "DataGridControl.h"
+#include "datagrid/DataGridControl.h"
 #include "InfoPanel.h"
 #include "FindPanel.h"
 #include "CharacterParserDumper.h"

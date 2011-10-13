@@ -1,7 +1,7 @@
 #ifndef QUERYDATAGRIDMODEL_H
 #define QUERYDATAGRIDMODEL_H
 
-#include "DataGridModel.h"
+#include "datagrid/DataGridModel.h"
 #include <Shared/SQLite.h>
 
 

@@ -1,7 +1,7 @@
 #ifndef IDENTIFYLISTDATAMODEL_H
 #define IDENTIFYLISTDATAMODEL_H
 
-#include "DataGridModel.h"
+#include "datagrid/DataGridModel.h"
 #include <Shared/SQLite.h>
 
 

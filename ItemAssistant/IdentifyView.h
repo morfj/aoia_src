@@ -2,7 +2,7 @@
 #define IDENTIFYVIEW_H
 
 #include <PluginSDK/ItemAssistView.h>
-#include "DataGridControl.h"
+#include "datagrid/DataGridControl.h"
 #include "IdentifyListDataModel.h"
 #include <atlsplit.h>
 

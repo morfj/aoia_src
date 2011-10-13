@@ -1,7 +1,7 @@
 #ifndef DATAMODEL_H
 #define DATAMODEL_H
 
-#include "DataGridModel.h"
+#include "datagrid/DataGridModel.h"
 #include <Shared/SQLite.h>
 
 namespace aoia { namespace sv {

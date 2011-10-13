@@ -2,6 +2,7 @@
 
 #include <string>
 #include <sstream>
+#include <tchar.h>
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 
