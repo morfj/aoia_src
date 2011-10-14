@@ -15,6 +15,7 @@ namespace
     };
 }
 
+
 class CSVDataModelTests
     : public testing::Test
 {
@@ -75,8 +76,10 @@ TEST_F(CSVDataModelTests, GetColumnName_Always_ReturnExpectedValue)
         .when(any<std::tstring const&>())
         .thenReturn(tbl);
 
+    // Act
     CSVDataModel subject(dbmanager, containermanager, _T(""), _T(""));
 
+    // Assert
     EXPECT_EQ(_T("Item Name"), subject.getColumnName(0));
     EXPECT_EQ(_T("QL"), subject.getColumnName(1));
     EXPECT_EQ(_T("Character"), subject.getColumnName(2));
@@ -100,8 +103,10 @@ TEST_F(CSVDataModelTests, GetItemCount_EmptyQueryResult_ReturnZeroRows)
 
     CSVDataModel subject(dbmanager, containermanager, _T(""), _T(""));
 
+    // Act
     unsigned int actual = subject.getItemCount();
 
+    // Assert
     EXPECT_EQ(0, actual);
 }
 
@@ -116,7 +121,9 @@ TEST_F(CSVDataModelTests, GetItemProperty_InvalidRow_ReturnEmptyString)
 
     CSVDataModel subject(dbmanager, containermanager, _T(""), _T(""));
 
+    // Act
     std::tstring actual = subject.getItemProperty(1, 0);
 
+    // Assert
     EXPECT_TRUE(actual.empty());
 }
