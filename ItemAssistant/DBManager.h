@@ -1,7 +1,7 @@
 #ifndef DBMANAGER_H
 #define DBMANAGER_H
 
-#include <shared/SQLite.h>
+#include <shared/IDB.h>
 #include <shared/Mutex.h>
 #include <vector>
 #include "IDBManager.h"
@@ -11,8 +11,8 @@ class DBManager
     : public IDBManager
 {
 public:
-    DBManager(void);
-    virtual ~DBManager(void);
+    DBManager();
+    virtual ~DBManager();
 
     bool init(std::tstring dbfile);
     void destroy();
@@ -66,13 +66,15 @@ public:
     /// Release database lock.
     void UnLock() { m_mutex.MutexOff(); }
 
-    virtual SQLite::TablePtr ExecTable(std::wstring const& sql) const;
-    virtual SQLite::TablePtr ExecTable(std::string const& sql) const;
-    virtual bool Exec(std::wstring const& sql) const;
-    virtual bool Exec(std::string const& sql) const;
-    virtual void Begin() const;
-    virtual void Commit() const;
-    virtual void Rollback() const;
+    //virtual sqlite::ITablePtr ExecTable(std::wstring const& sql) const;
+    //virtual sqlite::ITablePtr ExecTable(std::string const& sql) const;
+    //virtual bool Exec(std::wstring const& sql) const;
+    //virtual bool Exec(std::string const& sql) const;
+    //virtual void Begin() const;
+    //virtual void Commit() const;
+    //virtual void Rollback() const;
+
+    sqlite::IDBPtr GetDatabase() const { return m_db; }
 
 protected:
     bool syncLocalItemsDB(std::tstring const& localfile, std::tstring const& aofolder);
@@ -84,7 +86,7 @@ protected:
 
 private:
     Mutex m_mutex;
-    SQLite::Db m_db;
+    sqlite::IDBPtr m_db;
 };
 
 #endif // DBMANAGER_H

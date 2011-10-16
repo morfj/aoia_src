@@ -8,15 +8,14 @@
 #include <boost/algorithm/string.hpp>
 #include "DBManager.h"
 #include "MainFrm.h"
-#include "ntray.h"
-#include "Version.h"
 #include <ItemAssistantCore/AOManager.h>
 
 
 namespace ba = boost::algorithm;
 
 
-SharedServices::SharedServices()
+SharedServices::SharedServices(sqlite::IDBPtr db)
+    : m_db(db)
 {
     m_accounts = GetAccountNames();
 }
@@ -134,7 +133,7 @@ std::tstring SharedServices::MakeContainerName(unsigned int charid, unsigned int
 
     // Lets find the item description for the specified container.
     g_DBManager.Lock();
-    SQLite::TablePtr pT2 = g_DBManager.ExecTable( STREAM2STR( "SELECT keylow from tItems WHERE children = " << containerid ));
+    sqlite::ITablePtr pT2 = m_db->ExecTable( STREAM2STR( "SELECT keylow from tItems WHERE children = " << containerid ));
     g_DBManager.UnLock();
 
     if (pT2 != NULL && pT2->Rows())
@@ -175,7 +174,7 @@ std::map<std::tstring, std::tstring> SharedServices::GetAOItemInfo(unsigned int 
     sql << _T("SELECT aoid, ql, type, name, description, flags, properties, icon FROM tblAO WHERE aoid = ") << lowkey;
 
     g_DBManager.Lock();
-    SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());
+    sqlite::ITablePtr pT = m_db->ExecTable(sql.str());
     g_DBManager.UnLock();
 
     if (pT != NULL)
@@ -184,8 +183,8 @@ std::map<std::tstring, std::tstring> SharedServices::GetAOItemInfo(unsigned int 
         {
             for (unsigned int col = 0; col < pT->Columns(); col++)
             {
-                std::tstring column = from_ascii_copy(pT->Headers()[col]);
-                std::tstring data = ba::trim_copy(from_ascii_copy(pT->Data()[col]));
+                std::tstring column = from_ascii_copy(pT->Headers(col));
+                std::tstring data = ba::trim_copy(from_ascii_copy(pT->Data(0, col)));
 
                 result[column] = data;
             }
@@ -302,34 +301,3 @@ std::vector<std::tstring> SharedServices::GetAccountNames() const
 
     return result;
 }
-
-
-void SharedServices::ShowTrayIconBalloon(std::tstring const& message) const
-{
-    m_trayIcon->SetBalloonDetails(message.c_str(), _T("AO Item Assistant"), CTrayNotifyIcon::Info, 5000);
-}
-
-
-void SharedServices::SetTrayIcon(boost::shared_ptr<CTrayNotifyIcon> trayIcon)
-{
-    m_trayIcon = trayIcon;
-}
-
-
-void SharedServices::ShowHelp(std::tstring const& topic)
-{
-    std::tstringstream url;
-    url << _T("http://ia-help.frellu.net/?");
-    if (!topic.empty()) {
-        url << _T("topic=") << topic << _T("&");
-    }
-    url << _T("version=") << g_versionNumber;
-    SharedServices::OpenURL(url.str());
-}
-
-
-void SharedServices::OpenURL(std::tstring const& url)
-{
-    ShellExecute(NULL, _T("open"), url.c_str(), NULL, NULL, SW_NORMAL);
-}
-

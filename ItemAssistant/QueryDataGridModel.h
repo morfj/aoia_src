@@ -2,7 +2,7 @@
 #define QUERYDATAGRIDMODEL_H
 
 #include "datagrid/DataGridModel.h"
-#include <Shared/SQLite.h>
+#include <Shared/IDB.h>
 
 
 namespace aoia {
@@ -12,7 +12,7 @@ namespace aoia {
     {
     public:
         /// Constructor that takes the SQL used to load the data.
-        QueryDataGridModel(std::tstring const& sql);
+        QueryDataGridModel(sqlite::IDBPtr db, std::tstring const& sql);
 
         virtual ~QueryDataGridModel();
 
@@ -29,7 +29,8 @@ namespace aoia {
         virtual std::tstring getItemProperty(unsigned int index, unsigned int column) const;
 
     private:
-        SQLite::TablePtr m_result;
+        sqlite::IDBPtr m_db;
+        sqlite::ITablePtr m_result;
     };
 }
 

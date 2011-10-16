@@ -5,11 +5,12 @@
 
 namespace aoia {
 
-    using namespace SQLite;
+    using namespace sqlite;
 
-    QueryDataGridModel::QueryDataGridModel(std::tstring const& sql)
+    QueryDataGridModel::QueryDataGridModel(sqlite::IDBPtr db, std::tstring const& sql)
+        : m_db(db)
     {
-        m_result = g_DBManager.ExecTable(sql);
+        m_result = m_db->ExecTable(sql);
     }
 
 
@@ -36,7 +37,7 @@ namespace aoia {
             return _T("");
         }
 
-        return from_ascii_copy(m_result->Headers().at(index));
+        return from_ascii_copy(m_result->Headers(index));
     }
 
 

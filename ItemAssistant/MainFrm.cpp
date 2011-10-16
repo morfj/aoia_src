@@ -7,6 +7,7 @@
 #include "ntray.h"
 #include "Version.h"
 #include <ItemAssistantCore/SettingsManager.h>
+#include "GuiServices.h"
 
 
 // Delay loaded function definition
@@ -34,7 +35,7 @@ CMainFrame::CMainFrame()
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 {
-    PluginViewInterface *plugin = m_tabbedChildWindow.GetActivePluginView();
+    PluginViewInterface *plugin = m_tabbedChildWindow->GetActivePluginView();
     if (plugin != NULL)
     {
         if (plugin->PreTranslateMsg(pMsg))
@@ -44,13 +45,9 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
     }
 
     if(CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
+    {
         return TRUE;
-
-    //HWND hWnd = m_tabbedChildWindow.GetActiveView();
-    //if (hWnd != NULL)
-    //{
-    //   return (BOOL)::SendMessage(hWnd, WM_FORWARDMSG, 0, (LPARAM)pMsg);
-    //}
+    }
 
     return FALSE;
 }
@@ -93,16 +90,24 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
     CreateSimpleStatusBar();
 
+    // Create tray icon
+    HICON hIconSmall = (HICON)::LoadImage(_Module.GetResourceInstance(), MAKEINTRESOURCE(IDR_MAINFRAME), 
+        IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
+    m_trayIcon = boost::shared_ptr<CTrayNotifyIcon>(new CTrayNotifyIcon());
+    m_trayIcon->Create(this, IDR_TRAY_POPUP, _T("AO Item Assistant"), hIconSmall, WM_TRAYICON);
+
+    // Create GUI services
+    m_guiServices.reset(new aoia::GuiServices(m_trayIcon));
+
     DWORD style = WS_CHILD | /*WS_VISIBLE |*/ WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 
-    m_tabbedChildWindow.SetToolBarPanel(m_hWndToolBar);
-    m_tabbedChildWindow.SetStatusBar(m_hWndStatusBar);
-    m_tabbedChildWindow.SetTabStyles(CTCS_TOOLTIPS | CTCS_DRAGREARRANGE);
-    m_hWndClient = m_tabbedChildWindow.Create(m_hWnd, rcDefault, 0, style | WS_VISIBLE);
-
-    //UIAddToolBar(hWndToolBar);
-
-    m_tabbedChildWindow.SetToolbarVisibility(true);
+    m_tabbedChildWindow.reset(new TabFrame(m_guiServices));
+    m_tabbedChildWindow->SetToolBarPanel(m_hWndToolBar);
+    m_tabbedChildWindow->SetStatusBar(m_hWndStatusBar);
+    m_tabbedChildWindow->SetTabStyles(CTCS_TOOLTIPS | CTCS_DRAGREARRANGE);
+    m_hWndClient = m_tabbedChildWindow->Create(m_hWnd, rcDefault, 0, style | WS_VISIBLE);
+    m_tabbedChildWindow->SetToolbarVisibility(true);
+    
     UISetCheck(ID_VIEW_STATUS_BAR, true);
     UISetCheck(ID_VIEW_TOOLBAR, true);
     UpdateLayout();
@@ -112,13 +117,6 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
     ATLASSERT(pLoop != NULL);
     pLoop->AddMessageFilter(this);
     pLoop->AddIdleHandler(this);
-
-    // Load a tray icon
-    HICON hIconSmall = (HICON)::LoadImage(_Module.GetResourceInstance(), MAKEINTRESOURCE(IDR_MAINFRAME), 
-        IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
-
-    m_trayIcon = boost::shared_ptr<CTrayNotifyIcon>(new CTrayNotifyIcon());
-    m_trayIcon->Create(this, IDR_TRAY_POPUP, _T("AO Item Assistant"), hIconSmall, WM_TRAYICON);
 
     // To allow incoming messages from lower level applications like the AO Client we need to add the
     // message we use to the exception list.
@@ -172,7 +170,7 @@ LRESULT CMainFrame::OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 {
     static bool bVisible = true;	// initially state
     bVisible = !bVisible;
-    m_tabbedChildWindow.SetToolbarVisibility(bVisible);
+    m_tabbedChildWindow->SetToolbarVisibility(bVisible);
     UISetCheck(ID_VIEW_TOOLBAR, bVisible);
     UpdateLayout();
     return 0;
@@ -218,21 +216,21 @@ LRESULT CMainFrame::OnTrayShow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 LRESULT CMainFrame::OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-    SharedServices::ShowHelp(_T(""));
+    m_guiServices->ShowHelp(_T(""));
     return 0;
 }
 
 
 LRESULT CMainFrame::OnCheckForUpdates(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-    SharedServices::OpenURL(STREAM2STR(_T("http://ia.frellu.net/?topic=checkversion&version=") << g_versionNumber));
+    m_guiServices->OpenURL(STREAM2STR(_T("http://ia.frellu.net/?topic=checkversion&version=") << g_versionNumber));
     return 0;
 }
 
 
 LRESULT CMainFrame::OnSupportForum(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-    SharedServices::OpenURL(_T("http://apps.sourceforge.net/phpbb/aoia/"));
+    m_guiServices->OpenURL(_T("http://apps.sourceforge.net/phpbb/aoia/"));
     return 0;
 }
 
@@ -244,11 +242,11 @@ LRESULT CMainFrame::OnAOMessage(HWND wnd, PCOPYDATASTRUCT pData)
 
     if (pData->dwData == 1) {
         AOMessageBase msg(datablock, datasize);
-        m_tabbedChildWindow.OnAOServerMessage(msg);
+        m_tabbedChildWindow->OnAOServerMessage(msg);
     }
     else if (pData->dwData == 2) {
         AOClientMessageBase msg(datablock, datasize);
-        m_tabbedChildWindow.OnAOClientMessage(msg);
+        m_tabbedChildWindow->OnAOClientMessage(msg);
     }
 
     return 0;
@@ -264,7 +262,7 @@ LRESULT CMainFrame::OnTimer(UINT wParam)
         bool injected = Inject();
         if (injected && first_injection_try) {
             // Show warning about AO being started before AOIA
-            ServicesSingleton::Instance()->ShowTrayIconBalloon(_T("Anarchy Online was started before AO Item Assistant was started.\nItem database might be out of sync."));
+            m_guiServices->ShowTrayIconBalloon(_T("Anarchy Online was started before AO Item Assistant was started.\nItem database might be out of sync."));
         }
         first_injection_try = false;
         SetTimer(1, 10000);

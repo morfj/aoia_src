@@ -2,7 +2,7 @@
 #define CSVDATAMODEL_H
 
 #include <datagrid/DataGridModel.h>
-#include <shared/SQLite.h>
+#include <shared/IDB.h>
 #include <shared/IContainerManager.h>
 #include <set>
 #include "ItemAssistant/IDBManager.h"   // TODO : Move/extract interface
@@ -18,7 +18,7 @@ namespace aoia {
     {
     public:
         /// Constructor that takes a general SQL predicate as input.
-        CSVDataModel(IDBManagerPtr db, IContainerManagerPtr bp, std::tstring const& predicate, std::tstring const& link_template);
+        CSVDataModel(sqlite::IDBPtr db, IContainerManagerPtr bp, std::tstring const& predicate, std::tstring const& link_template);
         virtual ~CSVDataModel();
 
         /// Return number of columns.
@@ -61,9 +61,9 @@ namespace aoia {
         void runQuery(std::tstring const& predicate);
 
     private:
-        IDBManagerPtr m_db;
+        sqlite::IDBPtr m_db;
         IContainerManagerPtr m_bp;
-        SQLite::TablePtr m_result;
+        sqlite::ITablePtr m_result;
         std::tstring m_lastPredicate;
         std::tstring m_linkTemplate;
     };

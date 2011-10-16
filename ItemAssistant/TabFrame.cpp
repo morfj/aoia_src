@@ -3,8 +3,10 @@
 #include <boost/bind.hpp>
 
 
-TabFrame::TabFrame()
+TabFrame::TabFrame(aoia::IGuiServicesPtr gui)
   : m_toobarVisibility(true)
+  , m_InventoryView(g_DBManager.GetDatabase())
+  , m_summaryView(gui)
 {
     //SetForwardNotifications(true);
 }

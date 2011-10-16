@@ -2,11 +2,13 @@
 #define ITEMLISTDATAMODEL_H
 
 #include "datagrid/DataGridModel.h"
-#include <Shared/SQLite.h>
+#include <Shared/IDB.h>
 #include <set>
+#include "shared/IContainerManager.h"
 
 
-namespace aoia {
+namespace aoia
+{
 
     /**
      * Datamodel that searches for all recorded items that matches the specified WHERE predicate.
@@ -26,10 +28,13 @@ namespace aoia {
     {
     public:
         /// Constructor that takes a general SQL predicate as input.
-        ItemListDataModel(std::tstring const& predicate, unsigned int sortColumnIndex = -1, bool sortAscending = true);
+        ItemListDataModel(sqlite::IDBPtr db, IContainerManagerPtr containerManager, 
+            std::tstring const& predicate, unsigned int sortColumnIndex = -1, bool sortAscending = true);
+
         /// Convenience constructor for running a query where the predicate is an 
         /// IN-statement of the AOIDs in the supplied set.
-        ItemListDataModel(std::set<unsigned int> const& aoids, unsigned int sortColumnIndex = -1, bool sortAscending = true);
+        ItemListDataModel(sqlite::IDBPtr db, IContainerManagerPtr containerManager, 
+            std::set<unsigned int> const& aoids, unsigned int sortColumnIndex = -1, bool sortAscending = true);
         virtual ~ItemListDataModel();
 
         /// Return number of columns.
@@ -68,7 +73,9 @@ namespace aoia {
         void runQuery(std::tstring const& predicate, int sortColumn = -1, bool sortAscending = true);
 
     private:
-        SQLite::TablePtr m_result;
+        sqlite::IDBPtr m_db;
+        IContainerManagerPtr m_containerManager;
+        sqlite::ITablePtr m_result;
         std::tstring m_lastPredicate;
     };
 

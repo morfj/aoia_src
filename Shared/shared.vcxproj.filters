@@ -91,5 +91,11 @@
     <ClInclude Include="IContainerManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IDB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ITable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -8,8 +8,9 @@
 
 namespace aoia { namespace sv {
 
-    SummaryView::SummaryView()
+    SummaryView::SummaryView(aoia::IGuiServicesPtr gui)
         : m_webview(_T(""))
+        , m_gui(gui)
     {
     }
 
@@ -72,7 +73,7 @@ namespace aoia { namespace sv {
 
     LRESULT SummaryView::OnHelp( WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/ )
     {
-        SharedServices::ShowHelp(_T("summary"));
+        m_gui->ShowHelp(_T("summary"));
         return 0;
     }
 

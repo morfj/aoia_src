@@ -150,6 +150,9 @@
     <ClCompile Include="mdump.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GuiServices.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AboutDlg.h">
@@ -276,6 +279,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ITable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IGuiServices.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GuiServices.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

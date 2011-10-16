@@ -6,7 +6,7 @@
 
 namespace aoia {
 
-    CSVDataModel::CSVDataModel(IDBManagerPtr db, IContainerManagerPtr bp, std::tstring const& predicate, std::tstring const& link_template)
+    CSVDataModel::CSVDataModel(sqlite::IDBPtr db, IContainerManagerPtr bp, std::tstring const& predicate, std::tstring const& link_template)
         : m_db(db)
         , m_bp(bp)
         , m_linkTemplate(link_template)

@@ -21,7 +21,7 @@ class InventoryView
 public:
     DECLARE_WND_CLASS(NULL)
 
-    InventoryView();
+    InventoryView(sqlite::IDBPtr db);
     virtual ~InventoryView();
 
     enum
@@ -135,6 +135,8 @@ protected:
     bool SetClipboardText(std::tstring const& text);
 
 private:
+    sqlite::IDBPtr m_db;
+
     CharacterParserDumper m_characterParserDumper;
     bool m_enableCharacterParserDumper;
 

@@ -3,6 +3,7 @@
 #include <csvexport/CSVDataModel.h>
 
 using namespace aoia;
+using namespace sqlite;
 using namespace mockitopp::matcher;
 
 namespace
@@ -22,43 +23,44 @@ class CSVDataModelTests
 protected:
     virtual void SetUp()
     {
-        dbmanager.reset(&mockDbManager.getInstance(), null_deleter());
+        db.reset(&mockDB.getInstance(), null_deleter());
         containermanager.reset(&mockContainerManager.getInstance(), null_deleter());
+        table.reset(&mockTable.getInstance(), null_deleter());
     }
 
-    mockitopp::mock_object<IDBManager> mockDbManager;
+    mockitopp::mock_object<IDB> mockDB;
     mockitopp::mock_object<IContainerManager> mockContainerManager;
+    mockitopp::mock_object<ITable> mockTable;
 
-    boost::shared_ptr<IDBManager> dbmanager;
-    boost::shared_ptr<IContainerManager> containermanager;
+    IDBPtr db;
+    IContainerManagerPtr containermanager;
+    ITablePtr table;
 };
 
 
 TEST_F(CSVDataModelTests, Construction_Always_RunQueryOnce)
 {
     // Arrange
-    SQLite::TablePtr tbl(new SQLite::Table(0, 0, NULL));
-    mockDbManager(static_cast<SQLite::TablePtr (IDBManager::*)(std::tstring const&) const>(&IDBManager::ExecTable))
+    mockDB(static_cast<ITablePtr (IDB::*)(std::tstring const&) const>(&IDB::ExecTable))
         .when(any<std::tstring const&>())
-        .thenReturn(tbl);
+        .thenReturn(table);
 
     // Act
-    CSVDataModel subject(dbmanager, containermanager, _T(""), _T(""));
+    CSVDataModel subject(db, containermanager, _T(""), _T(""));
 
     // Assert
-    EXPECT_TRUE(mockDbManager(static_cast<SQLite::TablePtr (IDBManager::*)(std::tstring const&) const>(&IDBManager::ExecTable)).exactly(1));
+    EXPECT_TRUE(mockDB(static_cast<ITablePtr (IDB::*)(std::tstring const&) const>(&IDB::ExecTable)).exactly(1));
 }
 
 
 TEST_F(CSVDataModelTests, GetColumnCount_Always_ReturnExpectedValue)
 {
     // Arrange
-    SQLite::TablePtr tbl(new SQLite::Table(0, 0, NULL));
-    mockDbManager(static_cast<SQLite::TablePtr (IDBManager::*)(std::tstring const&) const>(&IDBManager::ExecTable))
+    mockDB(static_cast<ITablePtr (IDB::*)(std::tstring const&) const>(&IDB::ExecTable))
         .when(any<std::tstring const&>())
-        .thenReturn(tbl);
+        .thenReturn(table);
 
-    CSVDataModel subject(dbmanager, containermanager, _T(""), _T(""));
+    CSVDataModel subject(db, containermanager, _T(""), _T(""));
 
     // Act
     unsigned int actual = subject.getColumnCount();
@@ -71,13 +73,12 @@ TEST_F(CSVDataModelTests, GetColumnCount_Always_ReturnExpectedValue)
 TEST_F(CSVDataModelTests, GetColumnName_Always_ReturnExpectedValue)
 {
     // Arrange
-    SQLite::TablePtr tbl(new SQLite::Table(0, 0, NULL));
-    mockDbManager(static_cast<SQLite::TablePtr (IDBManager::*)(std::tstring const&) const>(&IDBManager::ExecTable))
+    mockDB(static_cast<ITablePtr (IDB::*)(std::tstring const&) const>(&IDB::ExecTable))
         .when(any<std::tstring const&>())
-        .thenReturn(tbl);
+        .thenReturn(table);
 
     // Act
-    CSVDataModel subject(dbmanager, containermanager, _T(""), _T(""));
+    CSVDataModel subject(db, containermanager, _T(""), _T(""));
 
     // Assert
     EXPECT_EQ(_T("Item Name"), subject.getColumnName(0));
@@ -96,12 +97,11 @@ TEST_F(CSVDataModelTests, GetColumnName_Always_ReturnExpectedValue)
 TEST_F(CSVDataModelTests, GetItemCount_EmptyQueryResult_ReturnZeroRows)
 {
     // Arrange
-    SQLite::TablePtr tbl(new SQLite::Table(0, 0, NULL));
-    mockDbManager(static_cast<SQLite::TablePtr (IDBManager::*)(std::tstring const&) const>(&IDBManager::ExecTable))
+    mockDB(static_cast<ITablePtr (IDB::*)(std::tstring const&) const>(&IDB::ExecTable))
         .when(any<std::tstring const&>())
-        .thenReturn(tbl);
+        .thenReturn(table);
 
-    CSVDataModel subject(dbmanager, containermanager, _T(""), _T(""));
+    CSVDataModel subject(db, containermanager, _T(""), _T(""));
 
     // Act
     unsigned int actual = subject.getItemCount();
@@ -114,12 +114,11 @@ TEST_F(CSVDataModelTests, GetItemCount_EmptyQueryResult_ReturnZeroRows)
 TEST_F(CSVDataModelTests, GetItemProperty_InvalidRow_ReturnEmptyString)
 {
     // Arrange
-    SQLite::TablePtr tbl(new SQLite::Table(0, 0, NULL));
-    mockDbManager(static_cast<SQLite::TablePtr (IDBManager::*)(std::tstring const&) const>(&IDBManager::ExecTable))
+    mockDB(static_cast<ITablePtr (IDB::*)(std::tstring const&) const>(&IDB::ExecTable))
         .when(any<std::tstring const&>())
-        .thenReturn(tbl);
+        .thenReturn(table);
 
-    CSVDataModel subject(dbmanager, containermanager, _T(""), _T(""));
+    CSVDataModel subject(db, containermanager, _T(""), _T(""));
 
     // Act
     std::tstring actual = subject.getItemProperty(1, 0);

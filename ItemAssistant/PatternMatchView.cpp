@@ -43,7 +43,7 @@ LRESULT PatternMatchView::OnCreate(LPCREATESTRUCT createStruct)
 
     // Build table of all PBs
     g_DBManager.Lock();
-    SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT pbid, name FROM tblPocketBoss ORDER BY name"));
+    sqlite::ITablePtr pT = g_DBManager.ExecTable(_T("SELECT pbid, name FROM tblPocketBoss ORDER BY name"));
     g_DBManager.UnLock();
 
     if (pT != NULL)
@@ -520,7 +520,7 @@ float AvailCalcThread::CalcPbAvailability(unsigned int dimensionid, unsigned int
     std::map<std::tstring, unsigned int> vals;
 
     // Get a list of all pattern pieces for the specified pocket boss (optionally exclude ABCD assemblies)
-    SQLite::TablePtr pIDs;
+    sqlite::ITablePtr pIDs;
     g_DBManager.Lock();
     {
         std::tstringstream sql;
@@ -551,7 +551,7 @@ float AvailCalcThread::CalcPbAvailability(unsigned int dimensionid, unsigned int
         }
 
         g_DBManager.Lock();
-        SQLite::TablePtr pItemCount = g_DBManager.ExecTable(sql);
+        sqlite::ITablePtr pItemCount = g_DBManager.ExecTable(sql);
         g_DBManager.UnLock();
 
         if (pItemCount && pItemCount->Rows() > 0) {

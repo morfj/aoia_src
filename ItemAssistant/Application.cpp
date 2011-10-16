@@ -75,9 +75,6 @@ int Application::run(LPTSTR /*lpstrCmdLine*/, int nCmdShow)
         assert(false);  // Could not create main window for some reason.
         return 0;
     }
-
-    ServicesSingleton::Instance()->SetTrayIcon(m_mainWindow->GetTrayIcon());
-
     m_mainWindow->ShowWindow(nCmdShow);
 
     int nRet = theLoop.Run();

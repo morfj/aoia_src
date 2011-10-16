@@ -18,8 +18,8 @@ class TabFrame
     typedef CTabbedChildWindow< CDotNetTabCtrl<CTabViewTabItem> > baseClass;
 
 public:
-    TabFrame(void);
-    virtual ~TabFrame(void);
+    TabFrame(aoia::IGuiServicesPtr gui);
+    virtual ~TabFrame();
 
     BEGIN_MSG_MAP(TabFrame)
         MESSAGE_HANDLER(WM_CREATE, OnCreate)

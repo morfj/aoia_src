@@ -12,6 +12,7 @@ namespace std {
    typedef basic_stringstream<TCHAR> tstringstream;
    typedef basic_ostringstream<TCHAR> tostringstream;
    typedef basic_ostream<TCHAR> tostream;
+   typedef basic_ofstream<TCHAR> tofstream;
 }
 
 

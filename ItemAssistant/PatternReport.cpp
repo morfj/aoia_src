@@ -10,11 +10,12 @@
 #include "boost/tuple/tuple.hpp"
 
 
-PatternReport::PatternReport(unsigned int dimensionid, unsigned int pbid, unsigned int toonid, bool excludeassembled)
+PatternReport::PatternReport(sqlite::IDBPtr db, unsigned int dimensionid, unsigned int pbid, unsigned int toonid, bool excludeassembled)
     : m_dimensionid(dimensionid)
     , m_pbid(pbid)
     , m_toonid(toonid)
     , m_excludeassembled(excludeassembled)
+    , m_db(db)
 {
     SYSTEMTIME time;
     ::GetLocalTime(&time);
@@ -54,7 +55,7 @@ PatternReport::PatternReport(unsigned int dimensionid, unsigned int pbid, unsign
 
     {  // Determine PB name
         g_DBManager.Lock();
-        SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR(_T("SELECT name FROM tblPocketBoss WHERE pbid = ") << pbid));
+        sqlite::ITablePtr pT = m_db->ExecTable(STREAM2STR(_T("SELECT name FROM tblPocketBoss WHERE pbid = ") << pbid));
         g_DBManager.UnLock();
 
         if (pT != NULL && pT->Rows() > 0)
@@ -68,7 +69,7 @@ PatternReport::PatternReport(unsigned int dimensionid, unsigned int pbid, unsign
 
     {  // Find all patternpieces
         g_DBManager.Lock();
-        SQLite::TablePtr pIDs = g_DBManager.ExecTable(STREAM2STR(_T("SELECT aoid, pattern FROM tblPatterns WHERE name = (SELECT name FROM tblPocketBoss WHERE pbid = ") << pbid << ")"));
+        sqlite::ITablePtr pIDs = m_db->ExecTable(STREAM2STR(_T("SELECT aoid, pattern FROM tblPatterns WHERE name = (SELECT name FROM tblPocketBoss WHERE pbid = ") << pbid << ")"));
         g_DBManager.UnLock();
 
         // Copy patternpiece IDs to map
@@ -92,7 +93,7 @@ PatternReport::PatternReport(unsigned int dimensionid, unsigned int pbid, unsign
                 sql += STREAM2STR(_T(" AND owner = ") << toonid);
             }
             g_DBManager.Lock();
-            SQLite::TablePtr pItems = g_DBManager.ExecTable(sql);
+            sqlite::ITablePtr pItems = m_db->ExecTable(sql);
             g_DBManager.UnLock();
 
             for (unsigned int itemIdx = 0; itemIdx < pItems->Rows(); ++itemIdx) {

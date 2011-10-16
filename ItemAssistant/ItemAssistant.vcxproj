@@ -139,6 +139,7 @@
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="CharacterParserDumper.cpp" />
     <ClCompile Include="DBManager.cpp" />
+    <ClCompile Include="GuiServices.cpp" />
     <ClCompile Include="InjectionSupport.cpp" />
     <ClCompile Include="ItemAssistant.cpp" />
     <ClCompile Include="MainFrm.cpp" />
@@ -180,7 +181,9 @@
     <ClInclude Include="Application.h" />
     <ClInclude Include="CharacterParserDumper.h" />
     <ClInclude Include="DBManager.h" />
+    <ClInclude Include="GuiServices.h" />
     <ClInclude Include="IDBManager.h" />
+    <ClInclude Include="IGuiServices.h" />
     <ClInclude Include="InjectionSupport.h" />
     <ClInclude Include="InventoryIDs.h" />
     <ClInclude Include="ITable.h" />

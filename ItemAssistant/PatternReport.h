@@ -1,6 +1,8 @@
 #ifndef PATTERNREPORT_H
 #define PATTERNREPORT_H
 
+#include <shared/IDB.h>
+
 
 /**
  * \brief
@@ -12,7 +14,7 @@
 class PatternReport
 {
 public:
-    PatternReport(unsigned int dimensionid, unsigned int pbid, unsigned int toonid, bool excludeassembled);
+    PatternReport(sqlite::IDBPtr db, unsigned int dimensionid, unsigned int pbid, unsigned int toonid, bool excludeassembled);
     virtual ~PatternReport();
 
     std::tstring toString() const;
@@ -28,6 +30,8 @@ private:
     std::tstring m_time;
     std::tstring m_pbname;
     std::tstring m_table;
+
+    sqlite::IDBPtr m_db;
 };
 
 

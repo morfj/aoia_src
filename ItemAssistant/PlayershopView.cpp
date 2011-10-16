@@ -14,22 +14,22 @@ enum ColumnID
 
 
 PlayershopView::PlayershopView(void)
-: m_sortColumn(0)
+    : m_sortColumn(0)
 {
-    m_hWakeupEvent = CreateEvent(0,false,false,0);
+    m_hWakeupEvent = CreateEvent(0, false, false, 0);
 }
 
 
 PlayershopView::~PlayershopView(void)
 {
-   if(m_directoryWatch != NULL)
-   {
-       SetEvent( m_hWakeupEvent );
-       m_directoryWatch->End();
-       CloseHandle(m_hWakeupEvent);
-       m_hWakeupEvent = NULL;
-       m_directoryWatch.reset();
-   }
+    if (m_directoryWatch != NULL)
+    {
+        SetEvent(m_hWakeupEvent);
+        m_directoryWatch->End();
+        CloseHandle(m_hWakeupEvent);
+        m_hWakeupEvent = NULL;
+        m_directoryWatch.reset();
+    }
 }
 
 void PlayershopView::StartMonitoring()
@@ -40,19 +40,19 @@ void PlayershopView::StartMonitoring()
 
 void PlayershopView::StopMonitoring()
 {
-   if(m_directoryWatch != NULL)
-   {
-       SetEvent( m_hWakeupEvent );
-       m_directoryWatch->End();
-//       CloseHandle(m_hWakeupEvent);
-//       m_hWakeupEvent = NULL;
-       m_directoryWatch.reset();
-   }
+    if (m_directoryWatch != NULL)
+    {
+        SetEvent(m_hWakeupEvent);
+        m_directoryWatch->End();
+        //       CloseHandle(m_hWakeupEvent);
+        //       m_hWakeupEvent = NULL;
+        m_directoryWatch.reset();
+    }
 }
 
 LRESULT PlayershopView::OnColumnClick(LPNMHDR lParam)
 {
-    LPNMLISTVIEW pnmv = (LPNMLISTVIEW) lParam;
+    LPNMLISTVIEW pnmv = (LPNMLISTVIEW)lParam;
 
     if (m_sortColumn != pnmv->iSubItem)
     {
@@ -91,7 +91,9 @@ LRESULT PlayershopView::OnCreate(LPCREATESTRUCT createStruct)
     m_splitter.Create(m_hWnd, rcDefault, NULL, style);
     m_splitter.SetSplitterExtendedStyle(0);
 
-    m_treeview.Create(m_splitter.m_hWnd, rcDefault, NULL, style | TVS_SHOWSELALWAYS | TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_EDITLABELS, WS_EX_CLIENTEDGE);
+    m_treeview.Create(m_splitter.m_hWnd, rcDefault, NULL,
+                      style | TVS_SHOWSELALWAYS | TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_EDITLABELS,
+                      WS_EX_CLIENTEDGE);
     m_treeview.SetDlgCtrlID(IDW_PSMTREEVIEW);
 
     m_listview.Create(m_splitter.m_hWnd, rcDefault, NULL, style | LVS_REPORT, WS_EX_CLIENTEDGE);
@@ -131,11 +133,12 @@ LRESULT PlayershopView::OnCreate(LPCREATESTRUCT createStruct)
     buttons[2].iString = (INT_PTR)_T("Help");
 
     CImageList imageList;
-    imageList.CreateFromImage(IDB_PLAYERSHOP_VIEW, 16, 1, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
+    imageList.CreateFromImage(IDB_PLAYERSHOP_VIEW, 16, 1, CLR_DEFAULT, IMAGE_BITMAP,
+                              LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
 
-    m_toolbar.Create(GetTopLevelWindow(), NULL, _T("PlayerShopViewToolBar"), 
-        ATL_SIMPLE_TOOLBAR_PANE_STYLE | TBSTYLE_LIST, 
-        TBSTYLE_EX_MIXEDBUTTONS);
+    m_toolbar.Create(GetTopLevelWindow(), NULL, _T("PlayerShopViewToolBar"),
+                     ATL_SIMPLE_TOOLBAR_PANE_STYLE | TBSTYLE_LIST,
+                     TBSTYLE_EX_MIXEDBUTTONS);
     m_toolbar.SetButtonStructSize();
     m_toolbar.SetImageList(imageList);
     m_toolbar.AddButtons(ARRAYSIZE(buttons), buttons);
@@ -147,9 +150,10 @@ LRESULT PlayershopView::OnCreate(LPCREATESTRUCT createStruct)
 
 void PlayershopView::UpdateLayout(CSize newSize)
 {
-    CRect r( CPoint( 0, 0 ), newSize );
+    CRect r(CPoint(0, 0), newSize);
 
-    m_splitter.SetWindowPos(NULL, r.left, r.top, r.Width(), r.Height(), SWP_NOZORDER | SWP_NOACTIVATE | SWP_DEFERERASE | SWP_NOSENDCHANGING);
+    m_splitter.SetWindowPos(NULL, r.left, r.top, r.Width(), r.Height(),
+                            SWP_NOZORDER | SWP_NOACTIVATE | SWP_DEFERERASE | SWP_NOSENDCHANGING);
 }
 
 
@@ -160,28 +164,28 @@ LRESULT PlayershopView::OnSize(UINT wParam, CSize newSize)
 }
 
 
-LRESULT PlayershopView::OnPostCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+LRESULT PlayershopView::OnPostCreate(UINT/*uMsg*/, WPARAM/*wParam*/, LPARAM/*lParam*/, BOOL&/*bHandled*/)
 {
     return 0;
 }
 
 
-LRESULT PlayershopView::OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT PlayershopView::OnHelp(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
 {
     SharedServices::ShowHelp(_T("playershop"));
     return 0;
 }
 
-LRESULT PlayershopView::OnPause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT PlayershopView::OnPause(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
 {
-   if(m_directoryWatch != NULL)
-   {
-      StopMonitoring();
-   }
-   else
-   {
-      StartMonitoring();
-   }
+    if (m_directoryWatch != NULL)
+    {
+        StopMonitoring();
+    }
+    else
+    {
+        StartMonitoring();
+    }
     return 0;
 }
 
@@ -190,7 +194,7 @@ LRESULT PlayershopView::OnPause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 void PlayershopView::UpdateListView(std::tstring const& where)
 {
     m_listview.DeleteAllItems();
-    m_listview.AddItem(0,0,where.c_str());
+    m_listview.AddItem(0, 0, where.c_str());
 }
 
 
@@ -199,8 +203,9 @@ void PlayershopView::UpdateListView(std::vector<std::tstring> v)
 {
     m_listview.DeleteAllItems();
 
-    for(unsigned int i=0; i<v.size();i++){
-        m_listview.AddItem(0,i%2,v[i].c_str());
+    for (unsigned int i = 0; i < v.size(); i++)
+    {
+        m_listview.AddItem(0, i % 2, v[i].c_str());
     }
 }
 
@@ -214,13 +219,13 @@ int PlayershopView::CompareStr(LPARAM param1, LPARAM param2, LPARAM sort)
     /*
     TCHAR name1[MAX_PATH];
     TCHAR name2[MAX_PATH];
-
+    
     ZeroMemory(name1, sizeof(name1));
     ZeroMemory(name2, sizeof(name2));
-
+    
     pThis->m_listview.GetItemText(param1, pThis->m_sortColumn, name1, sizeof(name1) - 1);
     pThis->m_listview.GetItemText(param2, pThis->m_sortColumn, name2, sizeof(name2) - 1);
-
+    
     switch (pThis->m_sortColumn)
     {
     case COL_QL:
@@ -238,18 +243,19 @@ int PlayershopView::CompareStr(LPARAM param1, LPARAM param2, LPARAM sort)
     return result;
 }
 
-LRESULT PlayershopView::OnContentUpdate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+LRESULT PlayershopView::OnContentUpdate(UINT/*uMsg*/, WPARAM/*wParam*/, LPARAM/*lParam*/, BOOL&/*bHandled*/)
 {
-   CTreeItem item = m_treeview.GetSelectedItem();
-   // Force refresh of current selection
-   m_treeview.SelectItem(NULL);
-   m_treeview.SelectItem(item);
-   return 0;
+    CTreeItem item = m_treeview.GetSelectedItem();
+    // Force refresh of current selection
+    m_treeview.SelectItem(NULL);
+    m_treeview.SelectItem(item);
+    return 0;
 }
 
 void PlayershopView::OnActive(bool doActivation)
 {
-    if (doActivation && m_splitter.GetSplitterPos() < 0) {
+    if (doActivation && m_splitter.GetSplitterPos() < 0)
+    {
         m_splitter.SetSplitterPos(200);
     }
 
@@ -270,98 +276,100 @@ typedef struct DIR_WATCH
 {
     OVERLAPPED overlapped;
     FILE_NOTIFY_INFORMATION* fileNotifyInfo;
-    LPTSTR     lpDir;
+    LPTSTR lpDir;
     PlayershopView* pOwner;
-} *HDIR_MONITOR;
+}* HDIR_MONITOR;
 
 
-VOID CALLBACK DirChangeCompletionRoutine( DWORD dwErrorCode, DWORD
-                                         dwNumberOfBytesTransfered,  LPOVERLAPPED lpOverlapped)
+VOID CALLBACK DirChangeCompletionRoutine(DWORD dwErrorCode, DWORD
+                                         dwNumberOfBytesTransfered, LPOVERLAPPED lpOverlapped)
 {
-    HDIR_MONITOR pMonitor  = (HDIR_MONITOR) lpOverlapped;
+    HDIR_MONITOR pMonitor = (HDIR_MONITOR)lpOverlapped;
     FILE_NOTIFY_INFORMATION* fileNotifyInfo = pMonitor->fileNotifyInfo;
-    
+
     do
     {
-       char* pIndexer = (char*)fileNotifyInfo;
-    // The string returned is not null terminated, lets terminate it
-       fileNotifyInfo->FileName[fileNotifyInfo->FileNameLength/2]=0;
+        char* pIndexer = (char*)fileNotifyInfo;
+        // The string returned is not null terminated, lets terminate it
+        fileNotifyInfo->FileName[fileNotifyInfo->FileNameLength / 2] = 0;
 
-       std::tstringstream f;
-       f << pMonitor->lpDir << "\\" << fileNotifyInfo->FileName; //pMonitor->fileNotifyInfo->FileName;
+        std::tstringstream f;
+        f << pMonitor->lpDir << "\\" << fileNotifyInfo->FileName; //pMonitor->fileNotifyInfo->FileName;
 
-       std::tstring filename(f.str());
-       const wchar_t* ptr = filename.c_str();
+        std::tstring filename(f.str());
+        const wchar_t* ptr = filename.c_str();
 
-       // Proceed only if the directory change notification is triggered by
-       // the file PlayerShopLog.html and is a remove or modify
-       if((fileNotifyInfo->Action==FILE_ACTION_MODIFIED||fileNotifyInfo->Action==FILE_ACTION_REMOVED)&&
-          boost::find_last(ptr, "PlayerShopLog.html"))
-       {
+        // Proceed only if the directory change notification is triggered by
+        // the file PlayerShopLog.html and is a remove or modify
+        if ((fileNotifyInfo->Action == FILE_ACTION_MODIFIED || fileNotifyInfo->Action == FILE_ACTION_REMOVED) &&
+            boost::find_last(ptr, "PlayerShopLog.html"))
+        {
 
-           // Send a message to the view to refresh the listing. 
-           pMonitor->pOwner->PostMessage(WM_PSM_UPDATE); //refresh listing always (remove items if file is deleted)
+            // Send a message to the view to refresh the listing. 
+            pMonitor->pOwner->PostMessage(WM_PSM_UPDATE); //refresh listing always (remove items if file is deleted)
 
-           if(fileNotifyInfo->Action!=FILE_ACTION_REMOVED) // if FILE_ACTION_REMOVED, file removed, nothing to parse
-           {
-              boost::filesystem::path p(to_utf8_copy(filename),boost::filesystem::native);
-              std::ifstream in(p.string().c_str());
-              std::string line;
-              std::string text;
-              std::vector<std::tstring> v;
-              while(in){
-                  line.clear();
-                  std::getline(in,line);
-                  if(!line.empty())
-                  {
-                      text += line;
-                  }
-              }
-
-              // Now that we have the whole file, lets parse it
-
-              // Text located between the two following tags is to be considered an item sold
-              std::string startTag = "<div indent=wrapped>" ;
-              std::string endTag   = "</div>" ;
-              std::ostringstream popupText;
-              while(text.length() > 0)
-              {
-                  std::string::size_type start = text.find( startTag, 0 );
-                  std::string::size_type end  = text.find( endTag , 0 );
-                  if( start != std::string::npos && end != std::string::npos)
-                  {
-                      // adding text for ballon message
-                      popupText << text.substr(start+startTag.length(),end-start-startTag.length()) << "\r\n";
-
-                      // remove the already processed part of the string
-                      text = text.substr(end+endTag.length());
-                  }
-                  else
-                  {
-                      text = "";
-                  }
-              }
-
-              if(!popupText.str().empty())
-              {
-                 //max string 256 bytes...
-                    std::string smallString = popupText.str();
-                    if(smallString.length()>256)
+            if (fileNotifyInfo->Action != FILE_ACTION_REMOVED) // if FILE_ACTION_REMOVED, file removed, nothing to parse
+            {
+                boost::filesystem::path p(to_utf8_copy (filename), boost::filesystem::native);
+                std::ifstream in(p.string().c_str());
+                std::string line;
+                std::string text;
+                std::vector<std::tstring> v;
+                while (in)
+                {
+                    line.clear();
+                    std::getline(in, line);
+                    if (!line.empty())
                     {
-                       smallString = smallString.substr(0,252) + "...";
+                        text += line;
                     }
-                  ServicesSingleton::Instance()->ShowTrayIconBalloon(from_ascii_copy(smallString));
-              }
-          }
-       }
+                }
 
-       if(fileNotifyInfo->NextEntryOffset==0)
-       {
-          break;
-       }
-       fileNotifyInfo = (FILE_NOTIFY_INFORMATION*)&pIndexer[fileNotifyInfo->NextEntryOffset];
+                // Now that we have the whole file, lets parse it
 
-    }while(true);
+                // Text located between the two following tags is to be considered an item sold
+                std::string startTag = "<div indent=wrapped>";
+                std::string endTag = "</div>";
+                std::ostringstream popupText;
+                while (text.length() > 0)
+                {
+                    std::string::size_type start = text.find(startTag, 0);
+                    std::string::size_type end = text.find(endTag, 0);
+                    if (start != std::string::npos && end != std::string::npos)
+                    {
+                        // adding text for ballon message
+                        popupText << text.substr(start + startTag.length(), end - start - startTag.length()) << "\r\n";
+
+                        // remove the already processed part of the string
+                        text = text.substr(end + endTag.length());
+                    }
+                    else
+                    {
+                        text = "";
+                    }
+                }
+
+                if (!popupText.str().empty())
+                {
+                    //max string 256 bytes...
+                    std::string smallString = popupText.str();
+                    if (smallString.length() > 256)
+                    {
+                        smallString = smallString.substr(0, 252) + "...";
+                    }
+                    ServicesSingleton::Instance()->ShowTrayIconBalloon(from_ascii_copy(smallString));
+                }
+            }
+        }
+
+        if (fileNotifyInfo->NextEntryOffset == 0)
+        {
+            break;
+        }
+        fileNotifyInfo = (FILE_NOTIFY_INFORMATION*)&pIndexer[fileNotifyInfo->NextEntryOffset];
+
+    }
+    while (true);
 }
 
 
@@ -374,15 +382,13 @@ void WatchDirectoryThread::WatchDirectory(LPTSTR lpDir)
     HANDLE hObjects[2];
 
     // Create a HANDLE to the directory we want to watch
-    HANDLE directory = CreateFile(
-        lpDir,                          
-        GENERIC_READ,
-        FILE_SHARE_READ|FILE_SHARE_WRITE,
-        NULL,
-        OPEN_EXISTING,
-        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
-        NULL
-        );
+    HANDLE directory = CreateFile(lpDir,
+                                  GENERIC_READ,
+                                  FILE_SHARE_READ | FILE_SHARE_WRITE,
+                                  NULL,
+                                  OPEN_EXISTING,
+                                  FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+                                  NULL);
 
     hObjects[0] = m_hWakeupEvent;
     hObjects[1] = directory;
@@ -396,29 +402,28 @@ void WatchDirectoryThread::WatchDirectory(LPTSTR lpDir)
     pMonitor->fileNotifyInfo = (_FILE_NOTIFY_INFORMATION*)buffer;
     pMonitor->pOwner = m_pOwner;
 
-    while (IsRunning()) 
-    { 
+    while (IsRunning())
+    {
         // Wait for notification
         DWORD bytesReturned = 0;
 
-        if(!ReadDirectoryChangesW(
-            directory,
-            pMonitor->fileNotifyInfo,
-            2048,
-            TRUE,
-            FILE_NOTIFY_CHANGE_LAST_WRITE|FILE_ACTION_REMOVED|FILE_ACTION_MODIFIED,
-            &bytesReturned,
-            &pMonitor->overlapped,
-            DirChangeCompletionRoutine
-            ))
+        if (!ReadDirectoryChangesW(directory,
+                                   pMonitor->fileNotifyInfo,
+                                   2048,
+                                   TRUE,
+                                   FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_ACTION_REMOVED | FILE_ACTION_MODIFIED,
+                                   &bytesReturned,
+                                   &pMonitor->overlapped,
+                                   DirChangeCompletionRoutine))
         {
             // error
-            int a =1;
+            int a = 1;
         }
         // Wait for notification.
         DWORD dwWaitStatus = WaitForMultipleObjects(2, hObjects, FALSE, INFINITE);
 
-        if(IsRunning()) {
+        if (IsRunning())
+        {
             SleepEx(1000, TRUE);
         }
     }
@@ -427,7 +432,7 @@ void WatchDirectoryThread::WatchDirectory(LPTSTR lpDir)
 
 DWORD WatchDirectoryThread::ThreadProc()
 {
-    std::tstring directoryToWatch = STREAM2STR( AOManager::instance().getAOFolder() << _T("\\Prefs") );
+    std::tstring directoryToWatch = STREAM2STR(AOManager::instance().getAOFolder() << _T("\\Prefs"));
     WatchDirectory((LPTSTR)directoryToWatch.c_str());
     return 0;
 }

@@ -3,6 +3,8 @@
 
 #include <PluginSDK/ItemAssistView.h>
 #include "WebView.h"
+#include "IGuiServices.h"
+
 
 namespace aoia { namespace sv {
 
@@ -10,7 +12,7 @@ namespace aoia { namespace sv {
         : public ItemAssistView<SummaryView>
     {
     public:
-        SummaryView();
+        SummaryView(aoia::IGuiServicesPtr gui);
         virtual ~SummaryView();
 
         BEGIN_MSG_MAP_EX(SummaryView)
@@ -35,6 +37,7 @@ namespace aoia { namespace sv {
         std::tstring SummaryView::GetHtmlTemplate();
 
     private:
+        aoia::IGuiServicesPtr m_gui;
         aoia::WebView m_webview;
         std::tstring m_template;
     };

@@ -5,6 +5,8 @@
 #include <string>
 #include <map>
 #include <shared/IContainerManager.h>
+#include <shared/IDB.h>
+#include "IGuiServices.h"
 
 
 // Puts the hex value of the specified char into a string
@@ -25,7 +27,7 @@ class SharedServices
     : public aoia::IContainerManager
 {
 public:
-    SharedServices();
+    SharedServices(sqlite::IDBPtr db);
     virtual ~SharedServices(void);
 
     // Implementation of \e IContainerManager
@@ -33,15 +35,6 @@ public:
 
     std::map<std::tstring, std::tstring> GetAOItemInfo(unsigned int lowkey) const;
 
-    void ShowTrayIconBalloon(std::tstring const& message) const;
-    void SetTrayIcon(boost::shared_ptr<CTrayNotifyIcon> trayIcon);
-
-    /// Opens the online help for the specified topic. 
-    /// (ex: topic = "patternmatcher" will expand to http://ia.frellu.net/help.php?topic=patternmatcher&version=0.9.0")
-    static void ShowHelp(std::tstring const& topic);
-
-    /// Opens the specified URL in a new browser window.
-    static void OpenURL(std::tstring const& url);
 
 	void ClearTempContainerIdCache(unsigned int charId);
 	void UpdateTempContainerId(unsigned int charId, unsigned int tempId, unsigned int containerId);
@@ -55,8 +48,8 @@ protected:
     std::tstring MakeContainerName(unsigned int charid, unsigned int containerid) const;
 
 private:
+    sqlite::IDBPtr m_db;
     std::vector<std::tstring> m_accounts;
-    boost::shared_ptr<CTrayNotifyIcon> m_trayIcon;
 
     mutable std::map< __int64, std::pair<std::tstring, FILETIME> > m_containerFileCache;
     mutable std::map< __int64, std::tstring > m_containerDBCache;
