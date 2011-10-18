@@ -5,19 +5,17 @@
 
 using namespace aoia;
 
-namespace PatternMatcher {
+namespace PatternMatcher
+{
 
-    FilterPanel::FilterPanel()
-    {
-    }
-
-
-    FilterPanel::~FilterPanel()
-    {
-    }
+    FilterPanel::FilterPanel(sqlite::IDBPtr db)
+        : m_db(db) {}
 
 
-    LRESULT FilterPanel::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+    FilterPanel::~FilterPanel() {}
+
+
+    LRESULT FilterPanel::onInitDialog(UINT/*uMsg*/, WPARAM/*wParam*/, LPARAM/*lParam*/, BOOL&/*bHandled*/)
     {
         SetWindowText(_T("Filter View"));
 
@@ -36,7 +34,7 @@ namespace PatternMatcher {
     }
 
 
-    LRESULT FilterPanel::onForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
+    LRESULT FilterPanel::onForwardMsg(UINT/*uMsg*/, WPARAM/*wParam*/, LPARAM lParam, BOOL&/*bHandled*/)
     {
         LPMSG pMsg = (LPMSG)lParam;
         return this->PreTranslateMsg(pMsg);
@@ -55,11 +53,12 @@ namespace PatternMatcher {
         std::map<unsigned int, std::tstring> dimensionNames;
         g_DBManager.Lock();
         g_DBManager.GetDimensions(dimensionNames);
-        SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT DISTINCT dimensionid FROM tToons"));
+        sqlite::ITablePtr pT = m_db->ExecTable(_T("SELECT DISTINCT dimensionid FROM tToons"));
         g_DBManager.UnLock();
 
         // Add named dimensions.
-        for (std::map<unsigned int, std::tstring>::iterator it = dimensionNames.begin(); it != dimensionNames.end(); ++it)
+        for (std::map<unsigned int, std::tstring>::iterator it = dimensionNames.begin();
+            it != dimensionNames.end(); ++it)
         {
             if ((item = cb.AddString(it->second.c_str())) != CB_ERR)
             {
@@ -76,7 +75,7 @@ namespace PatternMatcher {
             {
                 continue;   // Skip named ones.
             }
-            else 
+            else
             {
                 dimName = _T("Unknown Dimension");
                 if (dimId > 0)
@@ -134,18 +133,18 @@ namespace PatternMatcher {
         sql % getDimensionId();
 
         g_DBManager.Lock();
-        SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());
+        sqlite::ITablePtr pT = m_db->ExecTable(sql.str());
 
         if (pT != NULL)
         {
             for (unsigned int i = 0; i < pT->Rows(); i++)
             {
-                unsigned int id = boost::lexical_cast<unsigned int>(pT->Data(i,0));
+                unsigned int id = boost::lexical_cast<unsigned int>(pT->Data(i, 0));
 
                 std::tstring name = g_DBManager.GetToonName(id);
                 if (name.empty())
                 {
-                    name = from_ascii_copy(pT->Data()[pT->Columns()*i]);
+                    name = from_ascii_copy(pT->Data(i, 0));
                 }
 
                 if ((item = cb.AddString(name.c_str())) != CB_ERR)
@@ -185,7 +184,7 @@ namespace PatternMatcher {
     unsigned int FilterPanel::getDimensionId() const
     {
         WTL::CComboBox dimCb = GetDlgItem(IDC_DIMENSION_COMBO);
-        return (unsigned int) dimCb.GetItemData(dimCb.GetCurSel());
+        return (unsigned int)dimCb.GetItemData(dimCb.GetCurSel());
     }
 
 
@@ -236,7 +235,7 @@ namespace PatternMatcher {
     }
 
 
-    LRESULT FilterPanel::onDimensionComboSelection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+    LRESULT FilterPanel::onDimensionComboSelection(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
     {
         CComboBox cb = GetDlgItem(IDC_DIMENSION_COMBO);
         TCHAR buffer[256];
@@ -249,42 +248,42 @@ namespace PatternMatcher {
     }
 
 
-    LRESULT FilterPanel::onCbnSelchangeCharcombo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+    LRESULT FilterPanel::onCbnSelchangeCharcombo(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
     {
         signalSettingsChanged();
         return 0;
     }
 
 
-    LRESULT FilterPanel::onBnClickedShowAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+    LRESULT FilterPanel::onBnClickedShowAll(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
     {
         signalSettingsChanged();
         return 0;
     }
 
 
-    LRESULT FilterPanel::onBnClickedShowPartials(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+    LRESULT FilterPanel::onBnClickedShowPartials(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
     {
         signalSettingsChanged();
         return 0;
     }
 
 
-    LRESULT FilterPanel::onBnClickedCompletable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+    LRESULT FilterPanel::onBnClickedCompletable(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
     {
         signalSettingsChanged();
         return 0;
     }
 
 
-    LRESULT FilterPanel::OnCbnDropdown(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+    LRESULT FilterPanel::OnCbnDropdown(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
     {
         updateCharList();
         return 0;
     }
 
 
-    LRESULT FilterPanel::onExcludeAssembledPatternsClicked(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+    LRESULT FilterPanel::onExcludeAssembledPatternsClicked(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
     {
         signalSettingsChanged();
         return 0;

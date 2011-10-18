@@ -2,8 +2,10 @@
 #define FILTERPANEL
 
 #include <boost/signal.hpp>
+#include <shared/IDB.h>
 
-namespace PatternMatcher {
+namespace PatternMatcher
+{
 
     /**
      * This class implements a GUI dialog for filtering which character(s) 
@@ -12,16 +14,19 @@ namespace PatternMatcher {
      * This class emits SettingsChangedSignal whenever the user makes a change 
      * in the GUI.
      */
-    class FilterPanel :
-        public CDialogImpl<FilterPanel>
+    class FilterPanel
+        : public CDialogImpl<FilterPanel>
     {
     public:
-        enum { IDD = IDD_PATTERN_MATCHER };
+        enum
+        {
+            IDD = IDD_PATTERN_MATCHER
+        };
 
-        typedef boost::signal<void ()>  SettingsChangedSignal;
+        typedef boost::signal<void ()> SettingsChangedSignal;
         typedef boost::signals::connection Connection;
 
-        FilterPanel();
+        FilterPanel(sqlite::IDBPtr db);
         virtual ~FilterPanel();
 
         // Access to properties in the filter GUI.
@@ -56,19 +61,19 @@ namespace PatternMatcher {
 
         void updateDimensionList();
 
-        LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-        LRESULT onForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-        LRESULT onDimensionComboSelection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-        LRESULT onCbnSelchangeCharcombo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-        LRESULT onBnClickedShowAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-        LRESULT onBnClickedShowPartials(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-        LRESULT onBnClickedCompletable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-        LRESULT OnCbnDropdown(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-        LRESULT onExcludeAssembledPatternsClicked(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+        LRESULT onInitDialog(UINT/*uMsg*/, WPARAM/*wParam*/, LPARAM/*lParam*/, BOOL&/*bHandled*/);
+        LRESULT onForwardMsg(UINT/*uMsg*/, WPARAM/*wParam*/, LPARAM/*lParam*/, BOOL&/*bHandled*/);
+        LRESULT onDimensionComboSelection(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/);
+        LRESULT onCbnSelchangeCharcombo(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/);
+        LRESULT onBnClickedShowAll(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/);
+        LRESULT onBnClickedShowPartials(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/);
+        LRESULT onBnClickedCompletable(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/);
+        LRESULT OnCbnDropdown(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/);
+        LRESULT onExcludeAssembledPatternsClicked(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/);
 
     private:
+        sqlite::IDBPtr m_db;
         SettingsChangedSignal m_settingsChangedSignal;
-
         std::tstring m_basequery;
     };
 

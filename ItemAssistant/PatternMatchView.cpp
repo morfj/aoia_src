@@ -20,6 +20,7 @@ PatternMatchView::PatternMatchView(sqlite::IDBPtr db, aoia::IContainerManagerPtr
     , m_sortDesc(true)
     , m_sortColumn(1)
     , m_webview(STREAM2STR("http://ia-help.frellu.net/?topic=patternmatcher&version=" << g_versionNumber))
+    , m_filterPanel(db)
 {
     m_availCalc.SetOwner(this);
 }
