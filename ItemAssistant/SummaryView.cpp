@@ -8,8 +8,9 @@
 
 namespace aoia { namespace sv {
 
-    SummaryView::SummaryView(aoia::IGuiServicesPtr gui)
-        : m_webview(_T(""))
+    SummaryView::SummaryView(sqlite::IDBPtr db, aoia::IGuiServicesPtr gui)
+        : m_db(db)
+        , m_webview(_T(""))
         , m_gui(gui)
     {
     }
@@ -95,7 +96,7 @@ namespace aoia { namespace sv {
         std::vector<DataModelPtr> models;
         for (std::map<unsigned int, std::tstring>::const_iterator it = dimensions.begin(); it != dimensions.end(); ++it)
         {
-            models.push_back(DataModelPtr(new DataModel(it->first)));
+            models.push_back(DataModelPtr(new DataModel(m_db, it->first)));
         }
 
         std::tstringstream contentHtml;

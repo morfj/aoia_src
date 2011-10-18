@@ -2,45 +2,54 @@
 #define DATAMODEL_H
 
 #include "datagrid/DataGridModel.h"
-#include <Shared/SQLite.h>
+#include <shared/IDB.h>
 
-namespace aoia { namespace sv {
 
-    struct DataModelItem
+namespace aoia
+{
+    namespace sv
     {
-        unsigned int charid;
-        std::tstring name;
-        std::map<unsigned int, std::tstring> stats;
-    };
 
-    /**
-     * Queries all summary data for all toons in the specified dimension.
-     */
-    class DataModel
-        : public DataGridModel
-    {
-    public:
-        DataModel(unsigned int dimensionid);
-        virtual ~DataModel();
+        struct DataModelItem
+        {
+            unsigned int charid;
+            std::tstring name;
+            std::map<unsigned int, std::tstring> stats;
+        };
 
-        // 'DataGridModel' implementation
-        virtual unsigned int getColumnCount() const;
-        virtual std::tstring getColumnName(unsigned int index) const;
-        virtual unsigned int getItemCount() const;
-        virtual std::tstring getItemProperty(unsigned int index, unsigned int column) const;
+        /**
+         * Queries all summary data for all toons in the specified dimension.
+         */
+        class DataModel
+            : public DataGridModel
+        {
+        public:
+            DataModel(sqlite::IDBPtr db, unsigned int dimensionid);
+            virtual ~DataModel();
 
-        unsigned int getDimensionId() const { return m_dimensionid; }
+            // 'DataGridModel' implementation
+            virtual unsigned int getColumnCount() const;
+            virtual std::tstring getColumnName(unsigned int index) const;
+            virtual unsigned int getItemCount() const;
+            virtual std::tstring getItemProperty(unsigned int index, unsigned int column) const;
 
-    private:
-        std::map<unsigned int, std::tstring> m_columnTitles;
-        std::vector<unsigned int> m_statids;
-        unsigned int m_dimensionid;
-        SQLite::TablePtr m_result;
-        std::vector<DataModelItem> m_items;
-    };
+            unsigned int getDimensionId() const
+            {
+                return m_dimensionid;
+            }
 
-    typedef boost::shared_ptr<DataModel> DataModelPtr;
+        private:
+            sqlite::IDBPtr m_db;
+            sqlite::ITablePtr m_result;
+            unsigned int m_dimensionid;
+            std::map<unsigned int, std::tstring> m_columnTitles;
+            std::vector<unsigned int> m_statids;
+            std::vector<DataModelItem> m_items;
+        };
 
-}}  // end of namespace
+        typedef boost::shared_ptr<DataModel> DataModelPtr;
+
+    }   // namespace sv
+}  // namespace aoia
 
 #endif // DATAMODEL_H
