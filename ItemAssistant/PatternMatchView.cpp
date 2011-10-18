@@ -9,10 +9,14 @@
 #include <boost/bind.hpp>
 
 
-PatternMatchView::PatternMatchView(void)
-    : m_availfilter(-1.0f)
+PatternMatchView::PatternMatchView(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui)
+    : m_db(db)
+    , m_containerManager(containerManager)
+    , m_gui(gui)
+    , m_availCalc(db)
+    , m_availfilter(-1.0f)
     , m_dimensionid(0)
-    , m_toonid(0) 
+    , m_toonid(0)
     , m_sortDesc(true)
     , m_sortColumn(1)
     , m_webview(STREAM2STR("http://ia-help.frellu.net/?topic=patternmatcher&version=" << g_versionNumber))
@@ -21,9 +25,7 @@ PatternMatchView::PatternMatchView(void)
 }
 
 
-PatternMatchView::~PatternMatchView(void)
-{
-}
+PatternMatchView::~PatternMatchView() {}
 
 
 LRESULT PatternMatchView::OnCreate(LPCREATESTRUCT createStruct)
@@ -32,7 +34,8 @@ LRESULT PatternMatchView::OnCreate(LPCREATESTRUCT createStruct)
 
     m_listview.Create(m_hWnd, rcDefault, NULL, style | LVS_REPORT | LVS_SINGLESEL, WS_EX_CLIENTEDGE);
 
-    m_filterConnection = m_filterPanel.connectSettingsChanged(boost::bind(&PatternMatchView::onFilterSettingsChanged, this));
+    m_filterConnection = m_filterPanel.connectSettingsChanged(boost::bind(&PatternMatchView::onFilterSettingsChanged,
+        this));
     m_filterPanel.Create(m_hWnd);
     m_filterPanel.ShowWindow(SW_SHOWNOACTIVATE);
 
@@ -43,7 +46,7 @@ LRESULT PatternMatchView::OnCreate(LPCREATESTRUCT createStruct)
 
     // Build table of all PBs
     g_DBManager.Lock();
-    sqlite::ITablePtr pT = g_DBManager.ExecTable(_T("SELECT pbid, name FROM tblPocketBoss ORDER BY name"));
+    sqlite::ITablePtr pT = m_db->ExecTable(_T("SELECT pbid, name FROM tblPocketBoss ORDER BY name"));
     g_DBManager.UnLock();
 
     if (pT != NULL)
@@ -82,10 +85,11 @@ LRESULT PatternMatchView::OnCreate(LPCREATESTRUCT createStruct)
     buttons[2].iString = (INT_PTR)_T("Help");
 
     CImageList imageList;
-    imageList.CreateFromImage(IDB_PATTERNMATCH_VIEW, 16, 1, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
+    imageList.CreateFromImage(IDB_PATTERNMATCH_VIEW, 16, 1, CLR_DEFAULT, IMAGE_BITMAP,
+        LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
 
-    m_toolbar.Create(GetTopLevelWindow(), NULL, _T("PatternMatchViewToolBar"), 
-        ATL_SIMPLE_TOOLBAR_PANE_STYLE | TBSTYLE_LIST, 
+    m_toolbar.Create(GetTopLevelWindow(), NULL, _T("PatternMatchViewToolBar"),
+        ATL_SIMPLE_TOOLBAR_PANE_STYLE | TBSTYLE_LIST,
         TBSTYLE_EX_MIXEDBUTTONS);
     m_toolbar.SetButtonStructSize();
     m_toolbar.SetImageList(imageList);
@@ -136,7 +140,7 @@ void PatternMatchView::onFilterSettingsChanged()
     bool excludeAssembled = m_filterPanel.getExcludeAssembled();
 
     if (dimensionid != m_availCalc.getDimensionId() ||
-        charid != m_availCalc.Toon() || 
+        charid != m_availCalc.Toon() ||
         excludeAssembled != m_availCalc.ExcludeAssembled())
     {
         SetBossAvail(0, -1.0f);
@@ -168,8 +172,8 @@ void PatternMatchView::onFilterSettingsChanged()
 
 
 /**
- * Updates the specified pocketboss entry. If pbid is zero, update all entries.
- */
+* Updates the specified pocketboss entry. If pbid is zero, update all entries.
+*/
 void PatternMatchView::UpdatePbListView(unsigned int pbid)
 {
     if (pbid == 0)
@@ -249,9 +253,9 @@ void PatternMatchView::UpdateFilterProgress(unsigned short percent)
 }
 
 
-void PatternMatchView::SetColumns(std::vector<std::tstring> &headings)
+void PatternMatchView::SetColumns(std::vector<std::tstring>& headings)
 {
-    while(m_listview.GetHeader().GetItemCount() > 0)
+    while (m_listview.GetHeader().GetItemCount() > 0)
     {
         m_listview.DeleteColumn(0);
     }
@@ -264,7 +268,7 @@ void PatternMatchView::SetColumns(std::vector<std::tstring> &headings)
 }
 
 
-void PatternMatchView::AddRow(unsigned int rowid, std::vector<std::tstring> &data)
+void PatternMatchView::AddRow(unsigned int rowid, std::vector<std::tstring>& data)
 {
     int indx = m_listview.GetItemCount();
 
@@ -276,7 +280,7 @@ void PatternMatchView::AddRow(unsigned int rowid, std::vector<std::tstring> &dat
 }
 
 
-void PatternMatchView::UpdateRow(unsigned int rowid, std::vector<std::tstring> &data)
+void PatternMatchView::UpdateRow(unsigned int rowid, std::vector<std::tstring>& data)
 {
     LVFINDINFO findInfo;
     findInfo.flags = LVFI_PARAM;
@@ -325,7 +329,7 @@ void PatternMatchView::OnActive(bool doActivation)
 
 LRESULT PatternMatchView::OnColumnClick(LPNMHDR lParam)
 {
-    LPNMLISTVIEW pnmv = (LPNMLISTVIEW) lParam;
+    LPNMLISTVIEW pnmv = (LPNMLISTVIEW)lParam;
 
     if (m_sortColumn != pnmv->iSubItem)
     {
@@ -348,10 +352,11 @@ LRESULT PatternMatchView::OnItemChanging(LPNMHDR lParam)
     LPNMLISTVIEW pItem = (LPNMLISTVIEW)lParam;
 
     // Check to see if the change is a selection event.
-    if ( !(pItem->uOldState & LVIS_SELECTED) && (pItem->uNewState & LVIS_SELECTED) ) {
+    if (!(pItem->uOldState & LVIS_SELECTED) && (pItem->uNewState & LVIS_SELECTED))
+    {
         unsigned int data = m_listview.GetItemData(pItem->iItem);
-        PatternReport report(m_dimensionid, data, m_toonid, m_availCalc.ExcludeAssembled());
-        m_webview.SetHTML( report.toString() );
+        PatternReport report(m_db, m_containerManager, m_dimensionid, data, m_toonid, m_availCalc.ExcludeAssembled());
+        m_webview.SetHTML(report.toString());
     }
 
     return FALSE;
@@ -365,7 +370,7 @@ LRESULT PatternMatchView::OnSize(UINT wParam, CSize newSize)
 }
 
 
-LRESULT PatternMatchView::OnRecalculate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT PatternMatchView::OnRecalculate(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
 {
     // Stop workerthread
     m_availCalc.StopPlease();
@@ -391,14 +396,14 @@ LRESULT PatternMatchView::OnRecalculate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 }
 
 
-LRESULT PatternMatchView::OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT PatternMatchView::OnHelp(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
 {
-    SharedServices::ShowHelp(_T("patternmatcher"));
+    m_gui->ShowHelp(_T("patternmatcher"));
     return 0;
 }
 
 
-LRESULT PatternMatchView::OnUpdatePbListView(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled)
+LRESULT PatternMatchView::OnUpdatePbListView(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
     UpdatePbListView(lParam);
     UpdateFilterProgress(wParam);
@@ -417,13 +422,16 @@ void PatternMatchView::UpdateLayout(CSize newSize)
         m_filterPanel.GetWindowRect(&fvRect);
         int width = fvRect.right - fvRect.left;
         int height = fvRect.bottom - fvRect.top;
-        ::SetWindowPos(m_filterPanel, 0, 0, 0, width, height, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_DEFERERASE | SWP_NOSENDCHANGING);
+        ::SetWindowPos(m_filterPanel, 0, 0, 0, width, height,
+            SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_DEFERERASE | SWP_NOSENDCHANGING);
         left += width;
         top += height;
     }
 
-    m_listview.SetWindowPos(NULL, 0, top, left, newSize.cy - top, SWP_NOZORDER | SWP_NOACTIVATE | SWP_DEFERERASE | SWP_NOSENDCHANGING);
-    m_webview.SetWindowPos(NULL, left, 0, newSize.cx - left, newSize.cy, SWP_NOZORDER | SWP_NOACTIVATE | SWP_DEFERERASE | SWP_NOSENDCHANGING);
+    m_listview.SetWindowPos(NULL, 0, top, left, newSize.cy - top,
+        SWP_NOZORDER | SWP_NOACTIVATE | SWP_DEFERERASE | SWP_NOSENDCHANGING);
+    m_webview.SetWindowPos(NULL, left, 0, newSize.cx - left, newSize.cy,
+        SWP_NOZORDER | SWP_NOACTIVATE | SWP_DEFERERASE | SWP_NOSENDCHANGING);
 }
 
 
@@ -477,7 +485,7 @@ DWORD AvailCalcThread::ThreadProc()
 
         m_pOwner->PbListMutex().MutexOn();
 
-        PatternMatchView::PbList &list = m_pOwner->PbListRef();
+        PatternMatchView::PbList& list = m_pOwner->PbListRef();
 
         if (m_index < (int)list.size())
         {
@@ -485,11 +493,12 @@ DWORD AvailCalcThread::ThreadProc()
             {
                 unsigned int pbid = list[m_index]->pbid;
                 m_pOwner->PbListMutex().MutexOff();
-                float avail = CalcPbAvailability(m_dimensionid, pbid, m_toon, m_excludeAssembled);
+                float avail = CalcPbAvailability(m_db, m_dimensionid, pbid, m_toon, m_excludeAssembled);
                 m_pOwner->PbListMutex().MutexOn();
                 m_pOwner->SetBossAvail(pbid, avail);
                 unsigned short percent = (unsigned int)(((m_index + 1) * 100) / list.size());
-                if (percent > lastUpdate) {
+                if (percent > lastUpdate)
+                {
                     m_pOwner->PostMessage(WM_UPDATE_PBLIST, percent, pbid);
                     lastUpdate = percent;
                 }
@@ -505,7 +514,7 @@ DWORD AvailCalcThread::ThreadProc()
         m_pOwner->PbListMutex().MutexOff();
 
         ::Sleep(0);
-    } 
+    }
     while (!m_term);
 
     m_index = 0;
@@ -515,7 +524,7 @@ DWORD AvailCalcThread::ThreadProc()
 }
 
 
-float AvailCalcThread::CalcPbAvailability(unsigned int dimensionid, unsigned int pbid, unsigned int toonid, bool excludeassembled)
+float AvailCalcThread::CalcPbAvailability(sqlite::IDBPtr db, unsigned int dimensionid, unsigned int pbid, unsigned int toonid, bool excludeassembled)
 {
     std::map<std::tstring, unsigned int> vals;
 
@@ -524,12 +533,13 @@ float AvailCalcThread::CalcPbAvailability(unsigned int dimensionid, unsigned int
     g_DBManager.Lock();
     {
         std::tstringstream sql;
-        sql << _T("SELECT aoid, pattern FROM tblPatterns WHERE name = (SELECT name FROM tblPocketBoss WHERE pbid = ") << pbid << _T(")");
+        sql << _T("SELECT aoid, pattern FROM tblPatterns WHERE name = (SELECT name FROM tblPocketBoss WHERE pbid = ")
+            << pbid << _T(")");
         if (excludeassembled)
         {
             sql << _T("AND pattern != 'ABCD'");
         }
-        pIDs = g_DBManager.ExecTable(sql.str());
+        pIDs = db->ExecTable(sql.str());
     }
     g_DBManager.UnLock();
 
@@ -544,17 +554,20 @@ float AvailCalcThread::CalcPbAvailability(unsigned int dimensionid, unsigned int
         std::tstring pattern = from_ascii_copy(pIDs->Data(idIdx, 1));
         std::tstring id = from_ascii_copy(pIDs->Data(idIdx, 0));
 
-        std::tstring sql = STREAM2STR("SELECT COUNT(itemidx) FROM tItems I JOIN tToons T ON I.owner = T.charid WHERE I.keylow = " << id << " AND T.dimensionid = " << dimensionid);
+        std::tstring sql =
+            STREAM2STR("SELECT COUNT(itemidx) FROM tItems I JOIN tToons T ON I.owner = T.charid WHERE I.keylow = " <<
+            id << " AND T.dimensionid = " << dimensionid);
         if (toonid > 0)
         {
             sql += STREAM2STR(" AND I.owner = " << toonid);
         }
 
         g_DBManager.Lock();
-        sqlite::ITablePtr pItemCount = g_DBManager.ExecTable(sql);
+        sqlite::ITablePtr pItemCount = db->ExecTable(sql);
         g_DBManager.UnLock();
 
-        if (pItemCount && pItemCount->Rows() > 0) {
+        if (pItemCount && pItemCount->Rows() > 0)
+        {
             vals[pattern] += boost::lexical_cast<unsigned int>(pItemCount->Data(0, 0));
         }
     }

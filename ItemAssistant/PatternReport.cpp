@@ -10,29 +10,25 @@
 #include "boost/tuple/tuple.hpp"
 
 
-PatternReport::PatternReport(sqlite::IDBPtr db, unsigned int dimensionid, unsigned int pbid, unsigned int toonid, bool excludeassembled)
+PatternReport::PatternReport(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, unsigned int dimensionid, unsigned int pbid, unsigned int toonid, bool excludeassembled)
     : m_dimensionid(dimensionid)
     , m_pbid(pbid)
     , m_toonid(toonid)
     , m_excludeassembled(excludeassembled)
     , m_db(db)
+    , m_containerManager(containerManager)
 {
     SYSTEMTIME time;
     ::GetLocalTime(&time);
 
     std::tstringstream time_str;
-    time_str << (unsigned int) time.wYear << _T("-") 
-        << std::setfill(_T('0')) << std::setw(2) << (unsigned int) time.wMonth << _T("-") 
-        << std::setfill(_T('0')) << std::setw(2) << (unsigned int) time.wDay << _T(" ")
-        << std::setfill(_T('0')) << std::setw(2) << (unsigned int) time.wHour << _T(":") 
-        << std::setfill(_T('0')) << std::setw(2) << (unsigned int) time.wMinute << std::endl;
+    time_str << (unsigned int)time.wYear << _T("-")
+        << std::setfill(_T('0')) << std::setw(2) << (unsigned int)time.wMonth << _T("-")
+        << std::setfill(_T('0')) << std::setw(2) << (unsigned int)time.wDay << _T(" ")
+        << std::setfill(_T('0')) << std::setw(2) << (unsigned int)time.wHour << _T(":")
+        << std::setfill(_T('0')) << std::setw(2) << (unsigned int)time.wMinute << std::endl;
 
     m_time = time_str.str();
-    //STREAM2STR(time.wYear << _T("-") 
-    //<< std::setfill(_T('0')) << std::setw(2) << time.wMonth << _T("-") 
-    //<< std::setfill(_T('0')) << std::setw(2) << time.wDay << _T(" ")
-    //<< std::setfill(_T('0')) << std::setw(2) << time.wHour << _T(":") 
-    //<< std::setfill(_T('0')) << std::setw(2) << time.wMinute);
 
     if (m_toonid > 0)
     {
@@ -49,9 +45,8 @@ PatternReport::PatternReport(sqlite::IDBPtr db, unsigned int dimensionid, unsign
         m_toonname = _T("all toons");
     }
 
-    float avail = AvailCalcThread::CalcPbAvailability(dimensionid, pbid, toonid, excludeassembled);
+    float avail = AvailCalcThread::CalcPbAvailability(db, dimensionid, pbid, toonid, excludeassembled);
     m_avail = STREAM2STR((int)avail);
-
 
     {  // Determine PB name
         g_DBManager.Lock();
@@ -69,7 +64,9 @@ PatternReport::PatternReport(sqlite::IDBPtr db, unsigned int dimensionid, unsign
 
     {  // Find all patternpieces
         g_DBManager.Lock();
-        sqlite::ITablePtr pIDs = m_db->ExecTable(STREAM2STR(_T("SELECT aoid, pattern FROM tblPatterns WHERE name = (SELECT name FROM tblPocketBoss WHERE pbid = ") << pbid << ")"));
+        sqlite::ITablePtr pIDs = m_db
+            ->ExecTable(STREAM2STR(_T(
+            "SELECT aoid, pattern FROM tblPatterns WHERE name = (SELECT name FROM tblPocketBoss WHERE pbid = ") << pbid << ")"));
         g_DBManager.UnLock();
 
         // Copy patternpiece IDs to map
@@ -81,7 +78,8 @@ PatternReport::PatternReport(sqlite::IDBPtr db, unsigned int dimensionid, unsign
             PatternItemIds[from_ascii_copy(pIDs->Data(idIdx, 1))] = from_ascii_copy(pIDs->Data(idIdx, 0));
         }
 
-        for (std::map<std::tstring, std::tstring>::iterator it = PatternItemIds.begin(); it != PatternItemIds.end(); ++it)
+        for (std::map<std::tstring, std::tstring>::iterator it = PatternItemIds.begin();
+            it != PatternItemIds.end(); ++it)
         {
             std::tstring pattern = it->first;
             std::tstring itemid = it->second;
@@ -96,14 +94,18 @@ PatternReport::PatternReport(sqlite::IDBPtr db, unsigned int dimensionid, unsign
             sqlite::ITablePtr pItems = m_db->ExecTable(sql);
             g_DBManager.UnLock();
 
-            for (unsigned int itemIdx = 0; itemIdx < pItems->Rows(); ++itemIdx) {
+            for (unsigned int itemIdx = 0; itemIdx < pItems->Rows(); ++itemIdx)
+            {
                 unsigned int containerid = boost::lexical_cast<unsigned int>(pItems->Data(itemIdx, 0));
-                unsigned int owner = m_toonid > 0 ? m_toonid : boost::lexical_cast<unsigned int>(pItems->Data(itemIdx, 1));
+                unsigned int owner = m_toonid > 0 ? m_toonid : boost::lexical_cast<unsigned int>(pItems->Data(itemIdx,
+                    1));
 
-                if (pieces[owner][containerid].find(pattern) != pieces[owner][containerid].end()) {
+                if (pieces[owner][containerid].find(pattern) != pieces[owner][containerid].end())
+                {
                     pieces[owner][containerid][pattern] += 1;
                 }
-                else {
+                else
+                {
                     pieces[owner][containerid][pattern] = 1;
                 }
             }
@@ -117,29 +119,38 @@ PatternReport::PatternReport(sqlite::IDBPtr db, unsigned int dimensionid, unsign
     std::map<unsigned int, std::map<std::tstring, int> >::iterator it2;
     std::map<std::tstring, int>::iterator it3;
 
-    for (it = pieces.begin(); it != pieces.end(); ++it) {
+    for (it = pieces.begin(); it != pieces.end(); ++it)
+    {
         rowsPerToon[it->first] = it->second.size();
-        for (it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
+        for (it2 = it->second.begin(); it2 != it->second.end(); ++it2)
+        {
             rowsPerContainer[it2->first] = it2->second.size();
-            rowsPerToon[it->first] += (rowsPerContainer[it2->first]-1);
+            rowsPerToon[it->first] += (rowsPerContainer[it2->first] - 1);
         }
     }
 
     std::tstringstream out;
     out << _T("<tr><th>Toon</th><th>Location</th><th>Pieces</th><th>Count</th></tr>\n");
 
-    for (it = pieces.begin(); it != pieces.end(); ++it) {
-        for (it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
-            for (it3 = it2->second.begin(); it3 != it2->second.end(); ++it3) {
+    for (it = pieces.begin(); it != pieces.end(); ++it)
+    {
+        for (it2 = it->second.begin(); it2 != it->second.end(); ++it2)
+        {
+            for (it3 = it2->second.begin(); it3 != it2->second.end(); ++it3)
+            {
                 out << "<tr>";
-                if (it2 == it->second.begin() && it3 == it2->second.begin()) {
+                if (it2 == it->second.begin() && it3 == it2->second.begin())
+                {
                     g_DBManager.Lock();
                     std::tstring toon_name = g_DBManager.GetToonName(it->first);
                     g_DBManager.UnLock();
                     out << _T("<td rowspan=") << rowsPerToon[it->first] << _T(">") << toon_name << _T("</td>");
                 }
-                if (it3 == it2->second.begin()) {
-                    out << "<td rowspan=" << rowsPerContainer[it2->first] << ">" << ServicesSingleton::Instance()->GetContainerName(it->first, it2->first) << "</td>";
+                if (it3 == it2->second.begin())
+                {
+                    out << "<td rowspan=" << rowsPerContainer[it2->first] << ">"
+                        << m_containerManager->GetContainerName(it->first, it2->first)
+                        << "</td>";
                 }
                 out << "<td>" << it3->first << "</td>";
                 out << "<td>" << it3->second << "</td>";
@@ -152,9 +163,7 @@ PatternReport::PatternReport(sqlite::IDBPtr db, unsigned int dimensionid, unsign
 }
 
 
-PatternReport::~PatternReport(void)
-{
-}
+PatternReport::~PatternReport(void) {}
 
 
 std::tstring PatternReport::toString() const
@@ -164,7 +173,7 @@ std::tstring PatternReport::toString() const
     HRSRC hrsrc = ::FindResource(_Module.GetResourceInstance(), MAKEINTRESOURCE(IDR_HTML1), RT_HTML);
     DWORD size = ::SizeofResource(_Module.GetResourceInstance(), hrsrc);
     HGLOBAL hGlobal = ::LoadResource(_Module.GetResourceInstance(), hrsrc);
-    void * pData = ::LockResource(hGlobal);
+    void* pData = ::LockResource(hGlobal);
 
     if (pData != NULL)
     {

@@ -2,6 +2,7 @@
 #define PATTERNREPORT_H
 
 #include <shared/IDB.h>
+#include <Shared/IContainerManager.h>
 
 
 /**
@@ -14,7 +15,7 @@
 class PatternReport
 {
 public:
-    PatternReport(sqlite::IDBPtr db, unsigned int dimensionid, unsigned int pbid, unsigned int toonid, bool excludeassembled);
+    PatternReport(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, unsigned int dimensionid, unsigned int pbid, unsigned int toonid, bool excludeassembled);
     virtual ~PatternReport();
 
     std::tstring toString() const;
@@ -32,6 +33,7 @@ private:
     std::tstring m_table;
 
     sqlite::IDBPtr m_db;
+    aoia::IContainerManagerPtr m_containerManager;
 };
 
 

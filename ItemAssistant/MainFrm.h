@@ -84,6 +84,7 @@ private:
     bool m_minimized;
     CRect m_windowRect;
     boost::shared_ptr<aoia::GuiServices> m_guiServices;
+    aoia::IContainerManagerPtr m_containerManager;
 };
 
 #endif // MAINFRM_H

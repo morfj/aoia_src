@@ -6,6 +6,9 @@
 #include "shared/Mutex.h"
 #include "shared/Thread.h"
 #include "shared/aopackets.h"
+#include <Shared/IDB.h>
+#include <shared/IContainerManager.h>
+#include "IGuiServices.h"
 #include <PluginSDK/ItemAssistView.h>
 #include "WebView.h"
 
@@ -24,7 +27,7 @@ class PatternMatchView;
 class AvailCalcThread : public Thread
 {
 public:
-    AvailCalcThread() : m_index(0), m_term(false), m_dimensionid(0), m_toon(0), m_excludeAssembled(false) { }
+    AvailCalcThread(sqlite::IDBPtr db) : m_db(db), m_index(0), m_term(false), m_dimensionid(0), m_toon(0), m_excludeAssembled(false) { }
     virtual ~AvailCalcThread() { }
 
     void SetOwner(PatternMatchView* owner) { m_pOwner = owner; }
@@ -38,7 +41,7 @@ public:
 
     virtual DWORD ThreadProc();
 
-    static float CalcPbAvailability(unsigned int dimensionid, unsigned int pbid, unsigned int toonid, bool excludeassembled);
+    static float CalcPbAvailability(sqlite::IDBPtr db, unsigned int dimensionid, unsigned int pbid, unsigned int toonid, bool excludeassembled);
 
 private:
     PatternMatchView* m_pOwner;
@@ -47,6 +50,7 @@ private:
     unsigned int m_toon;
     bool m_term;
     bool m_excludeAssembled;
+    sqlite::IDBPtr m_db;
 };
 
 
@@ -60,8 +64,8 @@ class PatternMatchView
 public:
     DECLARE_WND_CLASS(NULL)
 
-    PatternMatchView(void);
-    virtual ~PatternMatchView(void);
+    PatternMatchView(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui);
+    virtual ~PatternMatchView();
 
     BEGIN_MSG_MAP_EX(PatternMatchView)
         MSG_WM_CREATE(OnCreate)
@@ -137,6 +141,10 @@ private:
 
     PatternMatcher::FilterPanel m_filterPanel;
     PatternMatcher::FilterPanel::Connection m_filterConnection;
+
+    sqlite::IDBPtr m_db;
+    aoia::IContainerManagerPtr m_containerManager;
+    aoia::IGuiServicesPtr m_gui;
 };
 
 

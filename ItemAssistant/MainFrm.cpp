@@ -8,6 +8,7 @@
 #include "Version.h"
 #include <ItemAssistantCore/SettingsManager.h>
 #include "GuiServices.h"
+#include "SharedServices.h"
 
 
 // Delay loaded function definition
@@ -96,12 +97,13 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
     m_trayIcon = boost::shared_ptr<CTrayNotifyIcon>(new CTrayNotifyIcon());
     m_trayIcon->Create(this, IDR_TRAY_POPUP, _T("AO Item Assistant"), hIconSmall, WM_TRAYICON);
 
-    // Create GUI services
+    // Create common services
+    m_containerManager.reset(new SharedServices(g_DBManager.GetDatabase()));
     m_guiServices.reset(new aoia::GuiServices(m_trayIcon));
 
     DWORD style = WS_CHILD | /*WS_VISIBLE |*/ WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 
-    m_tabbedChildWindow.reset(new TabFrame(m_guiServices));
+    m_tabbedChildWindow.reset(new TabFrame(g_DBManager.GetDatabase(), m_containerManager, m_guiServices));
     m_tabbedChildWindow->SetToolBarPanel(m_hWndToolBar);
     m_tabbedChildWindow->SetStatusBar(m_hWndStatusBar);
     m_tabbedChildWindow->SetTabStyles(CTCS_TOOLTIPS | CTCS_DRAGREARRANGE);

@@ -3,11 +3,12 @@
 #include <boost/bind.hpp>
 
 
-TabFrame::TabFrame(aoia::IGuiServicesPtr gui)
+TabFrame::TabFrame(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui)
   : m_toobarVisibility(true)
-  , m_inventoryView(g_DBManager.GetDatabase())
+  , m_inventoryView(db)
   , m_summaryView(gui)
   , m_playershopView(gui)
+  , m_patternView(db, containerManager, gui)
 {
     //SetForwardNotifications(true);
 }
