@@ -1,6 +1,8 @@
 #ifndef INFOPANEL_H
 #define INFOPANEL_H
 
+#include <shared/IDB.h>
+
 // Forward declarations
 class InventoryView;
 
@@ -12,7 +14,7 @@ class InfoView
 public:
     enum { IDD = IDD_ITEM_INFO };
 
-    InfoView();
+    InfoView(sqlite::IDBPtr db);
 
     void SetParent(InventoryView* parent);
     BOOL PreTranslateMsg(MSG* pMsg);
@@ -41,6 +43,7 @@ protected:
     LRESULT OnButtonClicked(WORD commandID, WORD buttonID, HWND hButton, BOOL &bHandled);
 
 private:
+    sqlite::IDBPtr m_db;
     InventoryView* m_pParent;
     unsigned int m_currentItem;
 };

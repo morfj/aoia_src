@@ -1,6 +1,8 @@
 #ifndef FINDPANEL_H
 #define FINDPANEL_H
 
+#include <shared/IDB.h>
+
 // Forward declarations
 class InventoryView;
 
@@ -9,9 +11,12 @@ class FindView
     , public CDialogResize<FindView>
 {
 public:
-    enum { IDD = IDD_INV_FIND };
+    enum
+    {
+        IDD = IDD_INV_FIND
+    };
 
-    FindView();
+    FindView(sqlite::IDBPtr db);
 
     void SetParent(InventoryView* parent);
     BOOL PreTranslateMsg(MSG* pMsg);
@@ -39,13 +44,13 @@ public:
         DLGRESIZE_CONTROL(IDC_CHARCOMBO, DLSZ_MOVE_X)
     END_DLGRESIZE_MAP()
 
-    LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-    LRESULT OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-    LRESULT onDimensionFocus(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-    LRESULT onDimensionSelection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-    LRESULT OnEnChangeItemtext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-    LRESULT OnCbnSelChangeCharcombo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-    LRESULT OnCbnDropdown(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+    LRESULT OnInitDialog(UINT/*uMsg*/, WPARAM/*wParam*/, LPARAM/*lParam*/, BOOL&/*bHandled*/);
+    LRESULT OnForwardMsg(UINT/*uMsg*/, WPARAM/*wParam*/, LPARAM/*lParam*/, BOOL&/*bHandled*/);
+    LRESULT onDimensionFocus(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/);
+    LRESULT onDimensionSelection(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/);
+    LRESULT OnEnChangeItemtext(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/);
+    LRESULT OnCbnSelChangeCharcombo(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/);
+    LRESULT OnCbnDropdown(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/);
     LRESULT OnTimer(UINT wParam);
 
 protected:
@@ -54,6 +59,7 @@ protected:
     void updateDimensionList();
 
 private:
+    sqlite::IDBPtr m_db;
     InventoryView* m_pParent;
     std::tstring m_lastQueryText;
     int m_lastQueryChar;

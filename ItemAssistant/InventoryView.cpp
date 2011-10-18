@@ -30,6 +30,8 @@ InventoryView::InventoryView(sqlite::IDBPtr db, aoia::IContainerManagerPtr conta
     , m_sortColumn(0)
     , m_datagrid(new DataGridControl())
     , m_characterParserDumper(_T("binfiles"))
+    , m_infoview(db)
+    , m_findview(db)
 {
     m_tempContainers.reset(new aoia::inv::TempContainerCache());
 
