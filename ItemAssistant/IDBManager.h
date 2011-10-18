@@ -13,11 +13,8 @@ struct OwnedItemInfo
     std::tstring itemname;
     std::tstring ownername;
     std::tstring ownerid;
-    std::tstring containername;
     std::tstring containerid;
     unsigned short flags;
-    //std::tstring inventoryname;
-    //std::tstring inventoryid;
 };
 
 typedef boost::shared_ptr<OwnedItemInfo> OwnedItemInfoPtr;

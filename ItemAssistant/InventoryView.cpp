@@ -331,10 +331,11 @@ LRESULT InventoryView::OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND 
         }
 
         OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo(model->getItemIndex(*it));
+        std::tstring containername = GetContainerNameForItem(pItemInfo);
 
         std::tstring itemlocation = pItemInfo->ownername;
         itemlocation += _T(" -> ");
-        itemlocation += pItemInfo->containername;
+        itemlocation += containername;
         boost::replace_all(itemlocation, _T("\""), _T("&quot;"));
 
         std::tstring itemStr = itemTemplate;
@@ -398,10 +399,12 @@ LRESULT InventoryView::OnShowItemRef(WORD FromAccelerator, WORD CommandId, HWND 
     g_DBManager.Lock();
     OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo(ownedItemIndex);
     g_DBManager.UnLock();
+    
+    std::tstring containername = GetContainerNameForItem(pItemInfo);
 
     std::tstring itemlocation = pItemInfo->ownername;
     itemlocation += _T(" -> ");
-    itemlocation += pItemInfo->containername;
+    itemlocation += containername;
 
     TCHAR buffer[1024];
     if (CommandId == ID_VIEW_ITEMSTATS_AUNO)
@@ -487,10 +490,11 @@ LRESULT InventoryView::OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND 
         }
 
         OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo(model->getItemIndex(*it));
+        std::tstring containername = GetContainerNameForItem(pItemInfo);
 
         std::tstring itemlocation = pItemInfo->ownername;
         itemlocation += _T(" -> ");
-        itemlocation += pItemInfo->containername;
+        itemlocation += containername;
 
         std::tstring itemStr = itemTemplate;
         boost::replace_all(itemStr, _T("%lowid%"), pItemInfo->itemloid);
@@ -2903,4 +2907,12 @@ bool InventoryView::SetClipboardText(std::tstring const& text)
         return true;
     }
     return false;
+}
+
+
+std::tstring InventoryView::GetContainerNameForItem( OwnedItemInfoPtr pItemInfo ) const
+{
+    unsigned int containerid = boost::lexical_cast<unsigned int>(pItemInfo->containerid);
+    unsigned int ownerid = boost::lexical_cast<unsigned int>(pItemInfo->ownerid);
+    return m_containerManager->GetContainerName(ownerid, containerid);
 }
