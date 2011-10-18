@@ -18,7 +18,7 @@ namespace bfs = boost::filesystem;
 
 DBManager::DBManager()
 {
-    m_db.reset(new SQLite::Db(Logger::instance().stream()));
+    m_db.reset(new sqlite::Db(Logger::instance().stream()));
 }
 
 
@@ -622,16 +622,16 @@ OwnedItemInfoPtr DBManager::GetOwnedItemInfo(unsigned int itemID)
 unsigned int DBManager::getAODBSchemeVersion(std::tstring const& filename) const
 {
     unsigned int retval = 0;
-    SQLite::Db db(Logger::instance().stream());
+    sqlite::Db db(Logger::instance().stream());
 
     if (db.Init(filename))
     {
         try
         {
-            SQLite::TablePtr pT = db.ExecTable(_T("SELECT Version FROM vSchemeVersion"));
+            sqlite::ITablePtr pT = db.ExecTable(_T("SELECT Version FROM vSchemeVersion"));
             retval = boost::lexical_cast<unsigned int>(pT->Data(0,0));
         }
-        catch (SQLite::Db::QueryFailedException &/*e*/)
+        catch (sqlite::Db::QueryFailedException &/*e*/)
         {
             retval = 0;
         }
@@ -654,7 +654,7 @@ unsigned int DBManager::getDBVersion() const
         sqlite::ITablePtr pT = m_db->ExecTable(_T("SELECT Version FROM vSchemeVersion"));
         retval = boost::lexical_cast<unsigned int>(pT->Data(0,0));
     }
-    catch (SQLite::Db::QueryFailedException &/*e*/)
+    catch (sqlite::Db::QueryFailedException &/*e*/)
     {
         retval = 0;
     }

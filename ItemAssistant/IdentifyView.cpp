@@ -7,7 +7,7 @@
 #include "ItemListDataModel.h"
 
 
-using namespace SQLite;
+using namespace sqlite;
 using namespace aoia;
 
 

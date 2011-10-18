@@ -1,13 +1,16 @@
-#pragma once
+#ifndef SQLITE_H
+#define SQLITE_H
 
 #include <shared/UnicodeSupport.h>
 #include <boost/smart_ptr.hpp>
 #include <vector>
+#include <shared/IDB.h>
 
 // Forward declarations
 struct sqlite3;
 
-namespace SQLite {
+namespace sqlite
+{
 
     class Db;
     class Table;
@@ -17,42 +20,20 @@ namespace SQLite {
 
 
     class Table
+        : public ITable
     {
     public:
-        Table(int nrow, int ncol, char **result)
-        {
-            m_headers.reserve(ncol);
-            m_data.reserve(nrow*ncol);
+        Table(int nrow, int ncol, char **result);
 
-            for(int i=0; i < ncol; ++i)
-            {
-                m_headers.push_back(result[i]);   /* First row heading */
-            }
-            for(int i=0; i < ncol*nrow; ++i)
-            {
-                if (result[ncol+i] == NULL)
-                {
-                    m_data.push_back(std::string());
-                }
-                else
-                {
-                    m_data.push_back(result[ncol+i]);
-                }
-            }
-        }
+        //std::vector<std::string> const& Headers() const { return m_headers; }
 
-        std::vector<std::string> const& Headers() const { return m_headers; }
-        std::vector<std::string> const& Data() const { return m_data; }
-        std::string Data(unsigned int row, unsigned int col) const {
-            if (row < Rows() && col < Columns())
-            {
-                return m_data.at(Columns()*row + col);
-            }
-            return "";
-        }
+        virtual std::string Headers( unsigned int col ) const;
 
-        size_t Columns() const { return m_headers.size(); }
-        size_t Rows() const { return m_headers.size() > 0 ? m_data.size() / m_headers.size() : 0; }
+        //std::vector<std::string> const& Data() const { return m_data; }
+        virtual std::string Data(unsigned int row, unsigned int col) const;
+
+        virtual size_t Columns() const;
+        virtual size_t Rows() const;
 
     private:
         std::vector<std::string> m_headers;
@@ -61,6 +42,7 @@ namespace SQLite {
 
 
     class Db
+        : public IDB
     {
     public:
         struct QueryFailedException : public std::exception
@@ -71,18 +53,18 @@ namespace SQLite {
         Db(std::ostream &log);
         virtual ~Db();
 
-        bool Init(std::tstring const& filename = _T("init.db"));
-        void Term();
+        virtual bool Init(std::tstring const& filename = _T("init.db"));
+        virtual void Term();
 
-        bool Exec(std::wstring const& sql) const;
-        bool Exec(std::string const& sql) const;
+        virtual bool Exec(std::wstring const& sql) const;
+        virtual bool Exec(std::string const& sql) const;
 
-        TablePtr ExecTable(std::wstring const& sql) const;
-        TablePtr ExecTable(std::string const& sql) const;
+        virtual ITablePtr ExecTable(std::wstring const& sql) const;
+        virtual ITablePtr ExecTable(std::string const& sql) const;
 
-        void Begin() const;
-        void Commit() const;
-        void Rollback() const;
+        virtual void Begin() const;
+        virtual void Commit() const;
+        virtual void Rollback() const;
 
     private:
         sqlite3 *m_pDb;
@@ -90,3 +72,6 @@ namespace SQLite {
     };
 
 }  // namespace SQLite
+
+
+#endif // SQLITE_H
