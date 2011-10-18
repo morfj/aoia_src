@@ -8,7 +8,7 @@
 #include "Version.h"
 #include <ItemAssistantCore/SettingsManager.h>
 #include "GuiServices.h"
-#include "SharedServices.h"
+#include "ContainerManager.h"
 
 
 // Delay loaded function definition
@@ -98,7 +98,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
     m_trayIcon->Create(this, IDR_TRAY_POPUP, _T("AO Item Assistant"), hIconSmall, WM_TRAYICON);
 
     // Create common services
-    m_containerManager.reset(new SharedServices(g_DBManager.GetDatabase()));
+    m_containerManager.reset(new ContainerManager(g_DBManager.GetDatabase()));
     m_guiServices.reset(new aoia::GuiServices(m_trayIcon));
 
     DWORD style = WS_CHILD | /*WS_VISIBLE |*/ WS_CLIPSIBLINGS | WS_CLIPCHILDREN;

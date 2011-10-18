@@ -5,8 +5,8 @@
 
 TabFrame::TabFrame(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui)
   : m_toobarVisibility(true)
-  , m_inventoryView(db)
-  , m_summaryView(gui)
+  , m_inventoryView(db, containerManager, gui)
+  , m_summaryView(db, gui)
   , m_playershopView(gui)
   , m_patternView(db, containerManager, gui)
 {

@@ -81,9 +81,6 @@
     <ClCompile Include="QueryDataGridModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SharedServices.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -153,6 +150,12 @@
     <ClCompile Include="GuiServices.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TempContainerCache.cpp">
+      <Filter>Plugins\Inventory</Filter>
+    </ClCompile>
+    <ClCompile Include="ContainerManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AboutDlg.h">
@@ -192,9 +195,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SharedServices.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
@@ -285,6 +285,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GuiServices.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TempContainerCache.h">
+      <Filter>Plugins\Inventory</Filter>
+    </ClInclude>
+    <ClInclude Include="ContainerManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,17 +1,20 @@
 #ifndef INVENTORYVIEW_H
 #define INVENTORYVIEW_H
 
-#include <boost/signal.hpp>
-#include "shared/aopackets.h"
+#include "CharacterParserDumper.h"
+#include "FindPanel.h"
+#include "IGuiServices.h"
+#include "InfoPanel.h"
+#include "InvTreeItems.h"
+#include "MFTreeView.h"
 #include <PluginSDK/ItemAssistView.h>
 #include <atlsplit.h>
+#include <boost/signal.hpp>
+#include <datagrid/DataGridControl.h>
+#include <shared/aopackets.h>
+#include <shared/IContainerManager.h>
 #include <vector>
-#include "MFTreeView.h"
-#include "InvTreeItems.h"
-#include "datagrid/DataGridControl.h"
-#include "InfoPanel.h"
-#include "FindPanel.h"
-#include "CharacterParserDumper.h"
+#include "TempContainerCache.h"
 
 
 class InventoryView
@@ -21,7 +24,7 @@ class InventoryView
 public:
     DECLARE_WND_CLASS(NULL)
 
-    InventoryView(sqlite::IDBPtr db);
+    InventoryView(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui);
     virtual ~InventoryView();
 
     enum
@@ -136,6 +139,9 @@ protected:
 
 private:
     sqlite::IDBPtr m_db;
+    aoia::IContainerManagerPtr m_containerManager;
+    aoia::IGuiServicesPtr m_gui;
+    aoia::inv::TempContainerCachePtr m_tempContainers;
 
     CharacterParserDumper m_characterParserDumper;
     bool m_enableCharacterParserDumper;
