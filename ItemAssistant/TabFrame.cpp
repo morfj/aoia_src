@@ -9,6 +9,7 @@ TabFrame::TabFrame(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManage
   , m_summaryView(db, gui)
   , m_playershopView(gui)
   , m_patternView(db, containerManager, gui)
+  , m_identifyView(db, containerManager, gui)
 {
     //SetForwardNotifications(true);
 }
