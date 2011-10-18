@@ -76,7 +76,7 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
     <Link>
-      <AdditionalDependencies>datagrid.lib;shared.lib;tinyxmlstl.lib;sqlite.lib;ItemAssistantCore.lib;Parsers.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>datagrid.lib;shared.lib;tinyxmlstl.lib;sqlite.lib;ItemAssistantCore.lib;Parsers.lib;csvexport.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)ItemAssistant.exe</OutputFile>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Configuration);$(BOOSTDIR)lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <EnableUAC>true</EnableUAC>
@@ -115,7 +115,7 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
     <Link>
-      <AdditionalDependencies>datagrid.lib;shared.lib;tinyxmlstl.lib;sqlite.lib;ItemAssistantCore.lib;Parsers.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>datagrid.lib;shared.lib;tinyxmlstl.lib;sqlite.lib;ItemAssistantCore.lib;Parsers.lib;csvexport.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)ItemAssistant.exe</OutputFile>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Configuration);$(BOOSTDIR)lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <EnableUAC>true</EnableUAC>
