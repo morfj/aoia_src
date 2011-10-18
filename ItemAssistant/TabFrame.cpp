@@ -5,8 +5,9 @@
 
 TabFrame::TabFrame(aoia::IGuiServicesPtr gui)
   : m_toobarVisibility(true)
-  , m_InventoryView(g_DBManager.GetDatabase())
+  , m_inventoryView(g_DBManager.GetDatabase())
   , m_summaryView(gui)
+  , m_playershopView(gui)
 {
     //SetForwardNotifications(true);
 }
@@ -84,28 +85,28 @@ LRESULT TabFrame::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandl
     AddTab(m_summaryView, _T("Summary"));
     m_viewPlugins.push_back(&m_summaryView);
 
-    m_InventoryView.Create(*this, defRect, 0, style);
-    AddTab(m_InventoryView, _T("Inventory"));
-    m_viewPlugins.push_back(&m_InventoryView);
+    m_inventoryView.Create(*this, defRect, 0, style);
+    AddTab(m_inventoryView, _T("Inventory"));
+    m_viewPlugins.push_back(&m_inventoryView);
 
-    m_PatternView.Create(*this, defRect, 0, style);
-    AddTab(m_PatternView, _T("Pattern Matcher"));
-    m_viewPlugins.push_back(&m_PatternView);
+    m_patternView.Create(*this, defRect, 0, style);
+    AddTab(m_patternView, _T("Pattern Matcher"));
+    m_viewPlugins.push_back(&m_patternView);
 
-    m_PlayershopView.Create(*this, defRect, 0, style);
-    AddTab(m_PlayershopView, _T("Playershop Monitor"));
-    m_viewPlugins.push_back(&m_PlayershopView);
+    m_playershopView.Create(*this, defRect, 0, style);
+    AddTab(m_playershopView, _T("Playershop Monitor"));
+    m_viewPlugins.push_back(&m_playershopView);
 
-    m_PlayershopView.StartMonitoring();
+    m_playershopView.StartMonitoring();
 
     m_identifyView.Create(*this, defRect, 0, style);
     AddTab(m_identifyView, _T("Identify"));
     m_viewPlugins.push_back(&m_identifyView);
 
 #ifdef _DEBUG
-    m_MsgView.Create(*this, defRect, 0, style);
-    AddTab(m_MsgView, _T("Messages (Debug)"));
-    m_viewPlugins.push_back(&m_MsgView);
+    m_msgView.Create(*this, defRect, 0, style);
+    AddTab(m_msgView, _T("Messages (Debug)"));
+    m_viewPlugins.push_back(&m_msgView);
 #endif
 
     DisplayTab(m_summaryView);

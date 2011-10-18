@@ -13,14 +13,15 @@ enum ColumnID
 };
 
 
-PlayershopView::PlayershopView(void)
+PlayershopView::PlayershopView(aoia::IGuiServicesPtr gui)
     : m_sortColumn(0)
+    , m_gui(gui)
 {
     m_hWakeupEvent = CreateEvent(0, false, false, 0);
 }
 
 
-PlayershopView::~PlayershopView(void)
+PlayershopView::~PlayershopView()
 {
     if (m_directoryWatch != NULL)
     {
@@ -172,7 +173,7 @@ LRESULT PlayershopView::OnPostCreate(UINT/*uMsg*/, WPARAM/*wParam*/, LPARAM/*lPa
 
 LRESULT PlayershopView::OnHelp(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
 {
-    SharedServices::ShowHelp(_T("playershop"));
+    m_gui->ShowHelp(_T("playershop"));
     return 0;
 }
 
@@ -249,6 +250,7 @@ LRESULT PlayershopView::OnContentUpdate(UINT/*uMsg*/, WPARAM/*wParam*/, LPARAM/*
     // Force refresh of current selection
     m_treeview.SelectItem(NULL);
     m_treeview.SelectItem(item);
+    ShowSalesBaloon();
     return 0;
 }
 
@@ -269,6 +271,76 @@ void PlayershopView::OnActive(bool doActivation)
     {
         m_treeview.SelectItem(item);
     }
+}
+
+
+void PlayershopView::ShowSalesBaloon()
+{
+    std::ostringstream popupText;
+
+    m_changedFilesMutex.MutexOn();
+    while (!m_changedFiles.empty())
+    {
+        boost::filesystem::path p = m_changedFiles.front();
+        m_changedFiles.erase(m_changedFiles.begin());
+
+        std::ifstream in(p.string().c_str());
+        std::string line;
+        std::string text;
+        std::vector<std::tstring> v;
+        while (in)
+        {
+            line.clear();
+            std::getline(in, line);
+            if (!line.empty())
+            {
+                text += line;
+            }
+        }
+
+        // Now that we have the whole file, lets parse it
+
+        // Text located between the two following tags is to be considered an item sold
+        std::string startTag = "<div indent=wrapped>";
+        std::string endTag = "</div>";
+        while (text.length() > 0)
+        {
+            std::string::size_type start = text.find(startTag, 0);
+            std::string::size_type end = text.find(endTag, 0);
+            if (start != std::string::npos && end != std::string::npos)
+            {
+                // adding text for ballon message
+                popupText << text.substr(start + startTag.length(), end - start - startTag.length()) << "\r\n";
+
+                // remove the already processed part of the string
+                text = text.substr(end + endTag.length());
+            }
+            else
+            {
+                text = "";
+            }
+        }
+    }
+    m_changedFilesMutex.MutexOff();
+
+    if (!popupText.str().empty())
+    {
+        //max string 256 bytes...
+        std::string smallString = popupText.str();
+        if (smallString.length() > 256)
+        {
+            smallString = smallString.substr(0, 252) + "...";
+        }
+        m_gui->ShowTrayIconBalloon(from_ascii_copy(smallString));
+    }
+}
+
+
+void PlayershopView::PushChangedFile( boost::filesystem::path p )
+{
+    m_changedFilesMutex.MutexOn();
+    m_changedFiles.push_back(p);
+    m_changedFilesMutex.MutexOff();
 }
 
 
@@ -299,75 +371,32 @@ VOID CALLBACK DirChangeCompletionRoutine(DWORD dwErrorCode, DWORD
         std::tstring filename(f.str());
         const wchar_t* ptr = filename.c_str();
 
+        bool refreshGui = false;
+
         // Proceed only if the directory change notification is triggered by
         // the file PlayerShopLog.html and is a remove or modify
         if ((fileNotifyInfo->Action == FILE_ACTION_MODIFIED || fileNotifyInfo->Action == FILE_ACTION_REMOVED) &&
             boost::find_last(ptr, "PlayerShopLog.html"))
         {
-
-            // Send a message to the view to refresh the listing. 
-            pMonitor->pOwner->PostMessage(WM_PSM_UPDATE); //refresh listing always (remove items if file is deleted)
+            refreshGui = true;
 
             if (fileNotifyInfo->Action != FILE_ACTION_REMOVED) // if FILE_ACTION_REMOVED, file removed, nothing to parse
             {
                 boost::filesystem::path p(to_utf8_copy (filename), boost::filesystem::native);
-                std::ifstream in(p.string().c_str());
-                std::string line;
-                std::string text;
-                std::vector<std::tstring> v;
-                while (in)
-                {
-                    line.clear();
-                    std::getline(in, line);
-                    if (!line.empty())
-                    {
-                        text += line;
-                    }
-                }
-
-                // Now that we have the whole file, lets parse it
-
-                // Text located between the two following tags is to be considered an item sold
-                std::string startTag = "<div indent=wrapped>";
-                std::string endTag = "</div>";
-                std::ostringstream popupText;
-                while (text.length() > 0)
-                {
-                    std::string::size_type start = text.find(startTag, 0);
-                    std::string::size_type end = text.find(endTag, 0);
-                    if (start != std::string::npos && end != std::string::npos)
-                    {
-                        // adding text for ballon message
-                        popupText << text.substr(start + startTag.length(), end - start - startTag.length()) << "\r\n";
-
-                        // remove the already processed part of the string
-                        text = text.substr(end + endTag.length());
-                    }
-                    else
-                    {
-                        text = "";
-                    }
-                }
-
-                if (!popupText.str().empty())
-                {
-                    //max string 256 bytes...
-                    std::string smallString = popupText.str();
-                    if (smallString.length() > 256)
-                    {
-                        smallString = smallString.substr(0, 252) + "...";
-                    }
-                    ServicesSingleton::Instance()->ShowTrayIconBalloon(from_ascii_copy(smallString));
-                }
+                pMonitor->pOwner->PushChangedFile(p);
             }
         }
 
         if (fileNotifyInfo->NextEntryOffset == 0)
         {
+            if (refreshGui)
+            {
+                // Send a message to the view to refresh the listing. 
+                pMonitor->pOwner->PostMessage(WM_PSM_UPDATE); //refresh listing always (remove items if file is deleted)
+            }
             break;
         }
         fileNotifyInfo = (FILE_NOTIFY_INFORMATION*)&pIndexer[fileNotifyInfo->NextEntryOffset];
-
     }
     while (true);
 }
