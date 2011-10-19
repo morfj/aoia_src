@@ -215,26 +215,32 @@ void FindView::UpdateFindQuery()
     ZeroMemory(buffer, MAX_PATH);
     qlmin.GetWindowText(buffer, MAX_PATH);
     std::tstring qlminText(buffer);
-    try
+    if (!qlminText.empty())
     {
-        minql = boost::lexical_cast<int>(qlminText);
-    }
-    catch (boost::bad_lexical_cast&/*e*/)
-    {
-        // Go with the default value
+        try
+        {
+            minql = boost::lexical_cast<int>(qlminText);
+        }
+        catch (boost::bad_lexical_cast&/*e*/)
+        {
+            // Go with the default value
+        }
     }
 
     int maxql = -1;
     ZeroMemory(buffer, MAX_PATH);
     qlmax.GetWindowText(buffer, MAX_PATH);
     std::tstring qlmaxText(buffer);
-    try
+    if (!qlmaxText.empty())
     {
-        maxql = boost::lexical_cast<int>(qlmaxText);
-    }
-    catch (boost::bad_lexical_cast&/*e*/)
-    {
-        // Go with the default value
+        try
+        {
+            maxql = boost::lexical_cast<int>(qlmaxText);
+        }
+        catch (boost::bad_lexical_cast&/*e*/)
+        {
+            // Go with the default value
+        }
     }
 
     if (text.size() > 2
