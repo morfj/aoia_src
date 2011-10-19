@@ -16,6 +16,8 @@
 #include "AOCharacterActionIDs.h"
 #include "InventoryIDs.h"
 #include <csvexport/CSVDataModel.h>
+#include <csvexport/CSVExporter.h>
+
 
 using namespace WTL;
 using namespace aoia;
@@ -2717,66 +2719,9 @@ void InventoryView::exportToCSV(std::tstring const& where)
         return;
     }
 
-    CSVDataModel model(m_db, m_containerManager, where_statement, itemURLTemplate);
-
-#if 0
-    std::tstring separator = _T("\n");
-
-    // Write the column headers
-    for (unsigned int column_index = 0; column_index < data->getColumnCount(); ++column_index)
-    {
-        if (column_index > 0)
-        {
-            ofs << _T(",");
-        }
-        ofs << data->getColumnName(column_index);
-    }
-    ofs << _T(",LowID,HighID,ContainerID,Link") << separator;
-
-    // Write one row for each item to export.
-    g_DBManager.Lock();
-    for (unsigned int row_index = 0; row_index < data->getItemCount(); ++row_index)
-    {
-        if (row_index > 0) {
-            ofs << separator;
-        }
-
-        // Dump all the columns from the datamodel.
-        for (unsigned int column_index = 0; column_index < data->getColumnCount(); ++column_index)
-        {
-            if (column_index > 0) {
-                ofs << _T(",");
-            }
-            std::tstring cell_value = data->getItemProperty(row_index, column_index);
-            if (cell_value.find(_T(",")) != std::tstring::npos)
-            {
-                // If the value of the cell contains a comma, we need to encapsulate the text in " symbols.
-                ofs << ensureEncapsulation(cell_value);
-            }
-            else
-            {
-                ofs << cell_value;
-            }
-        }
-
-        OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo(data->getItemIndex(row_index));
-
-        // Append columns with high-id and low-id
-        ofs << _T(",") << pItemInfo->itemloid << _T(",") << pItemInfo->itemhiid;
-
-        // Append column with container ID
-        ofs << _T(",") << pItemInfo->containerid;
-
-        // Append a column with the item URL
-        std::tstring itemURL = itemURLTemplate;
-        boost::replace_all(itemURL, _T("%lowid%"), pItemInfo->itemloid);
-        boost::replace_all(itemURL, _T("%hiid%"), pItemInfo->itemhiid);
-        boost::replace_all(itemURL, _T("%ql%"), pItemInfo->itemql);
-
-        ofs << _T(",") << itemURL;
-    }
-    g_DBManager.UnLock();
-#endif
+    CSVDataModelPtr model(new CSVDataModel(m_db, m_containerManager, where_statement, itemURLTemplate));
+    CSVExporter exporter;
+    exporter.DoExport(ofs, model);
 }
 
 
