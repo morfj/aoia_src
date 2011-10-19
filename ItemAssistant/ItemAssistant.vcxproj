@@ -253,6 +253,14 @@
     <ResourceCompile Include="ItemAssistant.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\csvexport\csvexport.vcxproj">
+      <Project>{29e7696b-2ce6-40e9-b732-dc54b368470c}</Project>
+      <Private>true</Private>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
     <ProjectReference Include="..\ItemAssistantCore\ItemAssistantCore.vcxproj">
       <Project>{d9effcc4-4544-4e8f-9920-2f7cd55d814b}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
