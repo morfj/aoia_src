@@ -100,6 +100,9 @@ TEST_F(CSVDataModelTests, GetItemCount_EmptyQueryResult_ReturnZeroRows)
     mockDB(static_cast<ITablePtr (IDB::*)(std::tstring const&) const>(&IDB::ExecTable))
         .when(any<std::tstring const&>())
         .thenReturn(table);
+    mockTable(&ITable::Rows)
+        .when()
+        .thenReturn(0);
 
     CSVDataModel subject(db, containermanager, _T(""), _T(""));
 
@@ -117,6 +120,9 @@ TEST_F(CSVDataModelTests, GetItemProperty_InvalidRow_ReturnEmptyString)
     mockDB(static_cast<ITablePtr (IDB::*)(std::tstring const&) const>(&IDB::ExecTable))
         .when(any<std::tstring const&>())
         .thenReturn(table);
+    mockTable(&ITable::Data)
+        .when(any<unsigned int>(), any<unsigned int>())
+        .thenReturn("");
 
     CSVDataModel subject(db, containermanager, _T(""), _T(""));
 
