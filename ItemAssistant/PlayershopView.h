@@ -18,10 +18,8 @@ class WatchDirectoryThread
     : public Thread
 {
 public:
-    WatchDirectoryThread(HANDLE hWakeupEvent, PlayershopView* owner)
-        : m_hWakeupEvent(hWakeupEvent)
-          , m_pOwner(owner) {}
-    virtual ~WatchDirectoryThread() {}
+    WatchDirectoryThread(HANDLE hWakeupEvent, PlayershopView* owner);
+    virtual ~WatchDirectoryThread();
 
     virtual DWORD ThreadProc();
 

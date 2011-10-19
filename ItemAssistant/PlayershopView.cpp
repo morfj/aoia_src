@@ -406,6 +406,26 @@ VOID CALLBACK DirChangeCompletionRoutine(DWORD dwErrorCode, DWORD
 /** Watch Directory Thread                      **/
 /*************************************************/
 
+WatchDirectoryThread::WatchDirectoryThread( HANDLE hWakeupEvent, PlayershopView* owner ) : m_hWakeupEvent(hWakeupEvent)
+    , m_pOwner(owner)
+{
+
+}
+
+WatchDirectoryThread::~WatchDirectoryThread()
+{
+
+}
+
+
+DWORD WatchDirectoryThread::ThreadProc()
+{
+    std::tstring directoryToWatch = STREAM2STR(AOManager::instance().getAOFolder() << _T("\\Prefs"));
+    WatchDirectory((LPTSTR)directoryToWatch.c_str());
+    return 0;
+}
+
+
 void WatchDirectoryThread::WatchDirectory(LPTSTR lpDir)
 {
     HANDLE hObjects[2];
@@ -457,12 +477,3 @@ void WatchDirectoryThread::WatchDirectory(LPTSTR lpDir)
         }
     }
 }
-
-
-DWORD WatchDirectoryThread::ThreadProc()
-{
-    std::tstring directoryToWatch = STREAM2STR(AOManager::instance().getAOFolder() << _T("\\Prefs"));
-    WatchDirectory((LPTSTR)directoryToWatch.c_str());
-    return 0;
-}
-
