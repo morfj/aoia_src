@@ -56,9 +56,10 @@ namespace aoia {
     LRESULT DataGridControl::onGetDispInfo(int wParam, LPNMHDR lParam, BOOL &bHandled)
     {
         NMLVDISPINFO *pdi = (NMLVDISPINFO*)lParam;
-        if (pdi->item.mask & LVIF_TEXT) {
+        if (pdi->item.mask & LVIF_TEXT)
+        {
             std::tstring text = m_model->getItemProperty(pdi->item.iItem, pdi->item.iSubItem);
-            StrCpyN(pdi->item.pszText, text.c_str(), min(text.length()+1, pdi->item.cchTextMax));
+            StrCpyN(pdi->item.pszText, text.c_str(), min((int)(text.length()) + 1, pdi->item.cchTextMax));
         }
         return 0;
     }

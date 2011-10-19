@@ -261,6 +261,14 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
+    <ProjectReference Include="..\datagrid\datagrid.vcxproj">
+      <Project>{6096d08e-50bf-444c-b40e-dc1a8be4166c}</Project>
+      <Private>true</Private>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
     <ProjectReference Include="..\ItemAssistantCore\ItemAssistantCore.vcxproj">
       <Project>{d9effcc4-4544-4e8f-9920-2f7cd55d814b}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

@@ -2,6 +2,7 @@
 #define AODatabaseParser_h__
 
 #include <boost/smart_ptr.hpp>
+#include <boost/filesystem.hpp>
 #include <fstream>
 #include <shared/AODB.h>
 #include <string>
@@ -22,14 +23,18 @@ public:
     boost::shared_ptr<ao_item> GetItem(unsigned int offset) const;
 
 protected:
-    void EnsureFileOpen(unsigned int offset) const;
-    std::pair<unsigned int, std::string> GetFileFromOffset(unsigned int offset) const;
-    void OpenFileFromOffset(unsigned int offset) const;
+    typedef std::pair<uintmax_t, std::string> FileOffsetAndStringPair;
+
+    void EnsureFileOpen(uintmax_t offset) const;
+    FileOffsetAndStringPair GetFileFromOffset(uintmax_t offset) const;
+    void OpenFileFromOffset(uintmax_t offset) const;
 
 private:
-    std::map<unsigned int, std::string> m_file_offsets;
-    mutable unsigned int m_current_file_offset;
-    mutable unsigned int m_current_file_size;
+    typedef std::map<uintmax_t, std::string> FileOffsetToStringMap;
+
+    FileOffsetToStringMap m_file_offsets;
+    mutable uintmax_t m_current_file_offset;
+    mutable uintmax_t m_current_file_size;
     mutable std::ifstream m_file;
     boost::shared_array<char> m_buffer;
 };

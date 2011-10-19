@@ -26,7 +26,7 @@ struct AOFullCharacterMessageTestFixture : public testing::Test
 
         if (ifs.is_open())
         {
-            int size = ifs.tellg();
+            int size = (int)ifs.tellg();
             ifs.seekg(0);
 
             char* buffer = new char[size];
