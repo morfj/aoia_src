@@ -53,7 +53,8 @@ namespace aoia {
             _T("    I.keyhigh, ")
             _T("    I.parent, ")
             _T("    A.aoid, ")
-            _T("    I.itemidx ")
+            _T("    I.itemidx, ")
+            _T("    I.owner ")
             _T("FROM ")
             _T("    tItems I JOIN aodb.tblAO A ON I.keyhigh = A.aoid JOIN tToons T ON I.owner = T.charid ");
 
@@ -140,7 +141,7 @@ namespace aoia {
                     // If the item is in the bank or inventory we just display an empty name for the backpack.
                     return _T("");
                 }
-                unsigned int charid = boost::lexical_cast<unsigned int>(m_result->Data(index, COL_COUNT));
+                unsigned int charid = boost::lexical_cast<unsigned int>(m_result->Data(index, COL_COUNT + 1));
                 return m_bp->GetContainerName(charid, id);
             }
             catch (boost::bad_lexical_cast &/*e*/)
@@ -168,7 +169,7 @@ namespace aoia {
             return 0;
         }
 
-        return boost::lexical_cast<unsigned int>(m_result->Data(index, COL_COUNT));
+        return boost::lexical_cast<unsigned int>(m_result->Data(index, COL_COUNT - 1));
     }
 
 
@@ -179,7 +180,7 @@ namespace aoia {
             return 0;
         }
 
-        return boost::lexical_cast<unsigned int>(m_result->Data(rowIndex, COL_COUNT + 1));
+        return boost::lexical_cast<unsigned int>(m_result->Data(rowIndex, COL_COUNT));
     }
 
 
