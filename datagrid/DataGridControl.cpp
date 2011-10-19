@@ -132,7 +132,6 @@ namespace aoia {
         else 
         {
             // Loop the visible rows and calculate width on those only.
-            int numCol = m_listView.GetHeader().GetItemCount();
             unsigned int numRows = m_listView.GetCountPerPage();
             unsigned int firstRow = m_listView.GetTopIndex();
             unsigned int maxRow = m_listView.GetItemCount();
