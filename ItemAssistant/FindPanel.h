@@ -2,6 +2,8 @@
 #define FINDPANEL_H
 
 #include <shared/IDB.h>
+#include <settings/ISettings.h>
+
 
 // Forward declarations
 class InventoryView;
@@ -16,7 +18,7 @@ public:
         IDD = IDD_INV_FIND
     };
 
-    FindView(sqlite::IDBPtr db);
+    FindView(sqlite::IDBPtr db, aoia::ISettingsPtr settings);
 
     void SetParent(InventoryView* parent);
     BOOL PreTranslateMsg(MSG* pMsg);
@@ -60,6 +62,7 @@ protected:
 
 private:
     sqlite::IDBPtr m_db;
+    aoia::ISettingsPtr m_settings;
     InventoryView* m_pParent;
     std::tstring m_lastQueryText;
     int m_lastQueryChar;

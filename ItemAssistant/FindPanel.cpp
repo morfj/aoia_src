@@ -1,14 +1,14 @@
 #include "StdAfx.h"
 #include "FindPanel.h"
 #include "InventoryView.h"
-#include <ItemAssistantCore/SettingsManager.h>
 #include <boost/algorithm/string.hpp>
 
 namespace ba = boost::algorithm;
 using namespace aoia;
 
-FindView::FindView(sqlite::IDBPtr db)
+FindView::FindView(sqlite::IDBPtr db, aoia::ISettingsPtr settings)
     : m_db(db)
+    , m_settings(settings)
     , m_lastQueryChar(-1)
     , m_lastQueryQlMin(-1)
     , m_lastQueryQlMax(-1)
@@ -33,9 +33,9 @@ LRESULT FindView::OnInitDialog(UINT/*uMsg*/, WPARAM/*wParam*/, LPARAM/*lParam*/,
     if (cb.GetCount() > 0)
     {
         int index = CB_ERR;
-        if (!SettingsManager::instance().getValue(_T("DefaultDimension")).empty())
+        if (!m_settings->getValue(_T("DefaultDimension")).empty())
         {
-            index = cb.FindStringExact(-1, SettingsManager::instance().getValue(_T("DefaultDimension")).c_str());
+            index = cb.FindStringExact(-1, m_settings->getValue(_T("DefaultDimension")).c_str());
         }
         if (index == CB_ERR)
         {
@@ -102,7 +102,7 @@ LRESULT FindView::onDimensionSelection(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*h
         dimension_id = (unsigned int)cb.GetItemData(item);
         TCHAR buffer[256];
         cb.GetLBText(item, buffer);
-        SettingsManager::instance().setValue(_T("DefaultDimension"), buffer);
+        m_settings->setValue(_T("DefaultDimension"), buffer);
     }
 
     updateCharList(dimension_id);
