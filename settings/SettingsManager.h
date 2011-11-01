@@ -1,25 +1,21 @@
 #ifndef SETTINGSMANAGER_H
 #define SETTINGSMANAGER_H
 
-#include <ItemAssistantCore/ItemAssistantCore.h>
 #include <map>
-#include <fstream>
-#include <Shared/Singleton.h>
-#include <Shared/UnicodeSupport.h>
+#include <settings/ISettings.h>
 
 
 namespace aoia {
 
-    class ITEMASSISTANTCORE_API SettingsManager
+    class SettingsManager
+        : public ISettings
     {
-        SINGLETON(SettingsManager)
     public:
+        SettingsManager();
         ~SettingsManager();
 
-        /// Gets the value associated with the specified key. Returns empty string if unknown key.
+        // ISettings implementation
         std::tstring getValue(std::tstring const& key) const;
-
-        /// Assigns a value to the specified key.
         void setValue(std::tstring const& key, std::tstring const& value);
 
         /// Reads in settings from a specified file.

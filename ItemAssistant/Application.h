@@ -1,6 +1,10 @@
-#pragma once
+#ifndef APPLICATION_H
+#define APPLICATION_H
 
-#include "MainFrm.h"
+#include <settings/SettingsManager.h>
+
+class CMainFrame;
+
 
 class Application
 {
@@ -14,4 +18,8 @@ public:
 
 private:
     boost::shared_ptr<CMainFrame> m_mainWindow;
+    aoia::SettingsManager _settings;
 };
+
+
+#endif // APPLICATION_H

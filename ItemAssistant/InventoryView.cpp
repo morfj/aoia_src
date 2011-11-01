@@ -8,7 +8,6 @@
 #include <ItemAssistantCore/AOManager.h>
 #include "ItemListDataModel.h"
 #include "ServerSelectorDialog.h"
-#include <ItemAssistantCore/SettingsManager.h>
 #include <Parsers/AOFullCharacterSync.h>
 #include <Parsers/AOPlayerShopInfo.h>
 #include <Parsers/AOPlayerShopContent.h>
@@ -24,10 +23,11 @@ using namespace aoia;
 using namespace boost::algorithm;
 
 
-InventoryView::InventoryView(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui)
+InventoryView::InventoryView(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui, aoia::ISettingsPtr settings)
     : m_db(db)
     , m_containerManager(containerManager)
     , m_gui(gui)
+    , m_settings(settings)
     , m_sortDesc(false)
     , m_sortColumn(0)
     , m_datagrid(new DataGridControl())
@@ -35,10 +35,15 @@ InventoryView::InventoryView(sqlite::IDBPtr db, aoia::IContainerManagerPtr conta
     , m_infoview(db)
     , m_findview(db)
 {
+    assert(db);
+    assert(containerManager);
+    assert(gui);
+    assert(settings);
+
     m_tempContainers.reset(new aoia::inv::TempContainerCache());
 
     m_enableCharacterParserDumper = true;
-    if (boost::algorithm::iequals(SettingsManager::instance().getValue(_T("Record Stats")), _T("no")))
+    if (boost::algorithm::iequals(m_settings->getValue(_T("Record Stats")), _T("no")))
     {
         m_enableCharacterParserDumper = false;
     }
@@ -487,7 +492,7 @@ LRESULT InventoryView::OnRecordStatsToggle(WORD/*wNotifyCode*/, WORD/*wID*/, HWN
     m_enableCharacterParserDumper = !m_enableCharacterParserDumper;
 
     m_toolbar.CheckButton(ID_RECORD_STATS_TOGGLE, m_enableCharacterParserDumper ? TRUE : FALSE);
-    SettingsManager::instance().setValue(_T("Record Stats"), m_enableCharacterParserDumper ? _T("yes") : _T("no"));
+    m_settings->setValue(_T("Record Stats"), m_enableCharacterParserDumper ? _T("yes") : _T("no"));
 
     return 0;
 }

@@ -1,18 +1,15 @@
-#include "StdAfx.h"
 #include "SettingsManager.h"
+#include <fstream>
 
 
-namespace aoia {
+namespace aoia
+{
 
-    SINGLETON_IMPL(SettingsManager);
+    SettingsManager::SettingsManager() {}
 
-    SettingsManager::SettingsManager()
-    {
-    }
 
-    SettingsManager::~SettingsManager()
-    {
-    }
+    SettingsManager::~SettingsManager() {}
+
 
     std::tstring SettingsManager::getValue(std::tstring const& key) const
     {
@@ -24,10 +21,12 @@ namespace aoia {
         return _T("");
     }
 
+
     void SettingsManager::setValue(std::tstring const& key, std::tstring const& value)
     {
         m_values[key] = value;
     }
+
 
     void SettingsManager::readSettings(std::tstring const& filename)
     {
@@ -54,10 +53,10 @@ namespace aoia {
         }
     }
 
+
     void SettingsManager::writeSettings(std::tstring const& filename)
     {
         std::basic_ofstream<TCHAR> ofs(filename.c_str());
-
         if (!ofs.is_open())
         {
             return;
@@ -70,5 +69,4 @@ namespace aoia {
             ++it;
         }
     }
-
 }

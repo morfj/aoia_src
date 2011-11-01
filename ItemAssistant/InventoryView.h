@@ -10,6 +10,7 @@
 #include <datagrid/DataGridControl.h>
 #include <PluginSDK/IContainerManager.h>
 #include <shared/aopackets.h>
+#include <settings/ISettings.h>
 
 #include "CharacterParserDumper.h"
 #include "FindPanel.h"
@@ -26,7 +27,7 @@ class InventoryView
 public:
     DECLARE_WND_CLASS(NULL)
 
-    InventoryView(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui);
+    InventoryView(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui, aoia::ISettingsPtr settings);
     virtual ~InventoryView();
 
     enum
@@ -145,6 +146,7 @@ private:
     sqlite::IDBPtr m_db;
     aoia::IContainerManagerPtr m_containerManager;
     aoia::IGuiServicesPtr m_gui;
+    aoia::ISettingsPtr m_settings;
     aoia::inv::TempContainerCachePtr m_tempContainers;
 
     CharacterParserDumper m_characterParserDumper;
