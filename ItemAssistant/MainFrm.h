@@ -1,6 +1,7 @@
 #ifndef MAINFRM_H
 #define MAINFRM_H
 
+#include <settings/ISettings.h>
 #include <PluginSDK/PluginViewInterface.h>
 #include "TabFrame.h"
 #include <vector>
@@ -20,7 +21,7 @@ class CMainFrame
     , public CIdleHandler
 {
 public:
-    CMainFrame();
+    CMainFrame(aoia::ISettingsPtr settings);
 
     DECLARE_FRAME_WND_CLASS(_T("ItemAssistantWindowClass"), IDR_MAINFRAME)
 
@@ -85,6 +86,7 @@ private:
     CRect m_windowRect;
     boost::shared_ptr<aoia::GuiServices> m_guiServices;
     aoia::IContainerManagerPtr m_containerManager;
+    aoia::ISettingsPtr m_settings;
 };
 
 #endif // MAINFRM_H

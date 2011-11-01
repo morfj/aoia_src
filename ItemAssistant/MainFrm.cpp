@@ -6,7 +6,6 @@
 #include "InjectionSupport.h"
 #include "ntray.h"
 #include "Version.h"
-#include <ItemAssistantCore/SettingsManager.h>
 #include "GuiServices.h"
 #include "ContainerManager.h"
 
@@ -17,14 +16,17 @@ typedef  BOOL (WINAPI *ChangeWindowMessageFilterFunc)(UINT message, DWORD dwFlag
 #define MSGFLT_REMOVE 2
 
 
-CMainFrame::CMainFrame()
+CMainFrame::CMainFrame(aoia::ISettingsPtr settings)
+    : m_settings(settings)
 {
+    assert(settings);
+
     try
     {
-        m_windowRect.left = boost::lexical_cast<int>(aoia::SettingsManager::instance().getValue(_T("Window.Left")));
-        m_windowRect.top = boost::lexical_cast<int>(aoia::SettingsManager::instance().getValue(_T("Window.Top")));
-        m_windowRect.right = m_windowRect.left + boost::lexical_cast<unsigned int>(aoia::SettingsManager::instance().getValue(_T("Window.Width")));
-        m_windowRect.bottom = m_windowRect.top + boost::lexical_cast<unsigned int>(aoia::SettingsManager::instance().getValue(_T("Window.Height")));
+        m_windowRect.left = boost::lexical_cast<int>(m_settings->getValue(_T("Window.Left")));
+        m_windowRect.top = boost::lexical_cast<int>(m_settings->getValue(_T("Window.Top")));
+        m_windowRect.right = m_windowRect.left + boost::lexical_cast<unsigned int>(m_settings->getValue(_T("Window.Width")));
+        m_windowRect.bottom = m_windowRect.top + boost::lexical_cast<unsigned int>(m_settings->getValue(_T("Window.Height")));
     }
     catch(boost::bad_lexical_cast &/*e*/)
     {
@@ -156,10 +158,10 @@ LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
     if (!m_windowRect.IsRectEmpty())
     {
         LOG("Storing window rectangle.");
-        aoia::SettingsManager::instance().setValue(_T("Window.Left"), STREAM2STR(m_windowRect.left));
-        aoia::SettingsManager::instance().setValue(_T("Window.Top"), STREAM2STR(m_windowRect.top));
-        aoia::SettingsManager::instance().setValue(_T("Window.Width"), STREAM2STR(m_windowRect.Width()));
-        aoia::SettingsManager::instance().setValue(_T("Window.Height"), STREAM2STR(m_windowRect.Height()));
+        m_settings->setValue(_T("Window.Left"), STREAM2STR(m_windowRect.left));
+        m_settings->setValue(_T("Window.Top"), STREAM2STR(m_windowRect.top));
+        m_settings->setValue(_T("Window.Width"), STREAM2STR(m_windowRect.Width()));
+        m_settings->setValue(_T("Window.Height"), STREAM2STR(m_windowRect.Height()));
     }
 
     LOG("Posting close command.");
