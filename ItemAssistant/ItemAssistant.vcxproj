@@ -149,7 +149,6 @@
     <ClCompile Include="MFTreeView.cpp" />
     <ClCompile Include="NTRAY.CPP" />
     <ClCompile Include="ProgressDialog.cpp" />
-    <ClCompile Include="QueryDataGridModel.cpp" />
     <ClCompile Include="ContainerManager.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -193,7 +192,6 @@
     <ClInclude Include="MFTreeView.h" />
     <ClInclude Include="NTRAY.H" />
     <ClInclude Include="ProgressDialog.h" />
-    <ClInclude Include="QueryDataGridModel.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ContainerManager.h" />
     <ClInclude Include="stdafx.h" />

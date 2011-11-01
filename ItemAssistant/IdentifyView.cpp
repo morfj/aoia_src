@@ -2,7 +2,6 @@
 #include "IdentifyView.h"
 #include <Shared/SQLite.h>
 #include "DBManager.h"
-#include "QueryDataGridModel.h"
 #include "IdentifyListDataModel.h"
 #include "ItemListDataModel.h"
 
