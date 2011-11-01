@@ -18,7 +18,7 @@ class TabFrame
     typedef CTabbedChildWindow< CDotNetTabCtrl<CTabViewTabItem> > baseClass;
 
 public:
-    TabFrame(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui);
+    TabFrame(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui, aoia::ISettingsPtr settings);
     virtual ~TabFrame();
 
     BEGIN_MSG_MAP(TabFrame)

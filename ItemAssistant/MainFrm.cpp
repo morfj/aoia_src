@@ -105,7 +105,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
     DWORD style = WS_CHILD | /*WS_VISIBLE |*/ WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 
-    m_tabbedChildWindow.reset(new TabFrame(g_DBManager.GetDatabase(), m_containerManager, m_guiServices));
+    m_tabbedChildWindow.reset(new TabFrame(g_DBManager.GetDatabase(), m_containerManager, m_guiServices, m_settings));
     m_tabbedChildWindow->SetToolBarPanel(m_hWndToolBar);
     m_tabbedChildWindow->SetStatusBar(m_hWndStatusBar);
     m_tabbedChildWindow->SetTabStyles(CTCS_TOOLTIPS | CTCS_DRAGREARRANGE);
