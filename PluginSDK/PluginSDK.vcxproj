@@ -79,6 +79,8 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="IDBManager.h" />
+    <ClInclude Include="IGuiServices.h" />
     <ClInclude Include="ItemAssistView.h" />
     <ClInclude Include="PluginViewInterface.h" />
   </ItemGroup>

@@ -21,5 +21,11 @@
     <ClInclude Include="PluginViewInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IDBManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IGuiServices.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

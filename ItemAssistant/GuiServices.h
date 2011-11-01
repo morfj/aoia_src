@@ -1,8 +1,10 @@
 #ifndef GUISERVICES_H
 #define GUISERVICES_H
 
-#include "IGuiServices.h"
+#include <PluginSDK/IGuiServices.h>
 
+
+class CTrayNotifyIcon;
 
 namespace aoia
 {

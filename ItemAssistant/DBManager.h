@@ -4,7 +4,7 @@
 #include <shared/IDB.h>
 #include <shared/Mutex.h>
 #include <vector>
-#include "IDBManager.h"
+#include <PluginSDK/IDBManager.h>
 
 
 class DBManager

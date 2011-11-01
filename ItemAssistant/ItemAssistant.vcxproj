@@ -185,11 +185,8 @@
     <ClInclude Include="CharacterParserDumper.h" />
     <ClInclude Include="DBManager.h" />
     <ClInclude Include="GuiServices.h" />
-    <ClInclude Include="IDBManager.h" />
-    <ClInclude Include="IGuiServices.h" />
     <ClInclude Include="InjectionSupport.h" />
     <ClInclude Include="InventoryIDs.h" />
-    <ClInclude Include="ITable.h" />
     <ClInclude Include="ItemAssistant.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="mdump.h" />

@@ -4,9 +4,9 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <PluginSDK/IGuiServices.h>
 #include <shared/IContainerManager.h>
 #include <shared/IDB.h>
-#include "IGuiServices.h"
 
 
 // Puts the hex value of the specified char into a string

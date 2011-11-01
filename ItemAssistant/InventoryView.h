@@ -1,19 +1,21 @@
 #ifndef INVENTORYVIEW_H
 #define INVENTORYVIEW_H
 
+#include <vector>
+#include <atlsplit.h>
+#include <boost/signal.hpp>
+
+#include <PluginSDK/IGuiServices.h>
+#include <PluginSDK/ItemAssistView.h>
+#include <datagrid/DataGridControl.h>
+#include <shared/IContainerManager.h>
+#include <shared/aopackets.h>
+
 #include "CharacterParserDumper.h"
 #include "FindPanel.h"
-#include "IGuiServices.h"
 #include "InfoPanel.h"
 #include "InvTreeItems.h"
 #include "MFTreeView.h"
-#include <PluginSDK/ItemAssistView.h>
-#include <atlsplit.h>
-#include <boost/signal.hpp>
-#include <datagrid/DataGridControl.h>
-#include <shared/aopackets.h>
-#include <shared/IContainerManager.h>
-#include <vector>
 #include "TempContainerCache.h"
 
 

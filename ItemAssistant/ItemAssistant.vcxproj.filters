@@ -173,9 +173,6 @@
     <ClInclude Include="InjectionSupport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="InventoryIDs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ItemAssistant.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -275,15 +272,6 @@
     <ClInclude Include="mdump.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IDBManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IGuiServices.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GuiServices.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -292,6 +280,9 @@
     </ClInclude>
     <ClInclude Include="ContainerManager.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InventoryIDs.h">
+      <Filter>Plugins\Inventory</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

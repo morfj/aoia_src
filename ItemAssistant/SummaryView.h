@@ -3,8 +3,8 @@
 
 #include <shared/IDB.h>
 #include <PluginSDK/ItemAssistView.h>
+#include <PluginSDK/IGuiServices.h>
 #include "WebView.h"
-#include "IGuiServices.h"
 
 
 namespace aoia

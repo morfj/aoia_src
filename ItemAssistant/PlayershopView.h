@@ -2,13 +2,13 @@
 #define PLAYERSHOPVIEW_H
 
 #include <PluginSDK/ItemAssistView.h>
+#include <PluginSDK/IGuiServices.h>
 #include <boost/filesystem/path.hpp>
 #include "shared/Thread.h"
 #include "shared/Mutex.h"
 #include <atlsplit.h>
 #include "MFTreeView.h"
 #include "PsmTreeItems.h"
-#include "IGuiServices.h"
 
 
 #define WM_PSM_UPDATE WM_USER+1

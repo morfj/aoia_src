@@ -5,7 +5,7 @@
 #include <shared/IDB.h>
 #include <shared/IContainerManager.h>
 #include <set>
-#include "ItemAssistant/IDBManager.h"   // TODO : Move/extract interface
+#include <PluginSDK/IDBManager.h>
 
 
 namespace aoia {

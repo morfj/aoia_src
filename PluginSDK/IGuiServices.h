@@ -1,8 +1,6 @@
 #ifndef IGUISERVICES_H
 #define IGUISERVICES_H
 
-class CTrayNotifyIcon;
-
 namespace aoia
 {
     struct IGuiServices

@@ -2,12 +2,12 @@
 #define IDENTIFYVIEW_H
 
 #include <PluginSDK/ItemAssistView.h>
+#include <PluginSDK/IGuiServices.h>
 #include "datagrid/DataGridControl.h"
 #include "IdentifyListDataModel.h"
 #include <atlsplit.h>
 #include <Shared/IDB.h>
 #include <shared/IContainerManager.h>
-#include "IGuiServices.h"
 
 
 class IdentifyView
