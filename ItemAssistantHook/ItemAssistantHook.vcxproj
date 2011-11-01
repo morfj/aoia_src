@@ -129,6 +129,14 @@
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\deps\Detours\Detours.vcxproj">
+      <Project>{a91ec33d-ac2c-4833-ba5c-5124cea3b83b}</Project>
+      <Private>true</Private>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
     <ProjectReference Include="..\Shared\shared.vcxproj">
       <Project>{370e1e96-79a9-4c9d-83b2-6e8298a90655}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
