@@ -94,7 +94,6 @@ public:
 
     LRESULT OnShowItemRef(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
     LRESULT OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
-
     LRESULT OnRecordStatsToggle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	virtual void OnAOClientMessage(AOClientMessageBase &msg);
@@ -138,6 +137,7 @@ protected:
     void onAllItemsRemoved();
 
     bool SetClipboardText(std::tstring const& text);
+    void GetSelectedItemIds( std::set<unsigned int> &ids );
 
 private:
     sqlite::IDBPtr m_db;

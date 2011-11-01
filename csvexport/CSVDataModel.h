@@ -19,6 +19,10 @@ namespace aoia {
     public:
         /// Constructor that takes a general SQL predicate as input.
         CSVDataModel(sqlite::IDBPtr db, IContainerManagerPtr bp, std::tstring const& predicate, std::tstring const& link_template);
+
+        /// Constructor that takes a set of AOIA item IDs as input.
+        CSVDataModel(sqlite::IDBPtr db, IContainerManagerPtr bp, std::set<unsigned int> const& ids, std::tstring const& link_template);
+
         virtual ~CSVDataModel();
 
         /// Return number of columns.

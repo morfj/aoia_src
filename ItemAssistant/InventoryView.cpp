@@ -447,27 +447,8 @@ LRESULT InventoryView::OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND 
         return 0;
     }
 
-    std::set<unsigned int> selectedIndexes = m_datagrid->getSelectedItems();
-
-    ItemServer server = SERVER_AUNO;
-    if (CommandId == ID_EXPORTTOCSV_JAYDEE)
-    {
-        server = SERVER_JAYDEE;
-    }
-    else if (CommandId == ID_EXPORTTOCSV_XYPHOS)
-    {
-        server = SERVER_XYPHOS;
-    }
-
-    std::tstring itemTemplate = _T("%lowid%,%hiid%,%ql%,\"%itemname%\",%itemlocation%,");
-    itemTemplate += GetServerItemURLTemplate(server);
-    itemTemplate += _T(",%containerid%");
-    std::tstring prefix = _T("LowID,HighID,QL,Name,Location,Link,ContainerID\n");
-    std::tstring separator = _T("\n");
-
     // Ask user for name of CSV file
-    std::tstring filename = BrowseForOutputFile(GetTopLevelWindow(), _T("Select Name of Output File"),
-                                                _T("CSV Files (Comma-Separated Values)\0*.csv\0\0"), _T("csv"));
+    std::tstring filename = BrowseForOutputFile(GetTopLevelWindow(), _T("Select Name of Output File"), _T("CSV Files (Comma-Separated Values)\0*.csv\0\0"), _T("csv"));
     if (filename.empty())
     {
         return 0;
@@ -480,35 +461,22 @@ LRESULT InventoryView::OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND 
         return 0;
     }
 
-    ItemListDataModelPtr model = boost::shared_static_cast<ItemListDataModel>(m_datagrid->getModel());
-
-    g_DBManager.Lock();
-    ofs << prefix;
-    for (std::set<unsigned int>::iterator it = selectedIndexes.begin(); it != selectedIndexes.end(); ++it)
+    ItemServer server = SERVER_AUNO;
+    if (CommandId == ID_EXPORTTOCSV_JAYDEE)
     {
-        if (it != selectedIndexes.begin())
-        {
-            ofs << separator;
-        }
-
-        OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo(model->getItemIndex(*it));
-        std::tstring containername = GetContainerNameForItem(pItemInfo);
-
-        std::tstring itemlocation = pItemInfo->ownername;
-        itemlocation += _T(" -> ");
-        itemlocation += containername;
-
-        std::tstring itemStr = itemTemplate;
-        boost::replace_all(itemStr, _T("%lowid%"), pItemInfo->itemloid);
-        boost::replace_all(itemStr, _T("%hiid%"), pItemInfo->itemhiid);
-        boost::replace_all(itemStr, _T("%ql%"), pItemInfo->itemql);
-        boost::replace_all(itemStr, _T("%itemname%"), pItemInfo->itemname);
-        boost::replace_all(itemStr, _T("%itemlocation%"), itemlocation);
-        boost::replace_all(itemStr, _T("%containerid%"), pItemInfo->containerid);
-
-        ofs << itemStr;
+        server = SERVER_JAYDEE;
     }
-    g_DBManager.UnLock();
+    else if (CommandId == ID_EXPORTTOCSV_XYPHOS)
+    {
+        server = SERVER_XYPHOS;
+    }
+
+    std::set<unsigned int> ids;
+    GetSelectedItemIds(ids);
+
+    CSVDataModelPtr model(new CSVDataModel(m_db, m_containerManager, ids, GetServerItemURLTemplate(server)));
+    CSVExporter exporter;
+    exporter.DoExport(ofs, model);
 
     return 0;
 }
@@ -2860,4 +2828,15 @@ std::tstring InventoryView::GetContainerNameForItem( OwnedItemInfoPtr pItemInfo 
     unsigned int containerid = boost::lexical_cast<unsigned int>(pItemInfo->containerid);
     unsigned int ownerid = boost::lexical_cast<unsigned int>(pItemInfo->ownerid);
     return m_containerManager->GetContainerName(ownerid, containerid);
+}
+
+
+void InventoryView::GetSelectedItemIds( std::set<unsigned int> &ids )
+{
+    std::set<unsigned int> selectedIndexes = m_datagrid->getSelectedItems();
+    ItemListDataModelPtr model = boost::shared_static_cast<ItemListDataModel>(m_datagrid->getModel());
+    for (std::set<unsigned int>::const_iterator it = selectedIndexes.begin(); it != selectedIndexes.end(); ++it)
+    {
+        ids.insert(model->getItemIndex(*it));
+    }
 }

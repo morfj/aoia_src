@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/replace.hpp>
+#include "boost/algorithm/string/join.hpp"
 
 
 namespace aoia {
@@ -12,6 +13,27 @@ namespace aoia {
         , m_linkTemplate(link_template)
     {
         assert(m_db);
+        runQuery(predicate);
+    }
+
+
+    CSVDataModel::CSVDataModel( sqlite::IDBPtr db, IContainerManagerPtr bp, std::set<unsigned int> const& ids, std::tstring const& link_template )
+        : m_db(db)
+        , m_bp(bp)
+        , m_linkTemplate(link_template)
+    {
+        assert(m_db);
+
+        std::vector<std::tstring> idStrings;
+        for (std::set<unsigned int>::const_iterator it = ids.begin(); it != ids.end(); ++it)
+        {
+            idStrings.push_back(STREAM2STR(*it));
+        }
+
+        std::tstring predicate = _T("I.itemidx IN(");
+        predicate += boost::algorithm::join(idStrings, _T(", "));
+        predicate += _T(")");
+
         runQuery(predicate);
     }
 
