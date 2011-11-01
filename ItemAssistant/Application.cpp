@@ -8,6 +8,7 @@
 
 Application::Application()
 {
+    m_settings.reset(new aoia::SettingsManager());
 }
 
 
@@ -19,7 +20,7 @@ Application::~Application()
 bool Application::init(std::tstring const& cmdLine)
 {
     // Read stored settings from file.
-    _settings.readSettings(_T("ItemAssistant.conf"));
+    m_settings->readSettings(_T("ItemAssistant.conf"));
 
     // Check to see if logging should be enabled
     if (cmdLine.find(_T("-log")) != std::tstring::npos)
@@ -57,7 +58,7 @@ void Application::destroy()
     m_mainWindow.reset();
 
     // Save user settings.
-    _settings.writeSettings(_T("ItemAssistant.conf"));
+    m_settings->writeSettings(_T("ItemAssistant.conf"));
 
     g_DBManager.Lock();
     g_DBManager.destroy();
@@ -73,7 +74,7 @@ int Application::run(LPTSTR /*lpstrCmdLine*/, int nCmdShow)
     _Module.AddMessageLoop(&theLoop);
 
     // Create the GUI
-    m_mainWindow.reset(new CMainFrame());
+    m_mainWindow.reset(new CMainFrame(m_settings));
     if (m_mainWindow->CreateEx() == NULL)
     {
         assert(false);  // Could not create main window for some reason.

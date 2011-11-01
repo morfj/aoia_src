@@ -18,7 +18,7 @@ public:
 
 private:
     boost::shared_ptr<CMainFrame> m_mainWindow;
-    aoia::SettingsManager _settings;
+    boost::shared_ptr<aoia::SettingsManager> m_settings;
 };
 
 
