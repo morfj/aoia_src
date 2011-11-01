@@ -7,7 +7,7 @@
 #include "shared/Thread.h"
 #include "shared/aopackets.h"
 #include <Shared/IDB.h>
-#include <shared/IContainerManager.h>
+#include <PluginSDK/IContainerManager.h>
 #include <PluginSDK/IGuiServices.h>
 #include <PluginSDK/ItemAssistView.h>
 #include "WebView.h"

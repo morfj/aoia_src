@@ -2,7 +2,7 @@
 #define PATTERNREPORT_H
 
 #include <shared/IDB.h>
-#include <Shared/IContainerManager.h>
+#include <PluginSDK/IContainerManager.h>
 
 
 /**

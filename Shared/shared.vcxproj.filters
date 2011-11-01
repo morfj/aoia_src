@@ -88,9 +88,6 @@
     <ClInclude Include="UnicodeSupport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IContainerManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="IDB.h">
       <Filter>Header Files</Filter>
     </ClInclude>

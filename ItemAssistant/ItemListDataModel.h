@@ -1,10 +1,10 @@
 #ifndef ITEMLISTDATAMODEL_H
 #define ITEMLISTDATAMODEL_H
 
-#include "datagrid/DataGridModel.h"
+#include <PluginSDK/IContainerManager.h>
+#include <datagrid/DataGridModel.h>
 #include <Shared/IDB.h>
 #include <set>
-#include "shared/IContainerManager.h"
 
 
 namespace aoia

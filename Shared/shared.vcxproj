@@ -116,7 +116,6 @@
     <ClInclude Include="AOItemParser.h" />
     <ClInclude Include="aopackets.h" />
     <ClInclude Include="FileUtils.h" />
-    <ClInclude Include="IContainerManager.h" />
     <ClInclude Include="IDB.h" />
     <ClInclude Include="ITable.h" />
     <ClInclude Include="Mutex.h" />

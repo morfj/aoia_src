@@ -3,7 +3,7 @@
 #include "MFTreeView.h"
 #include "DBManager.h"
 #include <strstream>
-#include <Shared/IContainerManager.h>
+#include <PluginSDK/IContainerManager.h>
 
 
 class InventoryView;

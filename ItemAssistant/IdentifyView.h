@@ -7,7 +7,7 @@
 #include "IdentifyListDataModel.h"
 #include <atlsplit.h>
 #include <Shared/IDB.h>
-#include <shared/IContainerManager.h>
+#include <PluginSDK/IContainerManager.h>
 
 
 class IdentifyView

@@ -8,7 +8,7 @@
 #include <PluginSDK/IGuiServices.h>
 #include <PluginSDK/ItemAssistView.h>
 #include <datagrid/DataGridControl.h>
-#include <shared/IContainerManager.h>
+#include <PluginSDK/IContainerManager.h>
 #include <shared/aopackets.h>
 
 #include "CharacterParserDumper.h"

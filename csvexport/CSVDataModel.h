@@ -3,7 +3,7 @@
 
 #include <datagrid/DataGridModel.h>
 #include <shared/IDB.h>
-#include <shared/IContainerManager.h>
+#include <PluginSDK/IContainerManager.h>
 #include <set>
 #include <PluginSDK/IDBManager.h>
 

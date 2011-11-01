@@ -5,7 +5,7 @@
 #include <string>
 #include <map>
 #include <PluginSDK/IGuiServices.h>
-#include <shared/IContainerManager.h>
+#include <PluginSDK/IContainerManager.h>
 #include <shared/IDB.h>
 
 
