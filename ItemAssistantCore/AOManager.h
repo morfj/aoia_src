@@ -19,8 +19,6 @@ public:
     };
 
     std::tstring getAOFolder() const;
-    bool createAOItemsDB(std::tstring const& localfile, bool showProgress = true);
-    std::tstring getCustomBackpackName(unsigned int charid, unsigned int containerid) const;
     std::vector<std::tstring> getAccountNames() const;
 
 private:

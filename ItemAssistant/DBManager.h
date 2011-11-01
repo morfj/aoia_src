@@ -66,14 +66,6 @@ public:
     /// Release database lock.
     void UnLock() { m_mutex.MutexOff(); }
 
-    //virtual sqlite::ITablePtr ExecTable(std::wstring const& sql) const;
-    //virtual sqlite::ITablePtr ExecTable(std::string const& sql) const;
-    //virtual bool Exec(std::wstring const& sql) const;
-    //virtual bool Exec(std::string const& sql) const;
-    //virtual void Begin() const;
-    //virtual void Commit() const;
-    //virtual void Rollback() const;
-
     sqlite::IDBPtr GetDatabase() const { return m_db; }
 
 protected:

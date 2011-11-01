@@ -70,18 +70,6 @@ std::tstring AOManager::getAOFolder() const
 }
 
 
-bool AOManager::createAOItemsDB(std::tstring const& localfile, bool showProgress)
-{
-    return false;
-}
-
-
-std::tstring AOManager::getCustomBackpackName(unsigned int charid, unsigned int containerid) const
-{
-    return _T("");
-}
-
-
 std::vector<std::tstring> AOManager::getAccountNames() const
 {
     std::vector<std::tstring> result;
@@ -97,30 +85,6 @@ std::vector<std::tstring> AOManager::getAccountNames() const
             }
         }
     }
-
-
-
-    //std::tstring path = getAOFolder();
-    //path += _T("\\Prefs\\*");
-
-    //WIN32_FIND_DATA findData;
-
-    //HANDLE hFind = FindFirstFileEx(path.c_str(), FindExInfoStandard, &findData, FindExSearchLimitToDirectories, NULL, 0);
-
-    //if (hFind != INVALID_HANDLE_VALUE)
-    //{
-    //    do
-    //    {
-    //        if ((findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) 
-    //            && (findData.cFileName[0] != NULL) 
-    //            && (findData.cFileName[0] != '.'))
-    //        {
-    //            result.push_back(std::tstring(findData.cFileName));
-    //        }
-    //    }
-    //    while (FindNextFile(hFind, &findData));
-    //    FindClose(hFind);
-    //}
 
     return result;
 }
