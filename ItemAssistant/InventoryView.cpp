@@ -33,7 +33,7 @@ InventoryView::InventoryView(sqlite::IDBPtr db, aoia::IContainerManagerPtr conta
     , m_datagrid(new DataGridControl())
     , m_characterParserDumper(_T("binfiles"))
     , m_infoview(db)
-    , m_findview(db)
+    , m_findview(db, settings)
 {
     assert(db);
     assert(containerManager);
