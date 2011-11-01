@@ -64,7 +64,7 @@ class PatternMatchView
 public:
     DECLARE_WND_CLASS(NULL)
 
-    PatternMatchView(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui);
+    PatternMatchView(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui, aoia::ISettingsPtr settings);
     virtual ~PatternMatchView();
 
     BEGIN_MSG_MAP_EX(PatternMatchView)

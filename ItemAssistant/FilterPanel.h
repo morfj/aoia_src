@@ -3,6 +3,8 @@
 
 #include <boost/signal.hpp>
 #include <shared/IDB.h>
+#include <settings/ISettings.h>
+
 
 namespace PatternMatcher
 {
@@ -26,7 +28,7 @@ namespace PatternMatcher
         typedef boost::signal<void ()> SettingsChangedSignal;
         typedef boost::signals::connection Connection;
 
-        FilterPanel(sqlite::IDBPtr db);
+        FilterPanel(sqlite::IDBPtr db, aoia::ISettingsPtr settings);
         virtual ~FilterPanel();
 
         // Access to properties in the filter GUI.
@@ -73,6 +75,7 @@ namespace PatternMatcher
 
     private:
         sqlite::IDBPtr m_db;
+        aoia::ISettingsPtr m_settings;
         SettingsChangedSignal m_settingsChangedSignal;
         std::tstring m_basequery;
     };

@@ -9,7 +9,7 @@
 #include <boost/bind.hpp>
 
 
-PatternMatchView::PatternMatchView(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui)
+PatternMatchView::PatternMatchView(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui, aoia::ISettingsPtr settings)
     : m_db(db)
     , m_containerManager(containerManager)
     , m_gui(gui)
@@ -20,7 +20,7 @@ PatternMatchView::PatternMatchView(sqlite::IDBPtr db, aoia::IContainerManagerPtr
     , m_sortDesc(true)
     , m_sortColumn(1)
     , m_webview(STREAM2STR("http://ia-help.frellu.net/?topic=patternmatcher&version=" << g_versionNumber))
-    , m_filterPanel(db)
+    , m_filterPanel(db, settings)
 {
     m_availCalc.SetOwner(this);
 }
