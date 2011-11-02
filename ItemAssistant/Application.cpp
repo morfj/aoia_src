@@ -9,6 +9,7 @@
 Application::Application()
 {
     m_settings.reset(new aoia::SettingsManager());
+    AOManager::instance().SettingsManager(m_settings);
 }
 
 

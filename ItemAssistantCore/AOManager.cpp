@@ -3,7 +3,6 @@
 #include <boost/filesystem.hpp>
 #include <Shared/UnicodeSupport.h>
 #include <Shared/FileUtils.h>
-#include <ItemAssistantCore/SettingsManager.h>
 
 
 namespace bfs = boost::filesystem;
@@ -30,13 +29,15 @@ AOManager::~AOManager()
 
 std::tstring AOManager::getAOFolder() const
 {
+    assert(m_settings);
+
     if (m_aofolder.empty())
     {
         bfs::tpath AODir;
         bool requestFolder = true;
 
         // Get AO folder from settings
-        std::tstring dir_setting = SettingsManager::instance().getValue(_T("AOPath"));
+        std::tstring dir_setting = m_settings->getValue(_T("AOPath"));
         if (!dir_setting.empty())
         {
             AODir = dir_setting;
@@ -60,7 +61,7 @@ std::tstring AOManager::getAOFolder() const
             }
 
             // Store the new AO directory in the settings
-            SettingsManager::instance().setValue(_T("AOPath"), AODir.native());
+            m_settings->setValue(_T("AOPath"), AODir.native());
         }
 
         m_aofolder = AODir.native();
@@ -87,4 +88,10 @@ std::vector<std::tstring> AOManager::getAccountNames() const
     }
 
     return result;
+}
+
+
+void AOManager::SettingsManager( aoia::ISettingsPtr settings )
+{
+    m_settings = settings;
 }

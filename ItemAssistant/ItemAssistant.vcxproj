@@ -280,6 +280,14 @@
       <Project>{27846e26-fa81-4b43-997d-62b0338f1a37}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+    <ProjectReference Include="..\settings\settings.vcxproj">
+      <Project>{49a0704e-0eb7-4df3-884e-29bcba7ec86c}</Project>
+      <Private>true</Private>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
     <ProjectReference Include="..\Shared\shared.vcxproj">
       <Project>{370e1e96-79a9-4c9d-83b2-6e8298a90655}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
