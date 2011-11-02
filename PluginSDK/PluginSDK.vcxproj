@@ -80,10 +80,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="IContainerManager.h" />
+    <ClInclude Include="ICore.h" />
     <ClInclude Include="IDBManager.h" />
     <ClInclude Include="IGuiServices.h" />
     <ClInclude Include="ItemAssistView.h" />
-    <ClInclude Include="PluginViewInterface.h" />
+    <ClInclude Include="IPluginView.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

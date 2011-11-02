@@ -1,13 +1,13 @@
 #ifndef ITEMASSISTVIEW_H
 #define ITEMASSISTVIEW_H
 
-#include <PluginSDK/PluginViewInterface.h>
+#include <PluginSDK/IPluginView.h>
 
 
 template < class T >
 class ItemAssistView
   : public CWindowImpl<T>
-  , public PluginViewInterface
+  , public aoia::IPluginView
 {
     typedef ItemAssistView<T> ThisType;
 
@@ -42,12 +42,12 @@ public:
         return false;
     }
 
-    virtual void OnAOServerMessage(AOMessageBase &msg)
+    virtual void OnAOServerMessage(Parsers::AOMessageBase &msg)
     {
         // Override in derived classes
     }
 
-    virtual void OnAOClientMessage(AOClientMessageBase &msg)
+    virtual void OnAOClientMessage(Parsers::AOClientMessageBase &msg)
     {
         // Override in derived classes
     }

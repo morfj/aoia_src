@@ -7,6 +7,9 @@
 #include "AOMessageIDs.h"
 
 
+using namespace Parsers;
+
+
 AoMsgView::AoMsgView(void)
 {
    // m_mask.insert(AO::MSG_POS_SYNC);

@@ -2,7 +2,7 @@
 #define MAINFRM_H
 
 #include <settings/ISettings.h>
-#include <PluginSDK/PluginViewInterface.h>
+#include <PluginSDK/IPluginView.h>
 #include "TabFrame.h"
 #include <vector>
 #include <shellapi.h>

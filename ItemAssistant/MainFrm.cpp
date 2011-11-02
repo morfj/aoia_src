@@ -10,6 +10,10 @@
 #include "ContainerManager.h"
 
 
+using namespace aoia;
+using namespace Parsers;
+
+
 // Delay loaded function definition
 typedef  BOOL (WINAPI *ChangeWindowMessageFilterFunc)(UINT message, DWORD dwFlag);
 #define MSGFLT_ADD 1
@@ -38,7 +42,7 @@ CMainFrame::CMainFrame(aoia::ISettingsPtr settings)
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 {
-    PluginViewInterface *plugin = m_tabbedChildWindow->GetActivePluginView();
+    IPluginView *plugin = m_tabbedChildWindow->GetActivePluginView();
     if (plugin != NULL)
     {
         if (plugin->PreTranslateMsg(pMsg))

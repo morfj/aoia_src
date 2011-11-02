@@ -1,7 +1,7 @@
 #ifndef TABFRAME_H
 #define TABFRAME_H
 
-#include <PluginSDK/PluginViewInterface.h>
+#include <PluginSDK/IPluginView.h>
 #include "InventoryView.h"
 #include "PatternMatchView.h"
 #include "PlayershopView.h"
@@ -30,9 +30,9 @@ public:
     LRESULT OnSelChange(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
     LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 
-    PluginViewInterface* GetActivePluginView();
-    void OnAOServerMessage(AOMessageBase &msg);
-    void OnAOClientMessage(AOClientMessageBase &msg);
+    aoia::IPluginView* GetActivePluginView();
+    void OnAOServerMessage(Parsers::AOMessageBase &msg);
+    void OnAOClientMessage(Parsers::AOClientMessageBase &msg);
     void SetToolBarPanel(HWND panel) { m_rebarControl.Attach(panel); }
     void SetStatusBar(HWND statusbar) { m_statusBar.Attach(statusbar); }
 
@@ -43,7 +43,7 @@ protected:
     void onStatusChanged();
 
 private:
-    std::vector<PluginViewInterface*> m_viewPlugins;
+    std::vector<aoia::IPluginView*> m_viewPlugins;
 
     InventoryView       m_inventoryView;
 #ifdef _DEBUG

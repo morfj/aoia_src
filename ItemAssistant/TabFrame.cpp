@@ -2,6 +2,9 @@
 #include "Tabframe.h"
 #include <boost/bind.hpp>
 
+using namespace aoia;
+using namespace Parsers;
+
 
 TabFrame::TabFrame(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui, aoia::ISettingsPtr settings)
   : m_toobarVisibility(true)
@@ -22,9 +25,9 @@ TabFrame::~TabFrame()
 
 LRESULT TabFrame::OnSelChange(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
 {
-    PluginViewInterface* oldplugin = GetActivePluginView();
+    IPluginView* oldplugin = GetActivePluginView();
     baseClass::OnSelChange(0, pnmh, bHandled);
-    PluginViewInterface* newplugin = GetActivePluginView();
+    IPluginView* newplugin = GetActivePluginView();
 
     if (oldplugin) {
         oldplugin->disconnect(m_statusTextSignalConnection);
@@ -117,9 +120,9 @@ LRESULT TabFrame::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandl
 }
 
 
-PluginViewInterface* TabFrame::GetActivePluginView()
+IPluginView* TabFrame::GetActivePluginView()
 {
-    PluginViewInterface* result = NULL;
+    IPluginView* result = NULL;
 
     HWND hWnd = GetActiveView();
     if (hWnd != NULL)

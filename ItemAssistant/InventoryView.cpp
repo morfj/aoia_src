@@ -21,6 +21,7 @@
 using namespace WTL;
 using namespace aoia;
 using namespace boost::algorithm;
+using namespace Parsers;
 
 
 InventoryView::InventoryView(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui, aoia::ISettingsPtr settings)

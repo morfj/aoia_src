@@ -63,13 +63,13 @@ public:
     LRESULT OnSave(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnSize(UINT wParam, CSize newSize);
 
-    virtual void OnAOServerMessage(AOMessageBase &msg);
-    virtual void OnAOClientMessage(AOClientMessageBase &msg);
+    virtual void OnAOServerMessage(Parsers::AOMessageBase &msg);
+    virtual void OnAOClientMessage(Parsers::AOClientMessageBase &msg);
 
 protected:
 	void DumpMessageToTextStream(std::basic_ofstream<TCHAR> &out, Parser &msg);
     void DumpMessageToStream(std::ostream &out, Parser &msg);
-    bool SearchMessageForBinarySequence(AOMessageBase &msg, unsigned char* pArray, unsigned int arraySize);
+    bool SearchMessageForBinarySequence(Parsers::AOMessageBase &msg, unsigned char* pArray, unsigned int arraySize);
 
 private:
     WTL::CListViewCtrl m_listview;

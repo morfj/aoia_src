@@ -99,8 +99,8 @@ public:
     LRESULT OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
     LRESULT OnRecordStatsToggle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
-	virtual void OnAOClientMessage(AOClientMessageBase &msg);
-    virtual void OnAOServerMessage(AOMessageBase &msg);
+	virtual void OnAOClientMessage(Parsers::AOClientMessageBase &msg);
+    virtual void OnAOServerMessage(Parsers::AOMessageBase &msg);
     virtual bool PreTranslateMsg(MSG* pMsg);
 
     void HideFindWindow();
