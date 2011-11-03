@@ -8,39 +8,52 @@
 #include <ItemAssistantCore/AOManager.h>
 #include "ItemListDataModel.h"
 #include "ServerSelectorDialog.h"
-#include <ItemAssistantCore/SettingsManager.h>
 #include <Parsers/AOFullCharacterSync.h>
 #include <Parsers/AOPlayerShopInfo.h>
 #include <Parsers/AOPlayerShopContent.h>
 #include "AOMessageIDs.h"
 #include "AOCharacterActionIDs.h"
 #include "InventoryIDs.h"
+#include <csvexport/CSVDataModel.h>
+#include <csvexport/CSVExporter.h>
+
 
 using namespace WTL;
 using namespace aoia;
 using namespace boost::algorithm;
 
 
-InventoryView::InventoryView()
-: m_sortDesc(false)
-, m_sortColumn(0)
-, m_datagrid(new DataGridControl())
-, m_characterParserDumper(_T("binfiles"))
+InventoryView::InventoryView(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui, aoia::ISettingsPtr settings)
+    : m_db(db)
+    , m_containerManager(containerManager)
+    , m_gui(gui)
+    , m_settings(settings)
+    , m_sortDesc(false)
+    , m_sortColumn(0)
+    , m_datagrid(new DataGridControl())
+    , m_characterParserDumper(_T("binfiles"))
+    , m_infoview(db)
+    , m_findview(db, settings)
 {
+    assert(db);
+    assert(containerManager);
+    assert(gui);
+    assert(settings);
+
+    m_tempContainers.reset(new aoia::inv::TempContainerCache());
+
     m_enableCharacterParserDumper = true;
-    if (boost::algorithm::iequals(SettingsManager::instance().getValue(_T("Record Stats")), _T("no")))
+    if (boost::algorithm::iequals(m_settings->getValue(_T("Record Stats")), _T("no")))
     {
         m_enableCharacterParserDumper = false;
     }
 }
 
 
-InventoryView::~InventoryView()
-{
-}
+InventoryView::~InventoryView() {}
 
 
-LRESULT InventoryView::OnFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT InventoryView::OnFind(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
 {
     if (!::IsWindowVisible(m_findview))
     {
@@ -59,9 +72,10 @@ LRESULT InventoryView::OnFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 }
 
 
-LRESULT InventoryView::OnFindToggle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT InventoryView::OnFindToggle(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
 {
-    if (!::IsWindowVisible(m_findview)) {
+    if (!::IsWindowVisible(m_findview))
+    {
         m_findview.ShowWindow(SW_SHOW);
         m_findview.SetFocus();
         RECT rect;
@@ -69,9 +83,10 @@ LRESULT InventoryView::OnFindToggle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
         CSize newsize(rect.right, rect.bottom);
         UpdateLayout(newsize);
     }
-    else {
+    else
+    {
         HideFindWindow();
-    } 
+    }
 
     m_toolbar.CheckButton(ID_INV_FIND_TOGGLE, m_findview.IsWindowVisible());
 
@@ -79,14 +94,14 @@ LRESULT InventoryView::OnFindToggle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 }
 
 
-LRESULT InventoryView::OnFindHide(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT InventoryView::OnFindHide(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
 {
     HideFindWindow();
     return 0;
 }
 
 
-LRESULT InventoryView::OnInfo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT InventoryView::OnInfo(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
 {
     if (!::IsWindowVisible(m_infoview))
     {
@@ -108,16 +123,16 @@ LRESULT InventoryView::OnInfo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 }
 
 
-LRESULT InventoryView::OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT InventoryView::OnHelp(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
 {
-    SharedServices::ShowHelp(_T("inventory"));
+    m_gui->ShowHelp(_T("inventory"));
     return 0;
 }
 
 
 LRESULT InventoryView::OnColumnClick(LPNMHDR lParam)
 {
-    LPNMLISTVIEW pnmv = (LPNMLISTVIEW) lParam;
+    LPNMLISTVIEW pnmv = (LPNMLISTVIEW)lParam;
 
     if (m_sortColumn != pnmv->iSubItem)
     {
@@ -138,9 +153,10 @@ LRESULT InventoryView::OnColumnClick(LPNMHDR lParam)
 
 LRESULT InventoryView::OnItemChanged(LPNMHDR lParam)
 {
-    LPNMLISTVIEW pnmv = (LPNMLISTVIEW)lParam; 
+    LPNMLISTVIEW pnmv = (LPNMLISTVIEW)lParam;
 
-    if (pnmv->uChanged & LVIF_STATE) {
+    if (pnmv->uChanged & LVIF_STATE)
+    {
         OnSelectionChanged();
     }
 
@@ -186,9 +202,9 @@ LRESULT InventoryView::OnSellItemAoMarket(WORD FromAccelerator, WORD CommandId, 
     ItemListDataModelPtr model = boost::shared_static_cast<ItemListDataModel>(m_datagrid->getModel());
     unsigned int ownedItemIndex = model->getItemIndex(activeItemIdx);
 
-    g_DBManager.lock();
-    OwnedItemInfoPtr pItemInfo = g_DBManager.getOwnedItemInfo(ownedItemIndex);
-    g_DBManager.unLock();
+    g_DBManager.Lock();
+    OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo(ownedItemIndex);
+    g_DBManager.UnLock();
 
     std::tstring url = _T("http://www.aomarket.com/bots/additem?id=%lowid%&ql=%ql%");
     boost::replace_all(url, _T("%lowid%"), pItemInfo->itemloid);
@@ -297,7 +313,9 @@ LRESULT InventoryView::OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND 
     case FORMAT_AO:
         itemTemplate = _T("<a href=%url%>%itemname%</a> [QL %ql%] [%itemlocation%]");
         prefix = _T("<a href=\"text://");
-        postfix = _T("<p><p><center>Generated by <a href='chatcmd:///start http://ia.frellu.net'>AOIA</a></center>\">Item List</a>");
+        postfix =
+            _T(
+            "<p><p><center>Generated by <a href='chatcmd:///start http://ia.frellu.net'>AOIA</a></center>\">Item List</a>");
         separator = _T("<br>");
         break;
 
@@ -310,19 +328,21 @@ LRESULT InventoryView::OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND 
 
     ItemListDataModelPtr model = boost::shared_static_cast<ItemListDataModel>(m_datagrid->getModel());
 
-    g_DBManager.lock();
+    g_DBManager.Lock();
     std::tstring output = prefix;
     for (std::set<unsigned int>::iterator it = selectedIndexes.begin(); it != selectedIndexes.end(); ++it)
     {
-        if (it != selectedIndexes.begin()) {
+        if (it != selectedIndexes.begin())
+        {
             output += separator;
         }
 
-        OwnedItemInfoPtr pItemInfo = g_DBManager.getOwnedItemInfo(model->getItemIndex(*it));
+        OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo(model->getItemIndex(*it));
+        std::tstring containername = GetContainerNameForItem(pItemInfo);
 
         std::tstring itemlocation = pItemInfo->ownername;
         itemlocation += _T(" -> ");
-        itemlocation += pItemInfo->containername;
+        itemlocation += containername;
         boost::replace_all(itemlocation, _T("\""), _T("&quot;"));
 
         std::tstring itemStr = itemTemplate;
@@ -335,13 +355,15 @@ LRESULT InventoryView::OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND 
         output += itemStr;
     }
     output += postfix;
-    g_DBManager.unLock();
+    g_DBManager.UnLock();
 
     SetClipboardText(output);
 
     // Output to the aoia script in the AO script folder.
-    if (scriptOutput) {
-        if (output.length() <= 4096) {
+    if (scriptOutput)
+    {
+        if (output.length() <= 4096)
+        {
             std::tstring filename = STREAM2STR(AOManager::instance().getAOFolder() << _T("\\scripts\\aoia"));
 #ifdef UNICODE
             std::wofstream ofs(filename.c_str());
@@ -354,18 +376,15 @@ LRESULT InventoryView::OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND 
 
             if (showMessage)
             {
-                MessageBox(
-                    _T("All selected items were copied to the clipboard AND written to the AO script called 'aoia' \r\nYou can access it ingame by typing /aoia"), _T("INFORMATION"),
-                    MB_OK | MB_ICONINFORMATION
-                    );
+                MessageBox(_T("All selected items were copied to the clipboard AND written to the AO script called 'aoia' \r\nYou can access it ingame by typing /aoia"), _T("INFORMATION"),
+                           MB_OK | MB_ICONINFORMATION);
                 showMessage = false;
             }
         }
-        else {
-            MessageBox(
-                _T("All selected items were copied to the clipboard, however Anarchy Online does not support scripts of more than 4096 bytes.\r\n\r\nTry selecting fewer items if you want the script file updated."), _T("ERROR"),
-                MB_OK | MB_ICONERROR
-                );
+        else
+        {
+            MessageBox(_T("All selected items were copied to the clipboard, however Anarchy Online does not support scripts of more than 4096 bytes.\r\n\r\nTry selecting fewer items if you want the script file updated."), _T("ERROR"),
+                       MB_OK | MB_ICONERROR);
         }
     }
 
@@ -384,30 +403,37 @@ LRESULT InventoryView::OnShowItemRef(WORD FromAccelerator, WORD CommandId, HWND 
     ItemListDataModelPtr model = boost::shared_static_cast<ItemListDataModel>(m_datagrid->getModel());
     unsigned int ownedItemIndex = model->getItemIndex(activeItemIdx);
 
-    g_DBManager.lock();
-    OwnedItemInfoPtr pItemInfo = g_DBManager.getOwnedItemInfo(ownedItemIndex);
-    g_DBManager.unLock();
+    g_DBManager.Lock();
+    OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo(ownedItemIndex);
+    g_DBManager.UnLock();
+    
+    std::tstring containername = GetContainerNameForItem(pItemInfo);
 
     std::tstring itemlocation = pItemInfo->ownername;
     itemlocation += _T(" -> ");
-    itemlocation += pItemInfo->containername;
+    itemlocation += containername;
 
     TCHAR buffer[1024];
-    if (CommandId == ID_VIEW_ITEMSTATS_AUNO) {
+    if (CommandId == ID_VIEW_ITEMSTATS_AUNO)
+    {
         ATL::AtlLoadString(IDS_AUNO_ITEMREF_URL, buffer, 1024);
     }
-    else if (CommandId == ID_VIEW_ITEMSTATS_JAYDEE) {
+    else if (CommandId == ID_VIEW_ITEMSTATS_JAYDEE)
+    {
         ATL::AtlLoadString(IDS_JAYDEE_ITEMREF_URL, buffer, 1024);
     }
-    else if (CommandId == ID_VIEW_ITEMSTATS_XYPHOS) {
+    else if (CommandId == ID_VIEW_ITEMSTATS_XYPHOS)
+    {
         ATL::AtlLoadString(IDS_XYPHOS_ITEMREF_URL, buffer, 1024);
     }
-    else {
+    else
+    {
         assert(false); // Looks like you forgot to add a section to load the proper url for your command.
     }
     std::tstring url(buffer);
 
-    if (!url.empty()) {
+    if (!url.empty())
+    {
         boost::replace_all(url, _T("%lowid%"), pItemInfo->itemloid);
         boost::replace_all(url, _T("%hiid%"), pItemInfo->itemhiid);
         boost::replace_all(url, _T("%ql%"), pItemInfo->itemql);
@@ -426,10 +452,23 @@ LRESULT InventoryView::OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND 
         return 0;
     }
 
-    std::set<unsigned int> selectedIndexes = m_datagrid->getSelectedItems();
+    // Ask user for name of CSV file
+    std::tstring filename = BrowseForOutputFile(GetTopLevelWindow(), _T("Select Name of Output File"), _T("CSV Files (Comma-Separated Values)\0*.csv\0\0"), _T("csv"));
+    if (filename.empty())
+    {
+        return 0;
+    }
+
+    // Output to the selected CSV file.
+    std::tofstream ofs(filename.c_str());
+    if (!ofs.is_open())
+    {
+        return 0;
+    }
 
     ItemServer server = SERVER_AUNO;
-    if (CommandId == ID_EXPORTTOCSV_JAYDEE) {
+    if (CommandId == ID_EXPORTTOCSV_JAYDEE)
+    {
         server = SERVER_JAYDEE;
     }
     else if (CommandId == ID_EXPORTTOCSV_XYPHOS)
@@ -437,65 +476,23 @@ LRESULT InventoryView::OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND 
         server = SERVER_XYPHOS;
     }
 
-    std::tstring itemTemplate = _T("%lowid%,%hiid%,%ql%,\"%itemname%\",%itemlocation%,");
-    itemTemplate += GetServerItemURLTemplate(server);
-    std::tstring prefix = _T("LowID,HighID,QL,Name,Location,Link\n");
-    std::tstring separator = _T("\n");
+    std::set<unsigned int> ids;
+    GetSelectedItemIds(ids);
 
-    // Ask user for name of CSV file
-    std::tstring filename = BrowseForOutputFile(GetTopLevelWindow(), _T("Select Name of Output File"), _T("CSV Files (Comma-Separated Values)\0*.csv\0\0"), _T("csv"));
-    if (filename.empty()) {
-        return 0;
-    }
-
-    // Output to the selected CSV file.
-#ifdef UNICODE
-    std::wofstream ofs(filename.c_str());
-#else
-    std::ofstream ofs(filename.c_str());
-#endif  // UNICODE
-
-    if (!ofs.is_open()) {
-        return 0;
-    }
-
-    ItemListDataModelPtr model = boost::shared_static_cast<ItemListDataModel>(m_datagrid->getModel());
-
-    g_DBManager.lock();
-    ofs << prefix;
-    for (std::set<unsigned int>::iterator it = selectedIndexes.begin(); it != selectedIndexes.end(); ++it)
-    {
-        if (it != selectedIndexes.begin()) {
-            ofs << separator;
-        }
-
-        OwnedItemInfoPtr pItemInfo = g_DBManager.getOwnedItemInfo(model->getItemIndex(*it));
-
-        std::tstring itemlocation = pItemInfo->ownername;
-        itemlocation += _T(" -> ");
-        itemlocation += pItemInfo->containername;
-
-        std::tstring itemStr = itemTemplate;
-        boost::replace_all(itemStr, _T("%lowid%"), pItemInfo->itemloid);
-        boost::replace_all(itemStr, _T("%hiid%"), pItemInfo->itemhiid);
-        boost::replace_all(itemStr, _T("%ql%"), pItemInfo->itemql);
-        boost::replace_all(itemStr, _T("%itemname%"), pItemInfo->itemname);
-        boost::replace_all(itemStr, _T("%itemlocation%"), itemlocation);
-
-        ofs << itemStr;
-    }
-    g_DBManager.unLock();
+    CSVDataModelPtr model(new CSVDataModel(m_db, m_containerManager, ids, GetServerItemURLTemplate(server)));
+    CSVExporter exporter;
+    exporter.DoExport(ofs, model);
 
     return 0;
 }
 
 
-LRESULT InventoryView::OnRecordStatsToggle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT InventoryView::OnRecordStatsToggle(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
 {
     m_enableCharacterParserDumper = !m_enableCharacterParserDumper;
 
     m_toolbar.CheckButton(ID_RECORD_STATS_TOGGLE, m_enableCharacterParserDumper ? TRUE : FALSE);
-    SettingsManager::instance().setValue(_T("Record Stats"), m_enableCharacterParserDumper ? _T("yes") : _T("no"));
+    m_settings->setValue(_T("Record Stats"), m_enableCharacterParserDumper ? _T("yes") : _T("no"));
 
     return 0;
 }
@@ -534,24 +531,28 @@ LRESULT InventoryView::OnCreate(LPCREATESTRUCT createStruct)
     m_splitter.Create(m_hWnd, rcDefault, NULL, style);
     m_splitter.SetSplitterExtendedStyle(0);
 
-    m_treeview.Create(m_splitter.m_hWnd, rcDefault, NULL, style | TVS_SHOWSELALWAYS | TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_EDITLABELS, WS_EX_CLIENTEDGE);
+    m_treeview.Create(m_splitter.m_hWnd, rcDefault, NULL,
+                      style | TVS_SHOWSELALWAYS | TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_EDITLABELS,
+                      WS_EX_CLIENTEDGE);
     m_treeview.SetDlgCtrlID(IDW_TREEVIEW);
 
-    m_datagrid->Create(m_splitter.m_hWnd, rcDefault, NULL, style | LVS_REPORT /*| LVS_SINGLESEL*/ | LVS_SHOWSELALWAYS | LVS_OWNERDATA, WS_EX_CLIENTEDGE);
+    m_datagrid->Create(m_splitter.m_hWnd, rcDefault, NULL,
+                       style | LVS_REPORT /*| LVS_SINGLESEL*/ | LVS_SHOWSELALWAYS | LVS_OWNERDATA, WS_EX_CLIENTEDGE);
     m_datagrid->SetDlgCtrlID(IDW_LISTVIEW);
 
     // Populate the tree-view
     {
         std::map<unsigned int, std::tstring> dimensionNames;
-        g_DBManager.lock();
-        g_DBManager.getDimensions(dimensionNames);
-        SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT DISTINCT dimensionid FROM tToons"));
-        g_DBManager.unLock();
+        g_DBManager.Lock();
+        g_DBManager.GetDimensions(dimensionNames);
+        sqlite::ITablePtr pT = m_db->ExecTable("SELECT DISTINCT dimensionid FROM tToons");
+        g_DBManager.UnLock();
 
         // Add named dimensions.
-        for (std::map<unsigned int, std::tstring>::iterator it = dimensionNames.begin(); it != dimensionNames.end(); ++it)
+        for (std::map<unsigned int, std::tstring>::iterator it = dimensionNames.begin();
+            it != dimensionNames.end(); ++it)
         {
-            boost::shared_ptr<DimensionNode> node(new DimensionNode(it->second, it->first, this));
+            boost::shared_ptr<DimensionNode> node(new DimensionNode(m_db, m_containerManager, it->second, it->first, this));
             m_dimensionNodes[it->second] = node;
         }
 
@@ -564,7 +565,7 @@ LRESULT InventoryView::OnCreate(LPCREATESTRUCT createStruct)
             {
                 continue;   // Skip named ones.
             }
-            else 
+            else
             {
                 dimName = _T("Unknown Dimension");
                 if (dimId > 0)
@@ -573,12 +574,13 @@ LRESULT InventoryView::OnCreate(LPCREATESTRUCT createStruct)
                 }
             }
 
-            boost::shared_ptr<DimensionNode> node(new DimensionNode(dimName, dimId, this));
+            boost::shared_ptr<DimensionNode> node(new DimensionNode(m_db, m_containerManager, dimName, dimId, this));
             m_dimensionNodes[dimName] = node;
         }
 
         // Add the tree-nodes.
-        for (std::map<std::tstring, boost::shared_ptr<DimensionNode> >::iterator it = m_dimensionNodes.begin(); it != m_dimensionNodes.end(); ++it)
+        for (std::map<std::tstring, boost::shared_ptr<DimensionNode> >::iterator it = m_dimensionNodes.begin();
+            it != m_dimensionNodes.end(); ++it)
         {
             m_treeview.addRootItem(it->second.get());
         }
@@ -637,11 +639,12 @@ LRESULT InventoryView::OnCreate(LPCREATESTRUCT createStruct)
     buttons[5].iString = (INT_PTR)_T("Help");
 
     CImageList imageList;
-    imageList.CreateFromImage(IDB_INVENTORY_VIEW, 16, 2, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
+    imageList.CreateFromImage(IDB_INVENTORY_VIEW, 16, 2, CLR_DEFAULT, IMAGE_BITMAP,
+                              LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
 
-    m_toolbar.Create(GetTopLevelWindow(), NULL, _T("InventoryViewToolBar"), 
-        ATL_SIMPLE_TOOLBAR_PANE_STYLE | TBSTYLE_LIST, 
-        TBSTYLE_EX_MIXEDBUTTONS);
+    m_toolbar.Create(GetTopLevelWindow(), NULL, _T("InventoryViewToolBar"),
+                     ATL_SIMPLE_TOOLBAR_PANE_STYLE | TBSTYLE_LIST,
+                     TBSTYLE_EX_MIXEDBUTTONS);
     m_toolbar.SetButtonStructSize();
     //m_toolbar.AddBitmap(2, IDB_INVENTORY_VIEW);
     m_toolbar.SetImageList(imageList);
@@ -658,14 +661,15 @@ LRESULT InventoryView::OnCreate(LPCREATESTRUCT createStruct)
 
 void InventoryView::UpdateLayout(CSize newSize)
 {
-    CRect r( CPoint( 0, 0 ), newSize );
+    CRect r(CPoint(0, 0), newSize);
 
     if (::IsWindowVisible(m_findview))
     {
         RECT fvRect;
         m_findview.GetWindowRect(&fvRect);
         int height = fvRect.bottom - fvRect.top;
-        ::SetWindowPos(m_findview, 0, r.left, r.top, r.Width(), height, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_DEFERERASE | SWP_NOSENDCHANGING);
+        ::SetWindowPos(m_findview, 0, r.left, r.top, r.Width(), height,
+                       SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_DEFERERASE | SWP_NOSENDCHANGING);
         r.top += height;
     }
 
@@ -674,11 +678,13 @@ void InventoryView::UpdateLayout(CSize newSize)
         RECT fvRect;
         m_infoview.GetWindowRect(&fvRect);
         int width = fvRect.right - fvRect.left;
-        ::SetWindowPos(m_infoview, 0, r.right - width, r.top, width, r.Height(), SWP_NOZORDER | SWP_NOACTIVATE | SWP_DEFERERASE | SWP_NOSENDCHANGING);
+        ::SetWindowPos(m_infoview, 0, r.right - width, r.top, width, r.Height(),
+                       SWP_NOZORDER | SWP_NOACTIVATE | SWP_DEFERERASE | SWP_NOSENDCHANGING);
         r.right -= width;
     }
 
-    m_splitter.SetWindowPos(NULL, r.left, r.top, r.Width(), r.Height(), SWP_NOZORDER | SWP_NOACTIVATE | SWP_DEFERERASE | SWP_NOSENDCHANGING);
+    m_splitter.SetWindowPos(NULL, r.left, r.top, r.Width(), r.Height(),
+                            SWP_NOZORDER | SWP_NOACTIVATE | SWP_DEFERERASE | SWP_NOSENDCHANGING);
 }
 
 
@@ -689,7 +695,7 @@ LRESULT InventoryView::OnSize(UINT wParam, CSize newSize)
 }
 
 
-LRESULT InventoryView::OnPostCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+LRESULT InventoryView::OnPostCreate(UINT/*uMsg*/, WPARAM/*wParam*/, LPARAM/*lParam*/, BOOL&/*bHandled*/)
 {
     //SetSplitterPos works best after the default WM_CREATE has been handled
     m_splitter.SetSplitterPos(200);
@@ -708,9 +714,10 @@ LRESULT InventoryView::OnPostCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
     return 0;
 }
 
-void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
+
+void InventoryView::OnAOClientMessage(AOClientMessageBase& msg)
 {
-    switch(msg.messageId())
+    switch (msg.messageId())
     {
     case AO::MSG_GIVE_TO_NPC:
         {
@@ -721,9 +728,8 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
 
             //if (npAction.fromId().High() == npAction.charid())
             {
-
-                unsigned int fromContainerId = GetFromContainerId(msg.characterId(), npAction.fromType(), npAction.fromContainerTempId());
-
+                unsigned int fromContainerId = GetFromContainerId(msg.characterId(), npAction.fromType(),
+                                                                  npAction.fromContainerTempId());
                 unsigned int toContainer = aoia::INV_TRADE;
 
                 if (npAction.direction() == 1)
@@ -732,11 +738,11 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
                     assert(fromContainerId == aoia::INV_TRADE);
                 }
 
+                g_DBManager.Lock();
+                m_db->Begin();
 
-                g_DBManager.lock();
-                g_DBManager.Begin();
-
-                unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(npAction.charid(), toContainer);
+                unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(npAction.charid(),
+                                                                                          toContainer);
 
                 {
                     std::tstringstream sql;
@@ -747,17 +753,18 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
                         << _T(" AND slot = ") << npAction.fromItemSlotId()
                         << _T(" AND owner = ") << msg.characterId(); //TODO: remove from other monitored char with fromId?
 
-                    g_DBManager.Exec(sql.str());
+                    m_db->Exec(sql.str());
 
                     //OutputDebugString(sql.str().c_str());
                 }
 
-                g_DBManager.Commit();
-                g_DBManager.unLock();
+                m_db->Commit();
+                g_DBManager.UnLock();
             }
 
         }
         break;
+
     case AO::MSG_END_NPC_TRADE:
         {
             LOG(_T("MSG_END_NPC_TRADE"));
@@ -783,13 +790,13 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
                 unsigned int newParent = aoia::INV_TOONINV;
                 unsigned int shopContainer = aoia::INV_TRADE;
 
-                g_DBManager.lock();
-                g_DBManager.Begin();
+                g_DBManager.Lock();
+                m_db->Begin();
 
-                for (unsigned int i=0;i<=shopCapacity;i++) //or is it the other direction?
+                for (unsigned int i = 0; i <= shopCapacity; i++) //or is it the other direction?
                 {
-                    unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(msg.characterId(), newParent);
-
+                    unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(msg.characterId(),
+                                                                                              newParent);
                     if (nextFreeInvSlot >= 94)
                     {
                         //if full, move to overflow. 
@@ -809,15 +816,15 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
                         << _T(" WHERE parent = ") << shopContainer
                         << _T(" AND slot = ") << i
                         << _T(" AND owner = ") << msg.characterId();
-                    g_DBManager.Exec(sqlMoveBack.str());
+                    m_db->Exec(sqlMoveBack.str());
                 }
 
-                g_DBManager.Commit();
-                g_DBManager.unLock();
+                m_db->Commit();
+                g_DBManager.UnLock();
             }
-
         }
         break;
+
     case AO::MSG_CHAR_OPERATION: //0x5e477770
         {
             LOG(_T("MSG_CHAR_OPERATION"));
@@ -835,38 +842,38 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
                 //the new item gets the count of the existing.
                 //the one with 
 
-                g_DBManager.lock();
-                g_DBManager.Begin();
-                unsigned int fromContainerId = GetFromContainerId(msg.characterId(), itemOp.fromType(), itemOp.fromContainerTempId());
-
+                g_DBManager.Lock();
+                m_db->Begin();
+                unsigned int fromContainerId = GetFromContainerId(msg.characterId(), itemOp.fromType(),
+                                                                  itemOp.fromContainerTempId());
                 if (fromContainerId == 0)
                 {
                     TRACE(_T("From container not found!"));
                     return; //we dont have the value cached, either a bug or ia was started after the bp was opened. Or unknown from type
                 }
 
-                unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(msg.characterId(), fromContainerId);
+                unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(msg.characterId(),
+                                                                                          fromContainerId);
 
                 std::tstringstream sqlInsert;
                 sqlInsert << _T("INSERT INTO tItems (keylow, keyhigh, ql, stack, parent, slot, children, owner)")
                     << _T(" SELECT keylow, keyhigh, ql, ") << itemOp.itemId().High()
                     << _T(", parent, ") << nextFreeInvSlot << _T(", children, owner FROM tItems")
-                    << _T(" WHERE owner = ") << msg.characterId() 
+                    << _T(" WHERE owner = ") << msg.characterId()
                     << _T(" AND parent = ") << fromContainerId
                     << _T(" AND slot = ") << itemOp.fromItemSlotId();
-                g_DBManager.Exec(sqlInsert.str());
+                m_db->Exec(sqlInsert.str());
 
                 {
                     std::tstringstream sql;
                     sql << _T("UPDATE tItems SET stack = stack - ") << itemOp.itemId().High()
-                        << _T(" WHERE owner = ") << msg.characterId() 
+                        << _T(" WHERE owner = ") << msg.characterId()
                         << _T(" AND parent = ") << fromContainerId
                         << _T(" AND slot = ") << itemOp.fromItemSlotId();
-                    g_DBManager.Exec(sql.str());
+                    m_db->Exec(sql.str());
                 }
-                g_DBManager.Commit();
-                g_DBManager.unLock();
-
+                m_db->Commit();
+                g_DBManager.UnLock();
             }
             else if (opId == AO::CHAR_ACTION_JOINSTACKS)
             {
@@ -879,10 +886,10 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
                 //user deleted an item
                 //handled on server side aswell (without keylow/high).
 
-                g_DBManager.lock();
-                g_DBManager.Begin();
-                unsigned int fromContainerId = GetFromContainerId(msg.characterId(), itemOp.fromType(), itemOp.fromContainerTempId());
-
+                g_DBManager.Lock();
+                m_db->Begin();
+                unsigned int fromContainerId = GetFromContainerId(msg.characterId(), itemOp.fromType(),
+                                                                  itemOp.fromContainerTempId());
                 if (fromContainerId == 0)
                 {
                     TRACE(_T("From container not found!"));
@@ -892,25 +899,24 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
                 //user deleted an item!
                 {
                     std::tstringstream sql;
-                    sql << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
+                    sql << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId()
                         << _T(" AND parent = ") << fromContainerId
                         << _T(" AND keylow = ") << itemOp.itemId().Low()
                         << _T(" AND keyhigh = ") << itemOp.itemId().High()
                         << _T(" AND slot = ") << itemOp.fromItemSlotId();
-                    g_DBManager.Exec(sql.str());
+                    m_db->Exec(sql.str());
                 }
                 TRACE(itemOp.print());
-                g_DBManager.Commit();
-                g_DBManager.unLock();
-
+                m_db->Commit();
+                g_DBManager.UnLock();
             }
-            else if (opId == AO::CHAR_ACTION_RUN_NANO) 
+            else if (opId == AO::CHAR_ACTION_RUN_NANO)
             {
                 LOG(_T("CHAR_ACTION_RUN_NANO"));
                 //when you run a nano, this one fires
                 return;
             }
-            else if (opId == AO::CHAR_ACTION_RUN_PERK) 
+            else if (opId == AO::CHAR_ACTION_RUN_PERK)
                 //0x69  from = 0c350+ a char Id = ?
             {
                 LOG(_T("CHAR_ACTION_RUN_PERK"));
@@ -928,19 +934,19 @@ void InventoryView::OnAOClientMessage(AOClientMessageBase &msg)
                 LOG(_T("CHAR_ACTION_TRADESKILL"));
                 //tradeskill. do nothing. we will get delete/trade operations for all.
             }
-            else if (opId == AO::CHAR_ACTION_LOGOFF1 ||opId == AO::CHAR_ACTION_LOGOFF2) 
+            else if (opId == AO::CHAR_ACTION_LOGOFF1 || opId == AO::CHAR_ACTION_LOGOFF2)
             {
                 LOG(_T("CHAR_ACTION_LOGOFF"));
                 //All zeroes, when you log off
                 return;
             }
-            else if (opId == AO::CHAR_ACTION_SNEAK )
-            { 
+            else if (opId == AO::CHAR_ACTION_SNEAK)
+            {
                 LOG(_T("CHAR_ACTION_SNEAK"));
                 return;
             }
-            else if (opId == AO::CHAR_ACTION_STAND )
-            { 
+            else if (opId == AO::CHAR_ACTION_STAND)
+            {
                 LOG(_T("CHAR_ACTION_STAND"));
                 return;
             }
@@ -985,7 +991,7 @@ unsigned int InventoryView::GetFromContainerId(unsigned int charId, unsigned sho
 {
     if (fromType == 0x006b) //backpack. fromSlotId contains a temp container id.
     {
-        return ServicesSingleton::Instance()->GetContainerId(charId, fromSlotId);
+        return m_tempContainers->GetContainerId(charId, fromSlotId);
     }
     else if (fromType == 0x0068//inv
         || fromType == 0x0065  //utils, hud, ncu, weap pane
@@ -993,7 +999,7 @@ unsigned int InventoryView::GetFromContainerId(unsigned int charId, unsigned sho
         || fromType == 0x0067  //implants
         || fromType == 0x0066) //wear neck,sleeve
     {
-        return aoia::INV_TOONINV; 
+        return aoia::INV_TOONINV;
     }
     else if (fromType == 0x0069)//bank
     {
@@ -1032,14 +1038,14 @@ unsigned int InventoryView::GetFromContainerId(unsigned int charId, unsigned sho
 }
 
 
-void InventoryView::OnAOServerMessage(AOMessageBase &msg)
+void InventoryView::OnAOServerMessage(AOMessageBase& msg)
 {
     if (m_enableCharacterParserDumper)
     {
         m_characterParserDumper.OnAOServerMessage(msg);
     }
 
-    switch(msg.messageId())
+    switch (msg.messageId())
     {
     case AO::MSG_ACCEPT_NPC_TRADE:
         {
@@ -1057,14 +1063,15 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
             unsigned int newParent = aoia::INV_TOONINV;
             unsigned int shopContainer = aoia::INV_TRADE;
 
-            g_DBManager.lock();
-            g_DBManager.Begin();
+            g_DBManager.Lock();
+            m_db->Begin();
 
-            for (unsigned int i=0;i<count;i++) //or is it the other direction?
+            for (unsigned int i = 0; i < count; i++) //or is it the other direction?
             {
                 TRACE(npcAccept.rejectedItem(i).print());
 
-                unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(msg.characterId(), newParent);
+                unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(msg.characterId(),
+                                                                                          newParent);
 
                 if (nextFreeInvSlot >= 94)
                 {
@@ -1090,7 +1097,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                     << _T(" AND keyhigh = ") << npcAccept.rejectedItem(i).itemId().High()
                     << _T(" AND ql = ") << npcAccept.rejectedItem(i).ql()
                     << _T(" AND owner = ") << msg.characterId();
-                g_DBManager.Exec(sqlMoveBack.str());
+                m_db->Exec(sqlMoveBack.str());
             }
 
             //and delete the stuff I gave away:
@@ -1100,14 +1107,14 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                 //Todo: Move only the first one found to preserve order in case 2 of same ql are
                 //returned with other stuff in between.??
 
-                sqlGiveAwayStuff << _T("DELETE FROM tItems WHERE owner = ") << npcAccept.charid() 
+                sqlGiveAwayStuff << _T("DELETE FROM tItems WHERE owner = ") << npcAccept.charid()
                     << _T(" AND parent = ") << shopContainer;
 
-                g_DBManager.Exec(sqlGiveAwayStuff.str());
+                m_db->Exec(sqlGiveAwayStuff.str());
             }
 
-            g_DBManager.Commit();
-            g_DBManager.unLock();
+            m_db->Commit();
+            g_DBManager.UnLock();
         }
         break;
 
@@ -1131,10 +1138,10 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                 LOG(_T("CHAR_ACTION_DELETEITEM"));
 
                 //user deleted an item
-                g_DBManager.lock();
-                g_DBManager.Begin();
-                unsigned int fromContainerId = GetFromContainerId(charOp.charid(), charOp.fromType(), charOp.fromContainerTempId());
-
+                g_DBManager.Lock();
+                m_db->Begin();
+                unsigned int fromContainerId = GetFromContainerId(charOp.charid(), charOp.fromType(),
+                                                                  charOp.fromContainerTempId());
                 if (fromContainerId == 0)
                 {
                     TRACE(_T("From container not found!"));
@@ -1144,18 +1151,17 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                 //server deleted an item!
                 {
                     std::tstringstream sql;
-                    sql << _T("DELETE FROM tItems WHERE owner = ") << charOp.charid() 
+                    sql << _T("DELETE FROM tItems WHERE owner = ") << charOp.charid()
                         << _T(" AND parent = ") << fromContainerId
                         //<< _T(" AND keylow = ") << itemOp.itemId().Low()
                         //<< _T(" AND keyhigh = ") << itemOp.itemId().High()
                         << _T(" AND slot = ") << charOp.fromItemSlotId();
 
-                    g_DBManager.Exec(sql.str());
+                    m_db->Exec(sql.str());
                 }
 
-                g_DBManager.Commit();
-                g_DBManager.unLock();
-
+                m_db->Commit();
+                g_DBManager.UnLock();
             }
             else if (opId == AO::CHAR_ACTION_DELETE_TEMP_ITEM)
             {
@@ -1170,16 +1176,16 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                 unsigned int fromContainerId = aoia::INV_TOONINV;
                 unsigned int charId = charOp.charid();
                 unsigned int itemTempId = (charOp.fromContainerTempId() << 16) + charOp.fromItemSlotId();
-                unsigned int realSlotId = ServicesSingleton::Instance()->GetItemSlotId(charId, itemTempId);
+                unsigned int realSlotId = m_tempContainers->GetItemSlotId(charId, itemTempId);
 
                 if (realSlotId > 0)
                 {
                     std::tstringstream sql;
-                    sql << _T("DELETE FROM tItems WHERE owner = ") << charId 
+                    sql << _T("DELETE FROM tItems WHERE owner = ") << charId
                         << _T(" AND parent = ") << fromContainerId
                         << _T(" AND slot = ") << realSlotId;
 
-                    g_DBManager.Exec(sql.str());
+                    m_db->Exec(sql.str());
                     //OutputDebugString(sql.str().c_str());
                 }
 
@@ -1205,54 +1211,55 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                 //itemHigh is the container id and slot id of the other item (gets deleted)
                 //itemLow is the fromType of the other item
 
-                unsigned short removedItemContType      = charOp.itemId().Low() & 0xff;
-                unsigned short removedItemContTempId    = charOp.itemId().High() >> 16;
-                unsigned short removedItemSlotId        = charOp.itemId().High() & 0xff;
-                unsigned int removedItemContainerId     = GetFromContainerId(charOp.charid(), removedItemContType, removedItemContTempId);
-                unsigned int fromContainerId = GetFromContainerId(charOp.charid(), charOp.fromType(), charOp.fromContainerTempId());
-
-                g_DBManager.lock();
-                g_DBManager.Begin();
-
+                unsigned short removedItemContType = charOp.itemId().Low() & 0xff;
+                unsigned short removedItemContTempId = charOp.itemId().High() >> 16;
+                unsigned short removedItemSlotId = charOp.itemId().High() & 0xff;
+                unsigned int removedItemContainerId = GetFromContainerId(charOp.charid(), removedItemContType,
+                                                                         removedItemContTempId);
+                unsigned int fromContainerId = GetFromContainerId(charOp.charid(), charOp.fromType(),
+                                                                  charOp.fromContainerTempId());
                 if (fromContainerId == 0)
                 {
                     TRACE(_T("From container not found!"));
                     return; //we dont have the value cached, either a bug or ia was started after the bp was opened. Or unknown from type
                 }
 
+                g_DBManager.Lock();
+                m_db->Begin();
+
                 std::tstringstream sqlUpd;
                 sqlUpd << _T("UPDATE tItems SET stack = ")
                     << _T(" (stack + (SELECT tItems2.stack FROM tItems tItems2 WHERE")
                     << _T(" tItems2.owner = ") << charOp.charid()
                     << _T(" AND tItems2.parent = ") << removedItemContainerId
-                    << _T(" AND tItems2.slot = ") << removedItemSlotId << _T("))") 
+                    << _T(" AND tItems2.slot = ") << removedItemSlotId << _T("))")
                     << _T(" WHERE owner = ") << charOp.charid()
                     << _T(" AND parent = ") << fromContainerId
                     << _T(" AND slot = ") << charOp.fromItemSlotId();
 
                 //OutputDebugString(sqlUpd.str().c_str());
-                g_DBManager.Exec(sqlUpd.str());
+                m_db->Exec(sqlUpd.str());
 
                 {
                     std::tstringstream sql;
-                    sql << _T("DELETE FROM tItems WHERE owner = ") << charOp.charid() 
+                    sql << _T("DELETE FROM tItems WHERE owner = ") << charOp.charid()
                         << _T(" AND parent = ") << removedItemContainerId
                         << _T(" AND slot = ") << removedItemSlotId;//itemId().High();
 
                     //OutputDebugString(sql.str().c_str());
-                    g_DBManager.Exec(sql.str());
+                    m_db->Exec(sql.str());
                 }
-                g_DBManager.Commit();
-                g_DBManager.unLock();
+                m_db->Commit();
+                g_DBManager.UnLock();
 
             }
 #ifdef DEBUG
-            else if (opId == AO::CHAR_ACTION_RUN_NANO || opId == AO::CHAR_ACTION_NANO_RAN) 
+            else if (opId == AO::CHAR_ACTION_RUN_NANO || opId == AO::CHAR_ACTION_NANO_RAN)
             {
                 //when you run a nano, this one fires
                 return;
             }
-            else if (opId == AO::CHAR_ACTION_RUN_PERK || opId == AO::CHAR_ACTION_SKILL_AVAIL) 
+            else if (opId == AO::CHAR_ACTION_RUN_PERK || opId == AO::CHAR_ACTION_SKILL_AVAIL)
                 //0x69  from = 0c350+ a char Id = ?
             {
                 //When you hit a perk, this one fires
@@ -1267,18 +1274,17 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
             {
                 //tradeskill. do nothing. we will get delete/trade operations for all.
             }
-            else if (opId == AO::CHAR_ACTION_LOGOFF1 ||opId == AO::CHAR_ACTION_LOGOFF2 || opId == AO::CHAR_ACTION_ZONE) 
+            else if (opId == AO::CHAR_ACTION_LOGOFF1 ||opId == AO::CHAR_ACTION_LOGOFF2 || opId == AO::CHAR_ACTION_ZONE)
             {
                 //All zeroes, when you log off
                 return;
             }
             else if (opId == AO::CHAR_ACTION_STAND || opId == AO::CHAR_ACTION_SNEAK  || opId == AO::CHAR_ACTION_MOVED || opId == AO::CHAR_ACTION_JUMP)
-            { 
+            {
                 return;
             }
             else
             {
-
                 LOG(_T("From Server: Unknown CHAR_ACTION: (check if SPLITSTACKS CAN BE DETECTED"));
                 TRACE(charOp.print());
             }
@@ -1321,32 +1327,31 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                 if (opId == 0x55) //trade partner adds an item
                 {
                     unsigned int otherTradeContainer = aoia::INV_TRADEPARTNER;
-                    g_DBManager.lock();
-                    g_DBManager.Begin();
+                    g_DBManager.Lock();
+                    m_db->Begin();
 
-                    unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), otherTradeContainer);
+                    unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(item.charid(),
+                                                                                              otherTradeContainer);
+                    g_DBManager.InsertItem(item.itemid().Low(),
+                                           item.itemid().High(),
+                                           item.ql(),
+                                           item.flags(),
+                                           item.stack(),
+                                           otherTradeContainer,
+                                           nextFreeInvSlot,
+                                           0,
+                                           item.charid());
 
-                    g_DBManager.insertItem(
-                        item.itemid().Low(),
-                        item.itemid().High(),
-                        item.ql(),
-                        item.flags(),
-                        item.stack(),
-                        otherTradeContainer,
-                        nextFreeInvSlot,
-                        0,
-                        item.charid());
-
-                    g_DBManager.Commit();
-                    g_DBManager.unLock();
+                    m_db->Commit();
+                    g_DBManager.UnLock();
                 }
                 else if (opId == 0x56) //trade partner removes an item
                 {
                     if (item.partnerFromType() == 0x6c)//remove from trade window
                     {
                         unsigned int otherTradeContainer = aoia::INV_TRADEPARTNER;
-                        g_DBManager.lock();
-                        g_DBManager.Begin();
+                        g_DBManager.Lock();
+                        m_db->Begin();
 
                         std::tstringstream sql;
 
@@ -1354,11 +1359,11 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                             << _T(" WHERE parent = ") << otherTradeContainer
                             << _T(" AND slot = ") << item.partnerFromItemSlotId()
                             << _T(" AND owner = ") << item.charid();
-                        g_DBManager.Exec(sql.str());
+                        m_db->Exec(sql.str());
                         //OutputDebugString(sql.str().c_str());
 
-                        g_DBManager.Commit();
-                        g_DBManager.unLock();
+                        m_db->Commit();
+                        g_DBManager.UnLock();
                     }
                 }
                 else if (opId == 0x57)//tradeskill result added to overflow
@@ -1378,22 +1383,21 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
                     unsigned int slotId = item.partnerFromItemSlotId();
 
-                    g_DBManager.lock();
-                    g_DBManager.Begin();
+                    g_DBManager.Lock();
+                    m_db->Begin();
 
                     if (slotId >= 0x6f)
-                        slotId = g_DBManager.findNextAvailableContainerSlot(item.charid(), otherTradeContainer);
+                        slotId = g_DBManager.FindNextAvailableContainerSlot(item.charid(), otherTradeContainer);
 
-                    g_DBManager.insertItem(
-                        item.itemid().Low(),
-                        item.itemid().High(),
-                        item.ql(),
-                        item.flags(),
-                        item.stack(),
-                        otherTradeContainer,  // 2 = inventory
-                        slotId,
-                        0,
-                        item.charid());
+                    g_DBManager.InsertItem(item.itemid().Low(),
+                                           item.itemid().High(),
+                                           item.ql(),
+                                           item.flags(),
+                                           item.stack(),
+                                           otherTradeContainer,  // 2 = inventory
+                                           slotId,
+                                           0,
+                                           item.charid());
 
                     /* {
                     std::tstringstream logS;
@@ -1404,8 +1408,8 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                     OutputDebugString(logS.str().c_str());
                     }*/
 
-                    g_DBManager.Commit();
-                    g_DBManager.unLock();
+                    m_db->Commit();
+                    g_DBManager.UnLock();
 
                 }
                 else if (opId == 0x03)//item used/deleted if stack=1 and depleteable
@@ -1416,10 +1420,11 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                     //Box of ammo did not deplete
 
                     unsigned int fromContainerId = GetFromContainerId(item.charid(),
-                        item.partnerFromType(), item.partnerFromContainerTempId());
+                                                                      item.partnerFromType(),
+                                                                      item.partnerFromContainerTempId());
 
-                    g_DBManager.lock();
-                    g_DBManager.Begin();
+                    g_DBManager.Lock();
+                    m_db->Begin();
 
                     std::tstringstream sqlDeplete;
                     sqlDeplete << _T("UPDATE tItems SET stack=(stack-1)")
@@ -1428,10 +1433,10 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                         << _T(" AND owner = ") << msg.characterId()
                         << _T(" AND keyhigh = ") << item.itemid().High()
                         << _T(" AND keylow = ") << item.itemid().Low()
-                        << _T(" AND keylow IN (SELECT aoid FROM tblao WHERE aoid = ") << item.itemid().Low() 
+                        << _T(" AND keylow IN (SELECT aoid FROM tblao WHERE aoid = ") << item.itemid().Low()
                         << _T(" AND (flags & 4196368))");//FLAG_USE_EMPTY_DESTRUCT+FLAG_HAS_ENERGY+FLAG_TURN_ON_USE
 
-                    g_DBManager.Exec(sqlDeplete.str());
+                    m_db->Exec(sqlDeplete.str());
 #ifdef DEBUG
                     TRACE(sqlDeplete.str());
 #endif
@@ -1447,22 +1452,22 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                     << _T(" AND keyhigh = ") << item.itemid().High()
                     << _T(" AND slot = ") << item.partnerFromItemSlotId();*/
 
-                    sqlDelete << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
+                    sqlDelete << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId()
                         << _T(" AND stack = 0")
                         << _T(" AND parent = ") << fromContainerId
                         << _T(" AND keylow = ") << item.itemid().Low()
                         << _T(" AND keyhigh = ") << item.itemid().High()
                         << _T(" AND slot = ") << item.partnerFromItemSlotId()
-                        << _T(" AND keylow IN (SELECT aoid FROM tblao WHERE aoid = ") << item.itemid().Low() 
+                        << _T(" AND keylow IN (SELECT aoid FROM tblao WHERE aoid = ") << item.itemid().Low()
                         << _T(" AND (flags & 4196368))");//FLAG_USE_EMPTY_DESTRUCT+FLAG_HAS_ENERGY+FLAG_TURN_ON_USE
 
-                    g_DBManager.Exec(sqlDelete.str());
+                    m_db->Exec(sqlDelete.str());
 #ifdef DEBUG
                     TRACE(sqlDelete.str());
 #endif
 
-                    g_DBManager.Commit();
-                    g_DBManager.unLock();
+                    m_db->Commit();
+                    g_DBManager.UnLock();
                 }
             }
 
@@ -1493,8 +1498,8 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                 //00=start trade? 01=client accept, 02=decline,03=tempAccept, 04=commit,05=add item,06=remove item
             case 0x00:
                 {
-                    g_DBManager.lock();
-                    g_DBManager.Begin();
+                    g_DBManager.Lock();
+                    m_db->Begin();
 
                     std::tstringstream sql;
 
@@ -1503,29 +1508,31 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                         << _T(" OR parent = ") << otherTradeContainer << _T(")")
                         << _T(" AND owner = ") << item.charid();
 
-                    g_DBManager.Exec(sql.str());
+                    m_db->Exec(sql.str());
 
-                    g_DBManager.Commit();
-                    g_DBManager.unLock();
+                    m_db->Commit();
+                    g_DBManager.UnLock();
                 }
+
             case 0x01:
                 {
                     //01=client accept //do nothing
                 }
                 break;
+
             case 0x02:
                 {
                     //02=decline or cancel//move my stuff back
-                    g_DBManager.lock();
-                    g_DBManager.Begin();
+                    g_DBManager.Lock();
+                    m_db->Begin();
 
                     unsigned int shopCapacity = 35;
                     unsigned int newParent = aoia::INV_TOONINV;
 
-                    for (unsigned int i=0;i<=shopCapacity;i++) //or is it the other direction?
+                    for (unsigned int i = 0; i <= shopCapacity; i++) //or is it the other direction?
                     {
-                        unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), newParent);
-
+                        unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(item.charid(),
+                                                                                                  newParent);
                         if (nextFreeInvSlot >= 94)
                         {
                             //if full, move to overflow. 
@@ -1545,7 +1552,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                             << _T(" WHERE parent = ") << shopContainer
                             << _T(" AND slot = ") << i
                             << _T(" AND owner = ") << item.charid();
-                        g_DBManager.Exec(sqlMoveBack.str());
+                        m_db->Exec(sqlMoveBack.str());
                         //OutputDebugString(sqlMoveBack.str().c_str());
                     }
 
@@ -1556,18 +1563,20 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
                     //TODO: What when this is a known player shop? Maybe we should duplicate the items instead from 
 
-                    g_DBManager.Exec(sql.str());
+                    m_db->Exec(sql.str());
                     //OutputDebugString(sql.str().c_str());
 
-                    g_DBManager.Commit();
-                    g_DBManager.unLock();
+                    m_db->Commit();
+                    g_DBManager.UnLock();
                 }
                 break;
+
             case 0x03:
                 {
                     //03=tempAccept //do nothing
                 }
                 break;
+
             case 0x04:
                 {
                     if (item.fromId().Low() == 0xC790)//51088)//fromType+fromTempContId+fromSlotId = charId
@@ -1588,7 +1597,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                         */
 
                         //from a playershop. item.fromId().High() contains the shop id.
-                        unsigned int owner = g_DBManager.getShopOwner(item.fromId().High());
+                        unsigned int owner = g_DBManager.GetShopOwner(item.fromId().High());
                         unsigned int container = aoia::INV_PLAYERSHOP;
 
                         if (owner == 0)
@@ -1599,8 +1608,8 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                         }
 
                         //from a known shop!
-                        g_DBManager.lock();
-                        g_DBManager.Begin();
+                        g_DBManager.Lock();
+                        m_db->Begin();
 
                         //first, remove the duplicate from the player shop
 
@@ -1612,16 +1621,18 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                             << _T("              AND owner = ") << item.charid() << _T(")")
                             << _T(" AND owner = ") << owner;
 
-                        g_DBManager.Exec(sqlRemoveFromShop.str());
+                        m_db->Exec(sqlRemoveFromShop.str());
 
                         //OutputDebugString(sqlRemoveFromShop.str().c_str());
 
                         unsigned int shopCapacity = 35;
 
-                        for (unsigned int i=0;i<=shopCapacity;i++) //or is it the other direction?
+                        for (unsigned int i = 0; i <= shopCapacity; i++) //or is it the other direction?
                         {
                             // unsigned int otherTradeContainer = aoia::INV_TRADEPARTNER;
-                            unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), aoia::INV_TOONINV);
+                            unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(item.charid(),
+                                                                                                      aoia::
+                                                                                                      INV_TOONINV);
                             //we keep the slotId!
                             {
                                 std::tstringstream sqlGetTheStuff;
@@ -1634,18 +1645,18 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                                     << _T(" AND slot = ") << i
                                     << _T(" AND owner = ") << owner;
 
-                                g_DBManager.Exec(sqlGetTheStuff.str());
+                                m_db->Exec(sqlGetTheStuff.str());
 
                                 //OutputDebugString(sqlGetTheStuff.str().c_str());
                             }
                         }
 
                         //put the stuff I added into the shop!
-
-                        for (unsigned int i=0;i<=shopCapacity;i++) //or is it the other direction?
+                        for (unsigned int i = 0; i <= shopCapacity; i++) //or is it the other direction?
                         {
                             // unsigned int otherTradeContainer = aoia::INV_TRADEPARTNER;
-                            unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), container);
+                            unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(item.charid(),
+                                                                                                      container);
                             //we keep the slotId!
                             {
                                 std::tstringstream sqlMoveStuffToShop;
@@ -1658,15 +1669,14 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                                     << _T(" AND slot = ") << i
                                     << _T(" AND owner = ") << item.charid();
 
-                                g_DBManager.Exec(sqlMoveStuffToShop.str());
+                                m_db->Exec(sqlMoveStuffToShop.str());
 
                                 //OutputDebugString(sqlMoveStuffToShop.str().c_str());
                             }
                         }
 
-                        g_DBManager.Commit();
-                        g_DBManager.unLock();
-
+                        m_db->Commit();
+                        g_DBManager.UnLock();
                     }
 
                     else //if (item.fromId().High() == item.charid())
@@ -1677,30 +1687,31 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                         //[13464] fromContainerTempId 2018  fromItemSlotId c404 
                         //[13464] fromId [51035|538493956] 
 
-                        g_DBManager.lock();
-                        g_DBManager.Begin();
+                        g_DBManager.Lock();
+                        m_db->Begin();
                         //commit/server accept: (bye-bye stuff!)
 
                         std::tstringstream sqlEmptyBackpacks;
                         sqlEmptyBackpacks << _T("DELETE FROM tItems WHERE owner = ") << item.charid()
                             << _T(" AND parent in (SELECT children from tItems WHERE parent = ") << shopContainer
                             << _T(" AND children > 0 AND owner = ") << item.charid() << _T(")");
-                        g_DBManager.Exec(sqlEmptyBackpacks.str());
+                        m_db->Exec(sqlEmptyBackpacks.str());
 
                         std::tstringstream sql;
                         sql << _T("DELETE FROM tItems WHERE parent = ") << shopContainer
                             << _T(" AND owner = ") << item.charid();
-                        g_DBManager.Exec(sql.str());
+                        m_db->Exec(sql.str());
 
                         //OutputDebugString(sql.str().c_str());
 
                         //grab the new stuff!
                         unsigned int shopCapacity = 35;
 
-                        for (unsigned int i=0;i<=shopCapacity;i++) //or is it the other direction?
+                        for (unsigned int i = 0; i <= shopCapacity; i++) //or is it the other direction?
                         {
-                            unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), aoia::INV_TOONINV);
-
+                            unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(item.charid(),
+                                                                                                      aoia::
+                                                                                                      INV_TOONINV);
                             std::tstringstream sqlGrabStuff;
 
                             sqlGrabStuff << _T("UPDATE tItems SET parent = 2")
@@ -1708,32 +1719,31 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                                 << _T(" WHERE parent = ") << otherTradeContainer
                                 << _T(" AND slot = ") << i
                                 << _T(" AND owner = ") << item.charid();
-                            g_DBManager.Exec(sqlGrabStuff.str());
+                            m_db->Exec(sqlGrabStuff.str());
                             // OutputDebugString(sqlGrabStuff.str().c_str());
                         }
 
-                        g_DBManager.Commit();
-                        g_DBManager.unLock();
+                        m_db->Commit();
+                        g_DBManager.UnLock();
                     }
                 }
                 break;
+
             case 0x05:
                 {
                     //add item to trade window
-
                     //TODO : Add/remove/commit/cancel with stuff from inv/bp to player shop trade window
-
                     //fromId contains the owner
-
                     if (item.fromId().High() == item.charid())
                     {
-                        unsigned int fromContainerId = GetFromContainerId(item.charid(), item.fromType(), item.fromContainerTempId());
+                        unsigned int fromContainerId = GetFromContainerId(item.charid(), item.fromType(),
+                                                                          item.fromContainerTempId());
 
-                        g_DBManager.lock();
-                        g_DBManager.Begin();
+                        g_DBManager.Lock();
+                        m_db->Begin();
 
-                        unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), shopContainer);
-
+                        unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(item.charid(),
+                                                                                                  shopContainer);
                         {
                             std::tstringstream sql;
 
@@ -1743,13 +1753,13 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                                 << _T(" AND slot = ") << item.fromItemSlotId()
                                 << _T(" AND owner = ") << item.fromId().High(); //TODO: remove from other monitored char with fromId?
 
-                            g_DBManager.Exec(sql.str());
+                            m_db->Exec(sql.str());
 
                             //OutputDebugString(sql.str().c_str());
                         }
 
-                        g_DBManager.Commit();
-                        g_DBManager.unLock();
+                        m_db->Commit();
+                        g_DBManager.UnLock();
                     }
                     else if (item.fromType() == 0x6b && item.fromId().Low() == 0xC790)//51088)
                     {
@@ -1768,7 +1778,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                         [6628] fromId [51088|457098300] */
 
                         //from a playershop. item.fromId().High() contains the shop id.
-                        unsigned int owner = g_DBManager.getShopOwner(item.fromId().High());
+                        unsigned int owner = g_DBManager.GetShopOwner(item.fromId().High());
                         unsigned int container = aoia::INV_PLAYERSHOP;
 
                         if (owner == 0)
@@ -1778,29 +1788,28 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                             container = aoia::INV_OTHER_PLAYERSHOP;
                         }
 
-                        g_DBManager.lock();
-                        g_DBManager.Begin();
+                        g_DBManager.Lock();
+                        m_db->Begin();
 
                         {
                             std::tstringstream sqlDuplicate;
                             //we must duplicate it since we cant detect trade in the cancel message. (where we wipe otherTradeContainer) 
-                            sqlDuplicate << _T("INSERT INTO tItems (keylow, keyhigh, ql, stack, parent, slot, children, owner)")
-                                << _T(" SELECT keylow, keyhigh, ql, stack, ") << otherTradeContainer 
+                            sqlDuplicate <<
+                                _T("INSERT INTO tItems (keylow, keyhigh, ql, stack, parent, slot, children, owner)")
+                                << _T(" SELECT keylow, keyhigh, ql, stack, ") << otherTradeContainer
                                 << _T(" , slot, children, ") << item.charid()
                                 << _T(" FROM tItems WHERE owner = ") << owner
                                 << _T(" AND parent = ") << container
                                 << _T(" AND slot = ") << item.fromItemSlotId();
 
 
-                            g_DBManager.Exec(sqlDuplicate.str());
+                            m_db->Exec(sqlDuplicate.str());
 
                             //OutputDebugString(sql.str().c_str());
                         }
 
-                        g_DBManager.Commit();
-                        g_DBManager.unLock();
-
-
+                        m_db->Commit();
+                        g_DBManager.UnLock();
                     }
                     else
                     {
@@ -1810,6 +1819,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                     }
                 }
                 break;
+
             case 0x06:
                 {
                     //item removed from trade window
@@ -1818,21 +1828,22 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                     {
                         //an item I had added to a trade.
 
-                        g_DBManager.lock();
-                        g_DBManager.Begin();
+                        g_DBManager.Lock();
+                        m_db->Begin();
 
-                        unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), aoia::INV_TOONINV);
+                        unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(item.charid(),
+                                                                                                  aoia::INV_TOONINV);
 
                         std::tstringstream sql;
                         sql << _T("UPDATE tItems SET parent = 2, slot = ") << nextFreeInvSlot
                             << _T(" WHERE parent = ") << shopContainer
                             << _T(" AND slot = ") << item.fromItemSlotId()
                             << _T(" AND owner = ") << item.charid();
-                        g_DBManager.Exec(sql.str());
+                        m_db->Exec(sql.str());
                         //OutputDebugString(sql.str().c_str());
 
-                        g_DBManager.Commit();
-                        g_DBManager.unLock();
+                        m_db->Commit();
+                        g_DBManager.UnLock();
                     }
                     else if (item.fromType() == 0x6b && item.fromId().Low() == 0xC790)//51088)
                     {
@@ -1847,9 +1858,8 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                         [6628] fromId [51088|457098300] */
                         // unsigned int owner = g_DBManager.getShopOwner(item.fromId().High());
 
-
-                        g_DBManager.lock();
-                        g_DBManager.Begin();
+                        g_DBManager.Lock();
+                        m_db->Begin();
 
                         {
                             std::tstringstream sqlRemove;
@@ -1859,13 +1869,13 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                                 << _T(" AND slot = ") << item.fromItemSlotId()
                                 << _T(" AND owner = ") << item.charid();
 
-                            g_DBManager.Exec(sqlRemove.str());
+                            m_db->Exec(sqlRemove.str());
 
                             //OutputDebugString(sql.str().c_str());
                         }
 
-                        g_DBManager.Commit();
-                        g_DBManager.unLock();
+                        m_db->Commit();
+                        g_DBManager.UnLock();
                     }
                     else
                     {
@@ -1873,9 +1883,9 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                         //handled by Native::AOPartnerTradeItem
                         return;
                     }
-
                 }
                 break;
+
             case 0x08:
                 {
                     //partner added a backpack to the trade window, this does not take a slot id in the trade window.
@@ -1892,36 +1902,37 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                     unsigned int otherTradeContainer = aoia::INV_TRADEPARTNER;
                     unsigned int containerId = (item.fromContainerTempId() << 16) + item.fromItemSlotId();
 
-                    g_DBManager.lock();
-                    g_DBManager.Begin();
+                    g_DBManager.Lock();
+                    m_db->Begin();
 
-                    unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), otherTradeContainer);
+                    unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(item.charid(),
+                                                                                              otherTradeContainer);
 
-                    g_DBManager.insertItem(
-                        99228,//small backpack used as template. To fix this, I must cache all MSG_BACKPACKS msgtype 0x1
-                        99228,
-                        1,
-                        0,
-                        1,
-                        otherTradeContainer,
-                        nextFreeInvSlot,
-                        containerId,
-                        item.charid());
+                    g_DBManager.InsertItem(99228,//small backpack used as template. To fix this, I must cache all MSG_BACKPACKS msgtype 0x1
+                                           99228,
+                                           1,
+                                           0,
+                                           1,
+                                           otherTradeContainer,
+                                           nextFreeInvSlot,
+                                           containerId,
+                                           item.charid());
 
-                    g_DBManager.Commit();
-                    g_DBManager.unLock();
+                    m_db->Commit();
+                    g_DBManager.UnLock();
 
                     // OutputDebugString(_T("Trade partner added a backpack to trade window."));
                     // OutputDebugString(sql11.str().c_str());*/
                     return;
                 }
                 break;
+
             case 0x09:// remove a backpack from trade window, same msg
                 {
                     unsigned int otherTradeContainer = aoia::INV_TRADEPARTNER;
                     unsigned int containerId = (item.fromContainerTempId() << 16) + item.fromItemSlotId();
-                    g_DBManager.lock();
-                    g_DBManager.Begin();
+                    g_DBManager.Lock();
+                    m_db->Begin();
 
                     std::tstringstream sql;
 
@@ -1930,26 +1941,25 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                         << _T(" AND children = ") << containerId
                         << _T(" AND owner = ") << item.charid();
 
-                    g_DBManager.Exec(sql.str());
+                    m_db->Exec(sql.str());
                     //OutputDebugString(sql.str().c_str());
 
-                    g_DBManager.Commit();
-                    g_DBManager.unLock();
+                    m_db->Commit();
+                    g_DBManager.UnLock();
 
                     //OutputDebugString(_T("Trade partner removed a backpack to trade window."));
 
                     return;
                 }
                 break;
+
             default:
                 {
                     LOG(_T("Unknown trade operation: ") << std::hex << item.operationId());
                     return;
                 }
                 break;
-
             }
-
         }
         break;
 
@@ -1961,24 +1971,24 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
 
             TRACE(item.print());
 
-            g_DBManager.lock();
-            g_DBManager.Begin();
+            g_DBManager.Lock();
+            m_db->Begin();
 
-            unsigned int nextFreeInvSlot = g_DBManager.findNextAvailableContainerSlot(item.charid(), aoia::INV_TOONINV);
+            unsigned int nextFreeInvSlot = g_DBManager.FindNextAvailableContainerSlot(item.charid(),
+                                                                                      aoia::INV_TOONINV);
 
-            g_DBManager.insertItem(
-                item.itemid().Low(),
-                item.itemid().High(),
-                item.ql(),
-                item.flags(),
-                item.stack(),
-                aoia::INV_TOONINV,
-                nextFreeInvSlot,
-                0,
-                item.charid());
+            g_DBManager.InsertItem(item.itemid().Low(),
+                                   item.itemid().High(),
+                                   item.ql(),
+                                   item.flags(),
+                                   item.stack(),
+                                   aoia::INV_TOONINV,
+                                   nextFreeInvSlot,
+                                   0,
+                                   item.charid());
 
-            g_DBManager.Commit();
-            g_DBManager.unLock();
+            m_db->Commit();
+            g_DBManager.UnLock();
         }
         break;
 
@@ -2000,46 +2010,45 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                     //also contains inv slot id. (plus keylow/ql/stack/flags)
                     //when mission deleted, this id is sent in a MSG_CHAR_OPERATION/op 0x2f
                     TRACE(_T("updating!"));
-                    ServicesSingleton::Instance()->UpdateTempItemId(bp.charid(), bp.targetId(), bp.invSlot());
+                    m_tempContainers->UpdateTempItemId(bp.charid(), bp.targetId(), bp.invSlot());
                 }
                 else if (bp.operationId() == 0x71) //I got an mission item
                 {
                     unsigned int containerId = bp.targetId();
                     unsigned int newParent = aoia::INV_OVERFLOW;
 
-                    g_DBManager.lock();
-                    g_DBManager.Begin();
+                    g_DBManager.Lock();
+                    m_db->Begin();
 
                     //find a free spot:
                     unsigned int slotId = bp.invSlot();
                     if (slotId >= 0x6f)
                     {
-                        slotId = g_DBManager.findNextAvailableContainerSlot(msg.characterId(), newParent);
+                        slotId = g_DBManager.FindNextAvailableContainerSlot(msg.characterId(), newParent);
                     }
 
                     // Add item
-                    g_DBManager.insertItem(
-                        bp.keyLow(),
-                        bp.keyHigh(),
-                        bp.ql(),
-                        bp.flags(),
-                        1,//stack
-                        newParent,
-                        slotId ,//bp.invSlot(),
-                        0,
-                        msg.characterId());
+                    g_DBManager.InsertItem(bp.keyLow(),
+                                           bp.keyHigh(),
+                                           bp.ql(),
+                                           bp.flags(),
+                                           1,//stack
+                                           newParent,
+                                           slotId,//bp.invSlot(),
+                                           0,
+                                           msg.characterId());
 
                     TRACE(_T("updating!"));
 
                     //this will be moved to the next inv slot in the next msg.
                     unsigned int invSlotId = bp.invSlot();
                     if (invSlotId >= 0x6f)
-                        invSlotId = g_DBManager.findNextAvailableContainerSlot(msg.characterId(), aoia::INV_TOONINV);
+                        invSlotId = g_DBManager.FindNextAvailableContainerSlot(msg.characterId(), aoia::INV_TOONINV);
 
-                    ServicesSingleton::Instance()->UpdateTempItemId(bp.charid(), bp.targetId(), invSlotId);
+                    m_tempContainers->UpdateTempItemId(bp.charid(), bp.targetId(), invSlotId);
 
-                    g_DBManager.Commit();
-                    g_DBManager.unLock();
+                    m_db->Commit();
+                    g_DBManager.UnLock();
                 }
                 else
                 {
@@ -2057,7 +2066,8 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
             Native::AOItemMoved moveOp((AO::ItemMoved*)msg.start(), true);
             TRACE(moveOp.print());
 
-            unsigned int fromContainerId = GetFromContainerId(moveOp.charid(), moveOp.fromType(), moveOp.fromContainerTempId());
+            unsigned int fromContainerId = GetFromContainerId(moveOp.charid(), moveOp.fromType(),
+                                                              moveOp.fromContainerTempId());
             unsigned int newParent;
             unsigned int toType = moveOp.toContainer().Low();
 
@@ -2075,7 +2085,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
             }
             else if (toType == 0xc350)
             {
-                newParent = aoia::INV_TOONINV; 
+                newParent = aoia::INV_TOONINV;
             }
             else if (toType == 0x006e) //to overflow
             {
@@ -2104,8 +2114,8 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                     //if anything there, we must hotswap!
                     //we move anything that was there to a temp hotswap inv, move the new item, then move the other back.
 
-                    g_DBManager.lock();
-                    g_DBManager.Begin();
+                    g_DBManager.Lock();
+                    m_db->Begin();
                     {
                         std::tstringstream sqlMoveToTemp;
                         sqlMoveToTemp << _T("UPDATE tItems SET parent = ") << aoia::INV_HOTSWAPTEMP
@@ -2115,7 +2125,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                             << _T(" AND owner = ") << moveOp.charid();
 
                         TRACE(sqlMoveToTemp.str());
-                        g_DBManager.Exec(sqlMoveToTemp.str());
+                        m_db->Exec(sqlMoveToTemp.str());
                     }
                     {
                         std::tstringstream sqlMoveNewItem;
@@ -2126,7 +2136,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                             << _T(" AND owner = ") << moveOp.charid();
 
                         TRACE(sqlMoveNewItem.str());
-                        g_DBManager.Exec(sqlMoveNewItem.str());
+                        m_db->Exec(sqlMoveNewItem.str());
                     }
                     {
                         std::tstringstream sqlMoveFromTemp;
@@ -2136,11 +2146,11 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                             << _T(" AND owner = ") << moveOp.charid();
 
                         TRACE(sqlMoveFromTemp.str());
-                        g_DBManager.Exec(sqlMoveFromTemp.str());
+                        m_db->Exec(sqlMoveFromTemp.str());
                     }
 
-                    g_DBManager.Commit();
-                    g_DBManager.unLock();
+                    m_db->Commit();
+                    g_DBManager.UnLock();
                     return;
                 }
                 else if (newSlot >= 0x6f)
@@ -2149,60 +2159,63 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                     //and there is an item with the same itemkey there.
                     //If so join with the one with the lowest slotId (I think).
 
-                    unsigned int itemProp = g_DBManager.getItemProperties(moveOp.charid(), fromContainerId, moveOp.fromItemSlotId());
+                    unsigned int itemProp = g_DBManager.GetItemProperties(moveOp.charid(), fromContainerId,
+                                                                          moveOp.fromItemSlotId());
 
                     //DID during downtime, check this with extruder bars and ammo at least
                     if ((itemProp & PROP_STACKABLE) && (!(itemProp & PROP_NO_SPLIT)))
                     {
                         //OutputDebugString(_T("Its stackable"));
-                        unsigned int newSlotId = g_DBManager.findFirstItemOfSameType(moveOp.charid(), fromContainerId, moveOp.fromItemSlotId(), newParent);
+                        unsigned int newSlotId = g_DBManager.FindFirstItemOfSameType(moveOp.charid(), fromContainerId,
+                                                                                     moveOp.fromItemSlotId(),
+                                                                                     newParent);
 
                         if (newSlotId > 0)
                         {
                             TRACE(_T("Stack join from move operation"));
 
-                            g_DBManager.lock();
-                            g_DBManager.Begin();
+                            g_DBManager.Lock();
+                            m_db->Begin();
                             //join them and delete the old one.
                             {
                                 std::tstringstream sqlUpd;
                                 sqlUpd << _T("UPDATE tItems SET stack = ")
                                     << _T(" (stack + (SELECT tItems2.stack FROM tItems tItems2 WHERE")
-                                    << _T(" tItems2.owner = ") << msg.characterId() 
+                                    << _T(" tItems2.owner = ") << msg.characterId()
                                     << _T(" AND tItems2.parent = ") << fromContainerId
-                                    << _T(" AND tItems2.slot = ") << moveOp.fromItemSlotId() << _T("))") 
-                                    << _T(" WHERE owner = ") << msg.characterId() 
+                                    << _T(" AND tItems2.slot = ") << moveOp.fromItemSlotId() << _T("))")
+                                    << _T(" WHERE owner = ") << msg.characterId()
                                     << _T(" AND parent = ") << newParent
                                     << _T(" AND slot = ") << newSlotId;
 
                                 //OutputDebugString(sqlUpd.str().c_str());
-                                g_DBManager.Exec(sqlUpd.str());
+                                m_db->Exec(sqlUpd.str());
                             }
 
                             {
                                 std::tstringstream sql;
-                                sql << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() 
+                                sql << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId()
                                     << _T(" AND parent = ") << fromContainerId
                                     << _T(" AND slot = ") << moveOp.fromItemSlotId();//itemId().High();
 
                                 //OutputDebugString(sql.str().c_str());
-                                g_DBManager.Exec(sql.str());
+                                m_db->Exec(sql.str());
                             }
 
-                            g_DBManager.Commit();
-                            g_DBManager.unLock();
+                            m_db->Commit();
+                            g_DBManager.UnLock();
                             return;
                         }
                     }
                 }
             }
 
-            g_DBManager.lock();
-            g_DBManager.Begin();
+            g_DBManager.Lock();
+            m_db->Begin();
 
             if (newSlot >= 0x6f || newSlot == 0x00)
             {
-                newSlot = g_DBManager.findNextAvailableContainerSlot(moveOp.charid(), newParent);
+                newSlot = g_DBManager.FindNextAvailableContainerSlot(moveOp.charid(), newParent);
             }
 
             std::tstringstream sql;
@@ -2213,10 +2226,10 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                 << _T(" AND owner = ") << moveOp.charid();
 
             TRACE(sql.str());
-            g_DBManager.Exec(sql.str());
+            m_db->Exec(sql.str());
 
-            g_DBManager.Commit();
-            g_DBManager.unLock();
+            m_db->Commit();
+            g_DBManager.UnLock();
         }
         break;
 
@@ -2225,29 +2238,28 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
             LOG(_T("MSG_BANK"));
 
             Native::AOBank bank((AO::Bank*)msg.start(), true);
-            g_DBManager.lock();
-            g_DBManager.Begin();
+            g_DBManager.Lock();
+            m_db->Begin();
             {  // Remove old stuff from the bank. Every update is a complete update.
                 std::tstringstream sql;
                 sql << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId() << _T(" AND parent = 1");
-                g_DBManager.Exec(sql.str());
+                m_db->Exec(sql.str());
             }
             for (unsigned int i = 0; i < bank.numitems(); i++)
             {
                 Native::AOItem item = bank.item(i);
-                g_DBManager.insertItem(
-                    item.itemid().Low(),
-                    item.itemid().High(),
-                    item.ql(),
-                    item.flags(),
-                    item.stack(),
-                    aoia::INV_BANK,
-                    item.index(),
-                    item.containerid().High(),
-                    msg.characterId());
+                g_DBManager.InsertItem(item.itemid().Low(),
+                                       item.itemid().High(),
+                                       item.ql(),
+                                       item.flags(),
+                                       item.stack(),
+                                       aoia::INV_BANK,
+                                       item.index(),
+                                       item.containerid().High(),
+                                       msg.characterId());
             }
-            g_DBManager.Commit();
-            g_DBManager.unLock();
+            m_db->Commit();
+            g_DBManager.UnLock();
         }
         break;
 
@@ -2264,56 +2276,55 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                     unsigned int containerId = bp.targetId();
                     unsigned int newParent = aoia::INV_TOONINV;
 
-                    g_DBManager.lock();
-                    g_DBManager.Begin();
+                    g_DBManager.Lock();
+                    m_db->Begin();
 
                     //find a free spot:
                     unsigned int slotId = bp.invSlot();
                     if (slotId >= 0x6f)
-                        slotId = g_DBManager.findNextAvailableContainerSlot(msg.characterId(), newParent);
+                        slotId = g_DBManager.FindNextAvailableContainerSlot(msg.characterId(), newParent);
                     {
                         // Remove old ref to backpack:
                         std::tstringstream sql;
                         sql << _T("DELETE FROM tItems WHERE owner = ") << msg.characterId()
                             << _T(" AND children = ") << containerId;
-                        g_DBManager.Exec(sql.str());
+                        m_db->Exec(sql.str());
                     }
 
                     // Add backpack:
-                    g_DBManager.insertItem(
-                        bp.keyLow(),
-                        bp.keyHigh(),
-                        bp.ql(),
-                        bp.flags(),
-                        1,//stack
-                        newParent,
-                        slotId ,//bp.invSlot(),
-                        containerId,
-                        msg.characterId());
+                    g_DBManager.InsertItem(bp.keyLow(),
+                                           bp.keyHigh(),
+                                           bp.ql(),
+                                           bp.flags(),
+                                           1,//stack
+                                           newParent,
+                                           slotId,//bp.invSlot(),
+                                           containerId,
+                                           msg.characterId());
 
                     TRACE(_T("BP: ") << bp.keyLow() << _T(" FL: ") << bp.flags());
 
-                    g_DBManager.Commit();
-                    g_DBManager.unLock();
+                    m_db->Commit();
+                    g_DBManager.UnLock();
                 }
                 /*else if (bp.operationId() == 0x01) //backpack refresh
                 {
                 unsigned int containerId = bp.target().High();
-
+                
                 unsigned int newParent = aoia::INV_TOONINV;
-
+                
                 unsigned int slotId = bp.invSlot();
-
+                
                 g_DBManager.lock();
-                g_DBManager.Begin();
-
+                m_db->Begin();
+                
                 {
                 // Remove old ref to backpack:
                 std::tstringstream sql;
                 sql << _T("DELETE FROM tItems WHERE children = ") << containerId;
-                g_DBManager.Exec(sql.str());
+                m_db->Exec(sql.str());
                 }
-
+                
                 g_DBManager.insertItem(
                 bp.keyLow(),
                 bp.keyHigh(),
@@ -2324,8 +2335,8 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                 slotId ,//bp.invSlot(),
                 containerId,
                 msg.characterId());
-
-                g_DBManager.Commit();
+                
+                m_db->Commit();
                 g_DBManager.unLock();
                 }*/
             }
@@ -2368,28 +2379,27 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
             msg.characterId());
             }*/
 
-            g_DBManager.lock();
-            g_DBManager.Begin();
+            g_DBManager.Lock();
+            m_db->Begin();
             {
                 // Remove old contents from BP
                 std::tstringstream sql;
                 sql << _T("DELETE FROM tItems WHERE parent = ") << containerId;
-                g_DBManager.Exec(sql.str());
+                m_db->Exec(sql.str());
             }
             // Register BP contents
             for (unsigned int i = 0; i < bp.numitems(); i++)
             {
                 Native::AOItem item = bp.item(i);
-                g_DBManager.insertItem(
-                    item.itemid().Low(),
-                    item.itemid().High(),
-                    item.ql(),
-                    item.flags(),
-                    item.stack(),
-                    containerId,
-                    item.index(),
-                    0,
-                    msg.characterId());
+                g_DBManager.InsertItem(item.itemid().Low(),
+                                       item.itemid().High(),
+                                       item.ql(),
+                                       item.flags(),
+                                       item.stack(),
+                                       containerId,
+                                       item.index(),
+                                       0,
+                                       msg.characterId());
                 /*#ifdef DEBUG
                 {
                 // Log
@@ -2403,11 +2413,11 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
             //don't store INV_OVERFLOW as contId 110, this id can be used by a backpack!
             if (containerId != aoia::INV_OVERFLOW)
             {
-                ServicesSingleton::Instance()->UpdateTempContainerId(bp.charid(), bp.tempContainerId(), containerId);
+                m_tempContainers->UpdateTempContainerId(bp.charid(), bp.tempContainerId(), containerId);
             }
 
-            g_DBManager.Commit();
-            g_DBManager.unLock();
+            m_db->Commit();
+            g_DBManager.UnLock();
             //AddToTreeView(msg.charid(), bp.containerid().High());
         }
         break;
@@ -2417,16 +2427,17 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
             Parsers::AOFullCharacterMessage parser(msg.start(), msg.size());
             LOG(_T("MSG_FULLSYNC CharacterID=") << parser.characterId());
 
-            g_DBManager.lock();
-            g_DBManager.Begin();
+            g_DBManager.Lock();
+            m_db->Begin();
             {
                 // Remove old contents from DB (inventory, trade, remote trade and overflow win.
                 std::tstringstream sql;
-                sql << _T("DELETE FROM tItems WHERE (parent = 2 or parent >= 4 and parent <= 8) AND owner = ") << parser.characterId();
-                g_DBManager.Exec(sql.str());
+                sql << _T("DELETE FROM tItems WHERE (parent = 2 or parent >= 4 and parent <= 8) AND owner = ") <<
+                    parser.characterId();
+                m_db->Exec(sql.str());
             }
 
-            ServicesSingleton::Instance()->ClearTempContainerIdCache(parser.characterId());
+            m_tempContainers->ClearTempContainerIdCache(parser.characterId());
 
             // Register items
             std::vector<AOContainerItemPtr> items;
@@ -2435,27 +2446,26 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
             {
                 Parsers::AOContainerItemPtr item = *it;
 
-                g_DBManager.insertItem(
-                    item->itemId().low(),
-                    item->itemId().high(),
-                    item->ql(),
-                    item->flags(),
-                    item->stack(),
-                    2,             // parent 2 = equip
-                    item->index(),
-                    item->containerId().high(),
-                    msg.characterId());
+                g_DBManager.InsertItem(item->itemId().low(),
+                                       item->itemId().high(),
+                                       item->ql(),
+                                       item->flags(),
+                                       item->stack(),
+                                       2,             // parent 2 = equip
+                                       item->index(),
+                                       item->containerId().high(),
+                                       msg.characterId());
 
                 //TRACE("Inv: " << item.itemid().Low() << "FL:\t" << item.flags());
             }
-            g_DBManager.Commit();
+            m_db->Commit();
 
             // Record stats in the DB
             StatMap stats;
             parser.getStats(stats);
-            g_DBManager.setToonStats(msg.characterId(), stats);
+            g_DBManager.SetToonStats(msg.characterId(), stats);
 
-            g_DBManager.unLock();
+            g_DBManager.UnLock();
 
             CleanupDB(msg.characterId());
         }
@@ -2474,10 +2484,10 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                 // Assuming server ID contains dimension ID in highbyte.
                 unsigned int dimensionid = (_byteswap_ulong(pMobInfo->header.serverid) & 0x0000FF00) >> 8;
 
-                g_DBManager.lock();
-                g_DBManager.setToonName(msg.characterId(), from_ascii_copy(name));
-                g_DBManager.setToonDimension(msg.characterId(), dimensionid);
-                g_DBManager.unLock();
+                g_DBManager.Lock();
+                g_DBManager.SetToonName(msg.characterId(), from_ascii_copy(name));
+                g_DBManager.SetToonDimension(msg.characterId(), dimensionid);
+                g_DBManager.UnLock();
             }
         }
         break;
@@ -2485,14 +2495,15 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
     case AO::MSG_SHOP_INFO:
         {
             AOPlayerShopInfo shop(msg.start(), msg.size());
-            LOG(_T("MSG_SHOP_INFO target=") << shop.characterId() << _T(" owner=") << shop.ownerId() << _T(" shop=") << shop.shopId());
+            LOG(_T("MSG_SHOP_INFO target=") << shop.characterId() << _T(" owner=") << shop.ownerId() << _T(" shop=") <<
+                shop.shopId());
 
             if (shop.shopId() != 0 && shop.ownerId() != 0)
             {
                 // As long as the shop and owner IDs are > 0 we record them.
                 // setToonShopId will not create new toon entries in the DB, 
                 // so its safe to just dump all the shop IDs to it.
-                g_DBManager.setToonShopId(shop.ownerId(), shop.shopId());
+                g_DBManager.SetToonShopId(shop.ownerId(), shop.shopId());
             }
         }
         break;
@@ -2506,7 +2517,7 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
             // ID of who-ever that shop is registered to. This will allow you to update all your toons shops without 
             // logging them in. (You only need to visit the shop with one of them.)
 
-            unsigned int owner = g_DBManager.getShopOwner(shop.shopid());
+            unsigned int owner = g_DBManager.GetShopOwner(shop.shopid());
 
             unsigned int parent = aoia::INV_PLAYERSHOP;
 
@@ -2518,13 +2529,13 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                 parent = aoia::INV_OTHER_PLAYERSHOP;
             }
 
-            g_DBManager.lock();
-            g_DBManager.Begin();
+            g_DBManager.Lock();
+            m_db->Begin();
             {
                 // Remove old contents from container
                 std::tstringstream sql;
                 sql << _T("DELETE FROM tItems WHERE parent = ") << parent << _T(" AND owner = ") << owner;
-                g_DBManager.Exec(sql.str());
+                m_db->Exec(sql.str());
             }
             // Register container contents
             for (unsigned int i = 0; i < shop.numitems(); i++)
@@ -2532,31 +2543,30 @@ void InventoryView::OnAOServerMessage(AOMessageBase &msg)
                 AOContainerItem item = shop.item(i);
                 unsigned int price = shop.price(item.index());
 
-                g_DBManager.insertItem(
-                    item.itemId().low(),
-                    item.itemId().high(),
-                    item.ql(),
-                    item.flags(),
-                    item.stack(),
-                    parent,
-                    item.index(),
-                    0,
-                    owner);
+                g_DBManager.InsertItem(item.itemId().low(),
+                                       item.itemId().high(),
+                                       item.ql(),
+                                       item.flags(),
+                                       item.stack(),
+                                       parent,
+                                       item.index(),
+                                       0,
+                                       owner);
             }
-            g_DBManager.Commit();
-            g_DBManager.unLock();
+            m_db->Commit();
+            g_DBManager.UnLock();
 
         }
         break;
         /*case AO::MSG_OPENBACKPACK:// 0x52526858://1196653092:
         {
-
+        
         return;//handled on server msg. 
         //Since the server msg is only sent once, we might want to update tempId here, but it shouldnt be needeed.
         Native::AOOpenBackpackOperation moveOp((AO::OpenBackpackOperation*)msg.start());
-
+        
         OutputDebugString(moveOp.print().c_str());
-
+        
         }
         break;*/
 
@@ -2570,11 +2580,12 @@ void InventoryView::CleanupDB(unsigned int charid)
 {
     // Statement to delete all the orfaned containers for this toon.
     std::tstringstream sql;
-    sql << _T("DELETE FROM tItems WHERE owner = ") << charid << _T(" AND parent > 3 AND parent NOT IN (SELECT DISTINCT children FROM tItems)");
+    sql << _T("DELETE FROM tItems WHERE owner = ") << charid <<
+        _T(" AND parent > 3 AND parent NOT IN (SELECT DISTINCT children FROM tItems)");
 
-    g_DBManager.lock();
-    g_DBManager.Exec(sql.str());
-    g_DBManager.unLock();
+    g_DBManager.Lock();
+    m_db->Exec(sql.str());
+    g_DBManager.UnLock();
 }
 
 
@@ -2604,7 +2615,7 @@ void InventoryView::UpdateListView(std::tstring const& where)
         m_datagrid->getModel()->disconnect(m_updateSignalConnection);
     }
 
-    ItemListDataModelPtr data(new ItemListDataModel(where, m_sortColumn, !m_sortDesc));
+    ItemListDataModelPtr data(new ItemListDataModel(m_db, m_containerManager, where, m_sortColumn, !m_sortDesc));
     m_addSignalConnection = data->connectItemAdded(boost::bind(&InventoryView::onItemAdded, this, _1));
     m_removeSignalConnection = data->connectItemRemoved(boost::bind(&InventoryView::onItemRemoved, this, _1));
     m_clearSignalConnection = data->connectAllRemoved(boost::bind(&InventoryView::onAllItemsRemoved, this));
@@ -2643,7 +2654,7 @@ void InventoryView::exportToCSV(std::tstring const& where)
     }
     where_statement += _T("I.children=0");
 
-    ItemListDataModelPtr data(new ItemListDataModel(where_statement, m_sortColumn, !m_sortDesc));
+    ItemListDataModelPtr data(new ItemListDataModel(m_db, m_containerManager, where_statement, m_sortColumn, !m_sortDesc));
 
     // Ask the user which server to use for item URLs
     ServerSelectorDialog dlg;
@@ -2667,75 +2678,23 @@ void InventoryView::exportToCSV(std::tstring const& where)
     }
 
     // Ask the user for a name for the CSV file
-    std::tstring filename = BrowseForOutputFile(GetTopLevelWindow(), _T("Select Name of Output File"), _T("CSV Files (Comma-Separated Values)\0*.csv\0\0"), _T("csv"));
-    if (filename.empty()) {
+    std::tstring filename = BrowseForOutputFile(GetTopLevelWindow(), _T("Select Name of Output File"),
+                                                _T("CSV Files (Comma-Separated Values)\0*.csv\0\0"), _T("csv"));
+    if (filename.empty())
+    {
         return;
     }
 
     // Output to the selected CSV file.
-#ifdef UNICODE
-    std::wofstream ofs(filename.c_str());
-#else
-    std::ofstream ofs(filename.c_str());
-#endif  // UNICODE
-
-    if (!ofs.is_open()) {
+    std::tofstream ofs(filename.c_str());
+    if (!ofs.is_open())
+    {
         return;
     }
 
-    std::tstring separator = _T("\n");
-
-    // Write the column headers
-    for (unsigned int column_index = 0; column_index < data->getColumnCount(); ++column_index)
-    {
-        if (column_index > 0)
-        {
-            ofs << _T(",");
-        }
-        ofs << data->getColumnName(column_index);
-    }
-    ofs << _T(",LowID,HighID,Link") << separator;
-
-    // Write one row for each item to export.
-    g_DBManager.lock();
-    for (unsigned int row_index = 0; row_index < data->getItemCount(); ++row_index)
-    {
-        if (row_index > 0) {
-            ofs << separator;
-        }
-
-        // Dump all the columns from the datamodel.
-        for (unsigned int column_index = 0; column_index < data->getColumnCount(); ++column_index)
-        {
-            if (column_index > 0) {
-                ofs << _T(",");
-            }
-            std::tstring cell_value = data->getItemProperty(row_index, column_index);
-            if (cell_value.find(_T(",")) != std::tstring::npos)
-            {
-                // If the value of the cell contains a comma, we need to encapsulate the text in " symbols.
-                ofs << ensureEncapsulation(cell_value);
-            }
-            else 
-            {
-                ofs << cell_value;
-            }
-        }
-
-        OwnedItemInfoPtr pItemInfo = g_DBManager.getOwnedItemInfo(data->getItemIndex(row_index));
-
-        // Append columns with high-id and low-id
-        ofs << _T(",") << pItemInfo->itemloid << _T(",") << pItemInfo->itemhiid;
-
-        // Append a column with the item URL
-        std::tstring itemURL = itemURLTemplate;
-        boost::replace_all(itemURL, _T("%lowid%"), pItemInfo->itemloid);
-        boost::replace_all(itemURL, _T("%hiid%"), pItemInfo->itemhiid);
-        boost::replace_all(itemURL, _T("%ql%"), pItemInfo->itemql);
-
-        ofs << _T(",") << itemURL;
-    }
-    g_DBManager.unLock();
+    CSVDataModelPtr model(new CSVDataModel(m_db, m_containerManager, where_statement, itemURLTemplate));
+    CSVExporter exporter;
+    exporter.DoExport(ofs, model);
 }
 
 
@@ -2759,7 +2718,7 @@ void InventoryView::OnSelectionChanged()
 }
 
 
-std::tstring InventoryView::GetServerItemURLTemplate( ItemServer server )
+std::tstring InventoryView::GetServerItemURLTemplate(ItemServer server)
 {
     std::tstring retval;
 
@@ -2843,8 +2802,8 @@ bool InventoryView::SetClipboardText(std::tstring const& text)
 
     if (OpenClipboard() && EmptyClipboard())
     {
-        HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT, (text.length() * 2 + 2)); 
-        if (hglbCopy == NULL) 
+        HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT, (text.length() * 2 + 2));
+        if (hglbCopy == NULL)
         {
             CloseClipboard();
             return false;
@@ -2866,4 +2825,23 @@ bool InventoryView::SetClipboardText(std::tstring const& text)
         return true;
     }
     return false;
+}
+
+
+std::tstring InventoryView::GetContainerNameForItem( OwnedItemInfoPtr pItemInfo ) const
+{
+    unsigned int containerid = boost::lexical_cast<unsigned int>(pItemInfo->containerid);
+    unsigned int ownerid = boost::lexical_cast<unsigned int>(pItemInfo->ownerid);
+    return m_containerManager->GetContainerName(ownerid, containerid);
+}
+
+
+void InventoryView::GetSelectedItemIds( std::set<unsigned int> &ids )
+{
+    std::set<unsigned int> selectedIndexes = m_datagrid->getSelectedItems();
+    ItemListDataModelPtr model = boost::shared_static_cast<ItemListDataModel>(m_datagrid->getModel());
+    for (std::set<unsigned int>::const_iterator it = selectedIndexes.begin(); it != selectedIndexes.end(); ++it)
+    {
+        ids.insert(model->getItemIndex(*it));
+    }
 }

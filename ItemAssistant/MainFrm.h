@@ -1,5 +1,7 @@
-#pragma once
+#ifndef MAINFRM_H
+#define MAINFRM_H
 
+#include <settings/ISettings.h>
 #include <PluginSDK/PluginViewInterface.h>
 #include "TabFrame.h"
 #include <vector>
@@ -7,6 +9,9 @@
 
 // Forward declarations
 class CTrayNotifyIcon;
+namespace aoia {
+    class GuiServices;
+}
 
 
 class CMainFrame
@@ -16,7 +21,7 @@ class CMainFrame
     , public CIdleHandler
 {
 public:
-    CMainFrame();
+    CMainFrame(aoia::ISettingsPtr settings);
 
     DECLARE_FRAME_WND_CLASS(_T("ItemAssistantWindowClass"), IDR_MAINFRAME)
 
@@ -47,7 +52,7 @@ public:
         MSG_WM_ERASEBKGND(OnEraseBkgnd)
         MSG_WM_SYSCOMMAND(OnSysCommand)
         MESSAGE_HANDLER(WM_TRAYICON, OnTrayIcon)
-        CHAIN_COMMANDS_MEMBER(m_tabbedChildWindow)
+        CHAIN_COMMANDS_MEMBER( (*m_tabbedChildWindow) )
         CHAIN_MSG_MAP(CUpdateUI<CMainFrame>)
         CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
         REFLECT_NOTIFICATIONS()
@@ -68,17 +73,20 @@ public:
     LRESULT OnTrayIcon(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
     void OnSysCommand(UINT wParam, CPoint mousePos);
 
-    boost::shared_ptr<CTrayNotifyIcon> GetTrayIcon() const { return m_trayIcon; }
+    //boost::shared_ptr<CTrayNotifyIcon> GetTrayIcon() const { return m_trayIcon; }
 
 private:
+    boost::shared_ptr<CTrayNotifyIcon> m_trayIcon;
+    boost::shared_ptr<TabFrame> m_tabbedChildWindow;
+
     bool Inject();
 
-    boost::shared_ptr<CTrayNotifyIcon> m_trayIcon;
-    TabFrame m_tabbedChildWindow;
-
-    CCommandBarCtrl            m_CmdBar;
-
+    CCommandBarCtrl m_CmdBar;
     bool m_minimized;
-
     CRect m_windowRect;
+    boost::shared_ptr<aoia::GuiServices> m_guiServices;
+    aoia::IContainerManagerPtr m_containerManager;
+    aoia::ISettingsPtr m_settings;
 };
+
+#endif // MAINFRM_H

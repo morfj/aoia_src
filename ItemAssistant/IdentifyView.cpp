@@ -2,17 +2,19 @@
 #include "IdentifyView.h"
 #include <Shared/SQLite.h>
 #include "DBManager.h"
-#include "QueryDataGridModel.h"
 #include "IdentifyListDataModel.h"
 #include "ItemListDataModel.h"
 
 
-using namespace SQLite;
+using namespace sqlite;
 using namespace aoia;
 
 
-IdentifyView::IdentifyView()
-    : m_datagrid(new DataGridControl())
+IdentifyView::IdentifyView(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui)
+    : m_db(db)
+    , m_containerManager(containerManager)
+    , m_gui(gui)
+    , m_datagrid(new DataGridControl())
     , m_identifyList(new DataGridControl())
     , m_sortColumn(-1)
     , m_sortAscending(true)
@@ -50,7 +52,7 @@ LRESULT IdentifyView::onCreate(LPCREATESTRUCT createStruct)
     m_splitter.SetSplitterPos(250);
 
     // Assign a datamodel to the list of identifyables.
-    m_identifyListModel.reset(new IdentifyListDataModel());
+    m_identifyListModel.reset(new IdentifyListDataModel(m_db));
     m_identifyList->setModel(m_identifyListModel);
     m_identifyList->autosizeColumnsUseData();
 
@@ -96,7 +98,7 @@ LRESULT IdentifyView::onListItemChanged(LPNMHDR lParam)
             aoids.insert(m_identifyListModel->getItemLowId(pItem->iItem));
             aoids.insert(m_identifyListModel->getItemHighId(pItem->iItem));
 
-            ItemListDataModelPtr data(new ItemListDataModel(aoids));
+            ItemListDataModelPtr data(new ItemListDataModel(m_db, m_containerManager, aoids));
 
             m_datagrid->setModel(data);
             m_datagrid->autosizeColumnsUseData();
@@ -123,7 +125,7 @@ LRESULT IdentifyView::onListItemStateChanged(LPNMHDR lParam)
             aoids.insert(m_identifyListModel->getItemLowId(lStateChange->iFrom));
             aoids.insert(m_identifyListModel->getItemHighId(lStateChange->iFrom));
 
-            ItemListDataModelPtr data(new ItemListDataModel(aoids));
+            ItemListDataModelPtr data(new ItemListDataModel(m_db, m_containerManager, aoids));
 
             m_datagrid->setModel(data);
             m_datagrid->autosizeColumnsUseData();
@@ -157,6 +159,6 @@ LRESULT IdentifyView::onColumnClick(LPNMHDR lParam)
 
 LRESULT IdentifyView::OnHelp( WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/ )
 {
-    SharedServices::ShowHelp(_T("identify"));
+    m_gui->ShowHelp(_T("identify"));
     return 0;
 }

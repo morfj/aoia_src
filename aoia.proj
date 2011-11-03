@@ -9,25 +9,12 @@
 		<Version Condition="'$(BUILD_NUMBER)'!=''">$(BUILD_NUMBER)</Version>
 	</PropertyGroup>
 
-	<ItemGroup>
-		<Projects Include="**/shared.vcproj" />
-		<Projects Include="**/tinyxmlSTL.vcproj" />
-		<Projects Include="**/PluginSDK.vcproj" />
-		<Projects Include="**/Detours.vcproj" />
-		<Projects Include="**/Parsers.vcproj" />
-		<Projects Include="**/ItemAssistantCore.vcproj" />
-		<Projects Include="**/ItemAssistantHook.vcproj" />
-		<Projects Include="**/ItemAssistant.vcproj" />
-		<Projects Include="**/ParsersTests.vcproj" />
-	</ItemGroup>
-
 	<Target Name="clean">
 		<Message Text="Cleaning" />
-		<VCBuild
-            Projects="@(Projects)"
-            Configuration="Release|Win32"
-            SolutionFile="ItemAssistant.sln"
-            Clean="true" />
+		<MSBuild
+            Projects="ItemAssistant.sln"
+            Properties="Configuration=Release"
+            Targets="Clean" />
 	</Target>
 
 	<Target Name="prepare_build">
@@ -39,7 +26,16 @@
 		<Delete Files="@(OldOutputFiles)" />
 	</Target>
 
-	<Target Name="update_version_resource">
+	<Target Name="get_repo_version">
+		<Exec Command="hg log -r tip --template {latesttag}.{latesttagdistance} > $(Temp)\version.txt"/>
+		<ReadLinesFromFile File="$(Temp)\version.txt">
+			<Output TaskParameter="Lines" PropertyName="Version"/>
+		</ReadLinesFromFile>
+		<Message Text="Repository Version: $(Version)" />
+		<BuildNumber Number="$(Version)-{build.number}" />
+	</Target>
+	
+	<Target Name="update_version_resource" DependsOnTargets="get_repo_version">
 		<Message Text="Updating Version Resource" />
 		<ItemGroup>
 			<ResourceFile Include="ItemAssistant/*.rc" />
@@ -62,7 +58,7 @@
                     ReplacementText="&quot;$1, $2, $3, $4&quot;" />
 	</Target>
 
-	<Target Name="update_version">
+	<Target Name="update_version" DependsOnTargets="get_repo_version">
 		<Message Text="Updating Version" />
 		<ItemGroup>
 			<VersionFile Include="ItemAssistant/Version.h" />
@@ -75,17 +71,17 @@
 
 	<Target Name="build">
 		<Message Text="Building" />
-		<VCBuild
-            Projects="@(Projects)"
-            Configuration="Release|Win32"
-            SolutionFile="ItemAssistant.sln" 
-            Rebuild="true" />
+		<MSBuild
+            Projects="ItemAssistant.sln"
+            Properties="Configuration=Release"
+            Targets="Rebuild" />
 	</Target>
 
 	<Target Name="test">
 		<Message Text="Testing" />
 		<RunGoogleTests TestExePath="Release/ParsersTests.exe" />
-	</Target>
+        <RunGoogleTests TestExePath="Release/csvexporttests.exe" />
+    </Target>
 
 	<Target Name="package" DependsOnTargets="prepare_build;update_version;update_version_resource;build">
 		<Message Text="Packaging" />
@@ -93,19 +89,18 @@
 			<Files Include="Release/ItemAssistant.exe" />
 			<Files Include="Release/ItemAssistantCore.dll" />
 			<Files Include="Release/ItemAssistantHook.dll" />
-			<Files Include="Release/sqlite3.dll" />
-			<Files Include="Release/*.manifest" />
-			<Files Include="Release/msvc*.dll" />
 			<Files Include="Release/README.txt" />
+			<Files Include="$(VS100COMNTOOLS)..\..\VC\redist\x86\Microsoft.VC100.CRT\*.dll" />
 		</ItemGroup>
 		<Zip
 			Files="@(Files)" 
 			WorkingDirectory="Release"
-			ZipFileName="Release/ItemAssistant-$(Version).zip" />
+			ZipFileName="Release/ItemAssistant-$(Version).zip" 
+			Flatten="true" />
 	</Target>
 
 	<Target Name="installer">
 		<Exec command="&quot;$(NSISDIR)\makensis.exe&quot; /DBUILD_NUMBER=$(Version) aoia_installer.nsi" WorkingDirectory="ItemAssistantInstaller" /> 
 	</Target>
-	
+
 </Project>

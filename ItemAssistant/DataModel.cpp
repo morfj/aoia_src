@@ -6,8 +6,9 @@
 
 namespace aoia { namespace sv {
 
-    DataModel::DataModel(unsigned int dimensionid)
-        : m_dimensionid(dimensionid)
+    DataModel::DataModel(sqlite::IDBPtr db, unsigned int dimensionid)
+        : m_db(db)
+        , m_dimensionid(dimensionid)
     {
         // Sets up the map between column-index and title.
         m_columnTitles = boost::assign::map_list_of
@@ -28,14 +29,14 @@ namespace aoia { namespace sv {
             statids << m_statids.at(i);
         }
 
-        SQLite::TablePtr toons = g_DBManager.ExecTable(STREAM2STR("SELECT charid, charname FROM tToons WHERE dimensionid = " << m_dimensionid));
+        sqlite::ITablePtr toons = m_db->ExecTable(STREAM2STR("SELECT charid, charname FROM tToons WHERE dimensionid = " << m_dimensionid));
         for (unsigned int i = 0; i < toons->Rows(); ++i)
         {
             DataModelItem item;
             item.charid = boost::lexical_cast<unsigned int>(toons->Data(i, 0));
             item.name = from_ascii_copy(toons->Data(i, 1));
 
-            SQLite::TablePtr stats = g_DBManager.ExecTable(STREAM2STR("SELECT statid, statvalue FROM tToonStats WHERE charid = " << item.charid << " AND statid IN("<< statids.str() << ")"));
+            sqlite::ITablePtr stats = m_db->ExecTable(STREAM2STR("SELECT statid, statvalue FROM tToonStats WHERE charid = " << item.charid << " AND statid IN("<< statids.str() << ")"));
             for (unsigned int j = 0; j < stats->Rows(); ++j)
             {
                 unsigned int id = boost::lexical_cast<unsigned int>(stats->Data(j, 0));

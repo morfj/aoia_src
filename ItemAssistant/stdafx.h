@@ -51,8 +51,6 @@ class DBManager;
 extern DBManager g_DBManager; // Global DB manager
 
 #include <shared/Singleton.h>
-#include "SharedServices.h"
-typedef Shared::Singleton<SharedServices> ServicesSingleton;
 
 class Application;
 typedef Shared::Singleton<Application> App;

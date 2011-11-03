@@ -5,10 +5,9 @@
 #include <ShellAPI.h>
 
 
-InfoView::InfoView()
-: m_pParent(NULL) 
-{
-}
+InfoView::InfoView(sqlite::IDBPtr db)
+    : m_db(db)
+    , m_pParent(NULL) {}
 
 
 void InfoView::SetParent(InventoryView* parent)
@@ -23,7 +22,7 @@ BOOL InfoView::PreTranslateMsg(MSG* pMsg)
 }
 
 
-LRESULT InfoView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+LRESULT InfoView::OnInitDialog(UINT/*uMsg*/, WPARAM/*wParam*/, LPARAM/*lParam*/, BOOL&/*bHandled*/)
 {
     this->SetWindowText(_T("Info View"));
 
@@ -32,16 +31,17 @@ LRESULT InfoView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 }
 
 
-LRESULT InfoView::OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
+LRESULT InfoView::OnForwardMsg(UINT/*uMsg*/, WPARAM/*wParam*/, LPARAM lParam, BOOL&/*bHandled*/)
 {
     LPMSG pMsg = (LPMSG)lParam;
     return this->PreTranslateMsg(pMsg);
 }
 
 
-LRESULT InfoView::OnButtonClicked(WORD commandID, WORD buttonID, HWND hButton, BOOL &bHandled)
+LRESULT InfoView::OnButtonClicked(WORD commandID, WORD buttonID, HWND hButton, BOOL& bHandled)
 {
-    if (m_currentItem == 0) {
+    if (m_currentItem == 0)
+    {
         return 0;
     }
 
@@ -66,9 +66,9 @@ LRESULT InfoView::OnButtonClicked(WORD commandID, WORD buttonID, HWND hButton, B
     }
     std::tstring url = InventoryView::GetServerItemURLTemplate(server);
 
-    g_DBManager.lock();
-    OwnedItemInfoPtr pItemInfo = g_DBManager.getOwnedItemInfo(m_currentItem);
-    g_DBManager.unLock();
+    g_DBManager.Lock();
+    OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo(m_currentItem);
+    g_DBManager.UnLock();
 
     boost::replace_all(url, _T("%lowid%"), pItemInfo->itemloid);
     boost::replace_all(url, _T("%hiid%"), pItemInfo->itemhiid);
@@ -91,9 +91,9 @@ void InfoView::SetCurrentItem(unsigned int item)
     std::tstringstream sql;
     sql << _T("SELECT * FROM tItems WHERE itemidx = ") << item;
 
-    g_DBManager.lock();
-    SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());
-    g_DBManager.unLock();
+    g_DBManager.Lock();
+    sqlite::ITablePtr pT = m_db->ExecTable(sql.str());
+    g_DBManager.UnLock();
 
     if (pT)
     {
@@ -101,7 +101,7 @@ void InfoView::SetCurrentItem(unsigned int item)
         {
             // Backup previous column widths
             std::vector<int> columnWidthList;
-            while(lv.GetHeader().GetItemCount() > 0)
+            while (lv.GetHeader().GetItemCount() > 0)
             {
                 columnWidthList.push_back(lv.GetColumnWidth(0));
                 lv.DeleteColumn(0);
@@ -120,8 +120,8 @@ void InfoView::SetCurrentItem(unsigned int item)
             int indx = INT_MAX - 1;
             for (unsigned int col = 0; col < pT->Columns(); col++)
             {
-                indx = lv.AddItem(indx, 0, from_ascii_copy(pT->Headers()[col]).c_str());
-                lv.AddItem(indx, 1, from_ascii_copy(pT->Data()[col]).c_str());
+                indx = lv.AddItem(indx, 0, from_ascii_copy(pT->Headers(col)).c_str());
+                lv.AddItem(indx, 1, from_ascii_copy(pT->Data(0, col)).c_str());
             }
         }
     }

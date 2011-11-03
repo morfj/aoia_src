@@ -3,13 +3,12 @@
 #include <SQLite/sqlite3.h>
 #include <iostream>
 
-namespace SQLite {
+namespace sqlite
+{
 
-    Db::Db(std::ostream &log)
+    Db::Db(std::ostream& log)
         : m_pDb(NULL)
-        , m_log(log)
-    {
-    }
+        , m_log(log) {}
 
 
     Db::~Db()
@@ -42,30 +41,31 @@ namespace SQLite {
     }
 
 
-    TablePtr Db::ExecTable(std::wstring const& sql) const
+    ITablePtr Db::ExecTable(std::wstring const& sql) const
     {
         return ExecTable(to_utf8_copy(sql));
     }
 
 
-    TablePtr Db::ExecTable(std::string const& sql) const
+    ITablePtr Db::ExecTable(std::string const& sql) const
     {
         TablePtr pRes;
-        char **result;
+        char** result;
         int nrow;
         int ncol;
 
-        int err = sqlite3_get_table(m_pDb, 
-            sql.c_str(), 
-            &result,          /* Result written to a char *[]  that this points to */
-            &nrow,            /* Number of result rows written here */
-            &ncol,            /* Number of result columns written here */
-            NULL);
+        int err = sqlite3_get_table(m_pDb,
+                                    sql.c_str(),
+                                    &result,          /* Result written to a char *[]  that this points to */
+                                    &nrow,            /* Number of result rows written here */
+                                    &ncol,            /* Number of result columns written here */
+                                    NULL);
 
         if (SQLITE_OK != err)
         {
             assert(false);
-            m_log << "Db::ExecTable: Failed to execute query [" << sql << "]. Error: " << err << ", " << sqlite3_errmsg(m_pDb) << std::endl;
+            m_log << "Db::ExecTable: Failed to execute query [" << sql << "]. Error: " << err << ", " <<
+                sqlite3_errmsg(m_pDb) << std::endl;
             std::tstring msg = STREAM2STR("Query Failed with error code " << err);
             throw QueryFailedException(msg);
         }
@@ -86,7 +86,8 @@ namespace SQLite {
     bool Db::Exec(std::string const& sql) const
     {
         int err = sqlite3_exec(m_pDb, sql.c_str(), NULL, NULL, NULL);
-        if (SQLITE_OK != err) {
+        if (SQLITE_OK != err)
+        {
             m_log << "Db::Exec: Failed to execute query [" << sql << "]. Error: " << err << ", " << sqlite3_errmsg(m_pDb) << std::endl;
             return false;
         }
@@ -111,4 +112,57 @@ namespace SQLite {
         Exec(_T("ROLLBACK TRANSACTION"));
     }
 
-}  // namespace SQLite
+
+    //////////////////////////////////////////////////////////////////////////
+    // Table 
+    //////////////////////////////////////////////////////////////////////////
+
+    Table::Table(int nrow, int ncol, char** result)
+    {
+        m_headers.reserve(ncol);
+        m_data.reserve(nrow * ncol);
+
+        for (int i = 0; i < ncol; ++i)
+        {
+            m_headers.push_back(result[i]);   /* First row heading */
+        }
+        for (int i = 0; i < ncol * nrow; ++i)
+        {
+            if (result[ncol + i] == NULL)
+            {
+                m_data.push_back(std::string());
+            }
+            else
+            {
+                m_data.push_back(result[ncol + i]);
+            }
+        }
+    }
+
+    std::string Table::Headers(unsigned int col) const
+    {
+        return m_headers.at(col);
+    }
+
+    std::string Table::Data(unsigned int row, unsigned int col) const
+    {
+        if (row < Rows() && col < Columns())
+        {
+            return m_data.at(Columns() * row + col);
+        }
+        return "";
+    }
+
+
+    size_t Table::Columns() const
+    {
+        return m_headers.size();
+    }
+
+
+    size_t Table::Rows() const
+    {
+        return m_headers.size() > 0 ? m_data.size() / m_headers.size() : 0;
+    }
+
+}  // namespace sqlite

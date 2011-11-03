@@ -1,8 +1,8 @@
 #ifndef IDENTIFYLISTDATAMODEL_H
 #define IDENTIFYLISTDATAMODEL_H
 
-#include "DataGridModel.h"
-#include <Shared/SQLite.h>
+#include "datagrid/DataGridModel.h"
+#include <shared/IDB.h>
 
 
 namespace aoia {
@@ -14,7 +14,7 @@ namespace aoia {
         : public DataGridModel
     {
     public:
-        IdentifyListDataModel();
+        IdentifyListDataModel(sqlite::IDBPtr db);
         virtual ~IdentifyListDataModel();
 
         /// Return number of columns.
@@ -39,7 +39,7 @@ namespace aoia {
         unsigned int getItemHighId(unsigned int rowIndex) const;
 
     private:
-        SQLite::TablePtr m_result;
+        sqlite::ITablePtr m_result;
     };
 
     typedef boost::shared_ptr<IdentifyListDataModel> IdentifyListDataModelPtr;

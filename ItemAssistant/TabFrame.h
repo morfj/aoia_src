@@ -18,8 +18,8 @@ class TabFrame
     typedef CTabbedChildWindow< CDotNetTabCtrl<CTabViewTabItem> > baseClass;
 
 public:
-    TabFrame(void);
-    virtual ~TabFrame(void);
+    TabFrame(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui, aoia::ISettingsPtr settings);
+    virtual ~TabFrame();
 
     BEGIN_MSG_MAP(TabFrame)
         MESSAGE_HANDLER(WM_CREATE, OnCreate)
@@ -45,12 +45,12 @@ protected:
 private:
     std::vector<PluginViewInterface*> m_viewPlugins;
 
-    InventoryView       m_InventoryView;
+    InventoryView       m_inventoryView;
 #ifdef _DEBUG
-    AoMsgView           m_MsgView;
+    AoMsgView           m_msgView;
 #endif
-    PatternMatchView    m_PatternView;
-    PlayershopView      m_PlayershopView;
+    PatternMatchView    m_patternView;
+    PlayershopView      m_playershopView;
     IdentifyView        m_identifyView;
     aoia::sv::SummaryView m_summaryView;
 

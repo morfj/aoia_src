@@ -11,6 +11,9 @@ Name "Item Assistant Installer"
 # Add-Remove-Programs registry key
 !define ARP_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\ItemAssistant"
 
+# VisualC++ redist directory
+!define CRT_REDIST_DIR "$%VS100COMNTOOLS%..\..\VC\redist\x86\Microsoft.VC100.CRT\"
+
 OutFile "ItemAssistant-${BUILD_NUMBER}-installer.exe"
 
 InstallDir "$PROGRAMFILES\ItemAssistant"
@@ -31,14 +34,12 @@ Section
 	File ..\Release\ItemAssistant.exe
 	File ..\Release\ItemAssistant*.dll
 	File ..\Release\README.txt
-	File ..\Release\sqlite3.dll
-	File ..\Release\*.manifest
-	File ..\Release\msvc*.dll
-	
+#	File ..\Release\*.manifest
+	File "${CRT_REDIST_DIR}*.dll"
+
 	# Create the startmenu shortcut
 	CreateDirectory "$SMPROGRAMS\Item Assistant"
 	CreateShortCut	"$SMPROGRAMS\Item Assistant\ItemAssistant.lnk" "$INSTDIR\ItemAssistant.exe"
-
 
 	# Register uninstaller in "add/remove programs".
 	WriteRegStr HKLM 	"${ARP_KEY}" "DisplayName"			"Item Assistant"
@@ -75,7 +76,6 @@ Section "uninstall"
 	Delete "$INSTDIR\ItemAssistant*.dll"
 	Delete "$INSTDIR\ItemAssistant.exe"
 	Delete "$INSTDIR\README.txt"
-	Delete "$INSTDIR\sqlite3.dll"
 	Delete "$INSTDIR\*.manifest"
 	Delete "$INSTDIR\msvc*.dll"
 

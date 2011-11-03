@@ -5,7 +5,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/assign.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
-#include <boost/filesystem.hpp>
 
 using namespace boost;
 using namespace boost::assign;
@@ -28,7 +27,7 @@ AODatabaseParser::AODatabaseParser(std::vector<std::string> const& aodbfiles)
 {
     m_buffer.reset(new char[BUFFER_SIZE]); // Creating a buffer for record parsing.
 
-    unsigned int accumulated_offset = 0;
+    uintmax_t accumulated_offset = 0;
     for (std::vector<std::string>::const_iterator it = aodbfiles.begin(); it != aodbfiles.end(); ++it)
     {
         path file(*it);
@@ -121,7 +120,7 @@ shared_ptr<ao_item> AODatabaseParser::GetItem(unsigned int offset) const
 }
 
 
-void AODatabaseParser::EnsureFileOpen(unsigned int offset) const
+void AODatabaseParser::EnsureFileOpen(uintmax_t offset) const
 {
     if (m_file.is_open())
     {
@@ -140,9 +139,9 @@ void AODatabaseParser::EnsureFileOpen(unsigned int offset) const
 }
 
 
-std::pair<unsigned int, std::string> AODatabaseParser::GetFileFromOffset(unsigned int offset) const
+AODatabaseParser::FileOffsetAndStringPair AODatabaseParser::GetFileFromOffset(uintmax_t offset) const
 {
-    std::map<unsigned int, std::string>::const_iterator it = m_file_offsets.upper_bound(offset);
+    FileOffsetToStringMap::const_iterator it = m_file_offsets.upper_bound(offset);
     if (it == m_file_offsets.begin())
     {
         throw Exception("Unable to locate database file for offset.");
@@ -157,9 +156,9 @@ std::pair<unsigned int, std::string> AODatabaseParser::GetFileFromOffset(unsigne
 }
 
 
-void AODatabaseParser::OpenFileFromOffset(unsigned int offset) const
+void AODatabaseParser::OpenFileFromOffset(uintmax_t offset) const
 {
-    std::pair<unsigned int, std::string> offset_file_info = GetFileFromOffset(offset);
+    FileOffsetAndStringPair offset_file_info = GetFileFromOffset(offset);
     m_current_file_offset = offset_file_info.first;
     m_current_file_size = file_size(offset_file_info.second);
     m_file.open(offset_file_info.second.c_str(), std::ifstream::in | std::ifstream::binary);

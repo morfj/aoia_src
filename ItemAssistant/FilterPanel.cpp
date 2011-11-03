@@ -1,23 +1,22 @@
 #include "StdAfx.h"
 #include "FilterPanel.h"
 #include "DBManager.h"
-#include <ItemAssistantCore/SettingsManager.h>
 
 using namespace aoia;
 
-namespace PatternMatcher {
+namespace PatternMatcher
+{
 
-    FilterPanel::FilterPanel()
-    {
-    }
-
-
-    FilterPanel::~FilterPanel()
-    {
-    }
+    FilterPanel::FilterPanel(sqlite::IDBPtr db, aoia::ISettingsPtr settings)
+        : m_db(db) 
+        , m_settings(settings)
+    {}
 
 
-    LRESULT FilterPanel::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+    FilterPanel::~FilterPanel() {}
+
+
+    LRESULT FilterPanel::onInitDialog(UINT/*uMsg*/, WPARAM/*wParam*/, LPARAM/*lParam*/, BOOL&/*bHandled*/)
     {
         SetWindowText(_T("Filter View"));
 
@@ -36,7 +35,7 @@ namespace PatternMatcher {
     }
 
 
-    LRESULT FilterPanel::onForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
+    LRESULT FilterPanel::onForwardMsg(UINT/*uMsg*/, WPARAM/*wParam*/, LPARAM lParam, BOOL&/*bHandled*/)
     {
         LPMSG pMsg = (LPMSG)lParam;
         return this->PreTranslateMsg(pMsg);
@@ -53,13 +52,14 @@ namespace PatternMatcher {
         cb.ResetContent();
 
         std::map<unsigned int, std::tstring> dimensionNames;
-        g_DBManager.lock();
-        g_DBManager.getDimensions(dimensionNames);
-        SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT DISTINCT dimensionid FROM tToons"));
-        g_DBManager.unLock();
+        g_DBManager.Lock();
+        g_DBManager.GetDimensions(dimensionNames);
+        sqlite::ITablePtr pT = m_db->ExecTable(_T("SELECT DISTINCT dimensionid FROM tToons"));
+        g_DBManager.UnLock();
 
         // Add named dimensions.
-        for (std::map<unsigned int, std::tstring>::iterator it = dimensionNames.begin(); it != dimensionNames.end(); ++it)
+        for (std::map<unsigned int, std::tstring>::iterator it = dimensionNames.begin();
+            it != dimensionNames.end(); ++it)
         {
             if ((item = cb.AddString(it->second.c_str())) != CB_ERR)
             {
@@ -76,7 +76,7 @@ namespace PatternMatcher {
             {
                 continue;   // Skip named ones.
             }
-            else 
+            else
             {
                 dimName = _T("Unknown Dimension");
                 if (dimId > 0)
@@ -97,9 +97,9 @@ namespace PatternMatcher {
         }
         else if (oldselection == -1)
         {
-            if (!SettingsManager::instance().getValue(_T("DefaultDimension")).empty())
+            if (!m_settings->getValue(_T("DefaultDimension")).empty())
             {
-                oldselection = cb.FindStringExact(-1, SettingsManager::instance().getValue(_T("DefaultDimension")).c_str());
+                oldselection = cb.FindStringExact(-1, m_settings->getValue(_T("DefaultDimension")).c_str());
             }
             if (oldselection == CB_ERR)
             {
@@ -133,19 +133,19 @@ namespace PatternMatcher {
         boost::format sql("SELECT DISTINCT owner FROM tItems I JOIN tToons T ON I.owner = T.charid WHERE dimensionid = %1% ORDER BY T.charname");
         sql % getDimensionId();
 
-        g_DBManager.lock();
-        SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());
+        g_DBManager.Lock();
+        sqlite::ITablePtr pT = m_db->ExecTable(sql.str());
 
         if (pT != NULL)
         {
             for (unsigned int i = 0; i < pT->Rows(); i++)
             {
-                unsigned int id = boost::lexical_cast<unsigned int>(pT->Data(i,0));
+                unsigned int id = boost::lexical_cast<unsigned int>(pT->Data(i, 0));
 
-                std::tstring name = g_DBManager.getToonName(id);
+                std::tstring name = g_DBManager.GetToonName(id);
                 if (name.empty())
                 {
-                    name = from_ascii_copy(pT->Data()[pT->Columns()*i]);
+                    name = from_ascii_copy(pT->Data(i, 0));
                 }
 
                 if ((item = cb.AddString(name.c_str())) != CB_ERR)
@@ -154,7 +154,7 @@ namespace PatternMatcher {
                 }
             }
         }
-        g_DBManager.unLock();
+        g_DBManager.UnLock();
 
         bool found = false;
         for (int i = 0; i < cb.GetCount(); ++i)
@@ -185,7 +185,7 @@ namespace PatternMatcher {
     unsigned int FilterPanel::getDimensionId() const
     {
         WTL::CComboBox dimCb = GetDlgItem(IDC_DIMENSION_COMBO);
-        return (unsigned int) dimCb.GetItemData(dimCb.GetCurSel());
+        return (unsigned int)dimCb.GetItemData(dimCb.GetCurSel());
     }
 
 
@@ -236,12 +236,12 @@ namespace PatternMatcher {
     }
 
 
-    LRESULT FilterPanel::onDimensionComboSelection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+    LRESULT FilterPanel::onDimensionComboSelection(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
     {
         CComboBox cb = GetDlgItem(IDC_DIMENSION_COMBO);
         TCHAR buffer[256];
         cb.GetLBText(cb.GetCurSel(), buffer);
-        SettingsManager::instance().setValue(_T("DefaultDimension"), buffer);
+        m_settings->setValue(_T("DefaultDimension"), buffer);
 
         updateCharList();
         signalSettingsChanged();
@@ -249,42 +249,42 @@ namespace PatternMatcher {
     }
 
 
-    LRESULT FilterPanel::onCbnSelchangeCharcombo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+    LRESULT FilterPanel::onCbnSelchangeCharcombo(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
     {
         signalSettingsChanged();
         return 0;
     }
 
 
-    LRESULT FilterPanel::onBnClickedShowAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+    LRESULT FilterPanel::onBnClickedShowAll(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
     {
         signalSettingsChanged();
         return 0;
     }
 
 
-    LRESULT FilterPanel::onBnClickedShowPartials(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+    LRESULT FilterPanel::onBnClickedShowPartials(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
     {
         signalSettingsChanged();
         return 0;
     }
 
 
-    LRESULT FilterPanel::onBnClickedCompletable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+    LRESULT FilterPanel::onBnClickedCompletable(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
     {
         signalSettingsChanged();
         return 0;
     }
 
 
-    LRESULT FilterPanel::OnCbnDropdown(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+    LRESULT FilterPanel::OnCbnDropdown(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
     {
         updateCharList();
         return 0;
     }
 
 
-    LRESULT FilterPanel::onExcludeAssembledPatternsClicked(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+    LRESULT FilterPanel::onExcludeAssembledPatternsClicked(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
     {
         signalSettingsChanged();
         return 0;

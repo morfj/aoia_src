@@ -2,9 +2,12 @@
 #define IDENTIFYVIEW_H
 
 #include <PluginSDK/ItemAssistView.h>
-#include "DataGridControl.h"
+#include <PluginSDK/IGuiServices.h>
+#include "datagrid/DataGridControl.h"
 #include "IdentifyListDataModel.h"
 #include <atlsplit.h>
+#include <Shared/IDB.h>
+#include <PluginSDK/IContainerManager.h>
 
 
 class IdentifyView
@@ -16,7 +19,7 @@ class IdentifyView
 public:
     DECLARE_WND_CLASS(NULL)
 
-    IdentifyView();
+    IdentifyView(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui);
     virtual ~IdentifyView();
 
     BEGIN_MSG_MAP_EX(IdentifyView)
@@ -50,6 +53,9 @@ protected:
     LRESULT OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 private:
+    sqlite::IDBPtr m_db;
+    aoia::IContainerManagerPtr m_containerManager;
+    aoia::IGuiServicesPtr m_gui;
     WTL::CSplitterWindow m_splitter;
     aoia::IdentifyListDataModelPtr m_identifyListModel;
     aoia::DataGridControlPtr m_identifyList;

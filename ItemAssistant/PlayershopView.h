@@ -2,12 +2,14 @@
 #define PLAYERSHOPVIEW_H
 
 #include <PluginSDK/ItemAssistView.h>
+#include <PluginSDK/IGuiServices.h>
 #include <boost/filesystem/path.hpp>
 #include "shared/Thread.h"
 #include "shared/Mutex.h"
 #include <atlsplit.h>
 #include "MFTreeView.h"
 #include "PsmTreeItems.h"
+
 
 #define WM_PSM_UPDATE WM_USER+1
 
@@ -16,10 +18,8 @@ class WatchDirectoryThread
     : public Thread
 {
 public:
-    WatchDirectoryThread(HANDLE hWakeupEvent, PlayershopView* owner)
-        : m_hWakeupEvent(hWakeupEvent), m_pOwner(owner)
-    { }
-    virtual ~WatchDirectoryThread() { }
+    WatchDirectoryThread(HANDLE hWakeupEvent, PlayershopView* owner);
+    virtual ~WatchDirectoryThread();
 
     virtual DWORD ThreadProc();
 
@@ -40,15 +40,16 @@ public:
     //enum { IDD = IDD_PLAYERSHOP };
     DECLARE_WND_CLASS(NULL)
 
-    PlayershopView(void);
-    virtual ~PlayershopView(void);
+    PlayershopView(aoia::IGuiServicesPtr gui);
+    virtual ~PlayershopView();
 
     enum
     {
         WM_POSTCREATE = WM_APP + 1,
     };
 
-    enum {
+    enum
+    {
         IDW_PSMLISTVIEW = 1,
         IDW_PSMTREEVIEW
     };
@@ -60,7 +61,7 @@ public:
         MESSAGE_HANDLER(WM_PSM_UPDATE, OnContentUpdate)
         COMMAND_ID_HANDLER(ID_HELP, OnHelp)
         COMMAND_ID_HANDLER(ID_PAUSE_TOGGLE, OnPause)
-        /*      COMMAND_ID_HANDLER(ID_INV_FIND, OnFind)
+    /*      COMMAND_ID_HANDLER(ID_INV_FIND, OnFind)
         COMMAND_ID_HANDLER(ID_INV_FIND_HIDE, OnFindHide)
         COMMAND_ID_HANDLER(ID_INFO, OnInfo)
         NOTIFY_CODE_HANDLER_EX(LVN_COLUMNCLICK, OnColumnClick)
@@ -72,10 +73,10 @@ public:
 
     LRESULT OnCreate(LPCREATESTRUCT createStruct);
     LRESULT OnSize(UINT wParam, CSize newSize);
-    LRESULT OnPostCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-    LRESULT OnContentUpdate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-    LRESULT OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-    LRESULT OnPause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+    LRESULT OnPostCreate(UINT/*uMsg*/, WPARAM/*wParam*/, LPARAM/*lParam*/, BOOL&/*bHandled*/);
+    LRESULT OnContentUpdate(UINT/*uMsg*/, WPARAM/*wParam*/, LPARAM/*lParam*/, BOOL&/*bHandled*/);
+    LRESULT OnHelp(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/);
+    LRESULT OnPause(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/);
     LRESULT OnColumnClick(LPNMHDR lParam);
     LRESULT OnItemActivate(LPNMHDR lParam);
     void StartMonitoring();
@@ -87,11 +88,16 @@ public:
     // ItemAssistView overrides
     virtual void OnActive(bool doActivation);
 
+    // Add files to the list of changed log files.
+    void PushChangedFile( boost::filesystem::path p );
+
 protected:
     void UpdateLayout(CSize newSize);
     static int CALLBACK CompareStr(LPARAM param1, LPARAM param2, LPARAM sort);
+    void ShowSalesBaloon();
 
 private:
+    aoia::IGuiServicesPtr m_gui;
     CSplitterWindow m_splitter;
     PsmTreeView m_treeview;
     CListViewCtrl m_listview;
@@ -100,8 +106,11 @@ private:
     boost::shared_ptr<WatchDirectoryThread> m_directoryWatch;
     HANDLE m_hWakeupEvent;
 
-    bool  m_sortDesc;
-    int   m_sortColumn;
+    bool m_sortDesc;
+    int m_sortColumn;
+
+    std::vector<boost::filesystem::path> m_changedFiles;
+    Mutex m_changedFilesMutex;
 };
 
 

@@ -3,5 +3,11 @@ syntax: glob
 *.ncb
 *.suo
 *.user
-*.filters
 ipch
+[Rr]elease
+*.exe
+*.*sdf
+GeneratedFiles
+*.aps
+*.ilk
+*.pdb

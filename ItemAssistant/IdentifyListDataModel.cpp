@@ -3,19 +3,16 @@
 #include "DBManager.h"
 
 
-namespace aoia {
+namespace aoia
+{
 
-    using namespace SQLite;
-
-    IdentifyListDataModel::IdentifyListDataModel()
+    IdentifyListDataModel::IdentifyListDataModel(sqlite::IDBPtr db)
     {
-        m_result = g_DBManager.ExecTable(_T("SELECT AO.name, I.purpose, I.aoid, I.lowid, I.highid FROM tblIdentify I JOIN tblAO AO ON I.highid = AO.aoid ORDER BY AO.name"));
+        m_result = db->ExecTable(_T("SELECT AO.name, I.purpose, I.aoid, I.lowid, I.highid FROM tblIdentify I JOIN tblAO AO ON I.highid = AO.aoid ORDER BY AO.name"));
     }
 
 
-    IdentifyListDataModel::~IdentifyListDataModel()
-    {
-    }
+    IdentifyListDataModel::~IdentifyListDataModel() {}
 
 
     unsigned int IdentifyListDataModel::getColumnCount() const
@@ -40,10 +37,12 @@ namespace aoia {
         {
             return _T("Item");
         }
+
         if (index == 1)
         {
             return _T("Purpose");
         }
+
         return _T("");
     }
 

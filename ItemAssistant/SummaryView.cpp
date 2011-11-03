@@ -8,8 +8,10 @@
 
 namespace aoia { namespace sv {
 
-    SummaryView::SummaryView()
-        : m_webview(_T(""))
+    SummaryView::SummaryView(sqlite::IDBPtr db, aoia::IGuiServicesPtr gui)
+        : m_db(db)
+        , m_webview(_T(""))
+        , m_gui(gui)
     {
     }
 
@@ -72,7 +74,7 @@ namespace aoia { namespace sv {
 
     LRESULT SummaryView::OnHelp( WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/ )
     {
-        SharedServices::ShowHelp(_T("summary"));
+        m_gui->ShowHelp(_T("summary"));
         return 0;
     }
 
@@ -86,7 +88,7 @@ namespace aoia { namespace sv {
     void SummaryView::UpdateSummary()
     {
         std::map<unsigned int, std::tstring> dimensions;
-        if (!g_DBManager.getDimensions(dimensions)) {
+        if (!g_DBManager.GetDimensions(dimensions)) {
             LOG("SummaryView::UpdateSummary() : Unable to get dimensional info.");
             return;
         }
@@ -94,7 +96,7 @@ namespace aoia { namespace sv {
         std::vector<DataModelPtr> models;
         for (std::map<unsigned int, std::tstring>::const_iterator it = dimensions.begin(); it != dimensions.end(); ++it)
         {
-            models.push_back(DataModelPtr(new DataModel(it->first)));
+            models.push_back(DataModelPtr(new DataModel(m_db, it->first)));
         }
 
         std::tstringstream contentHtml;

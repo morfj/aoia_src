@@ -3,15 +3,22 @@
 #include "DBManager.h"
 
 
-namespace aoia {
+namespace aoia 
+{
 
-    ItemListDataModel::ItemListDataModel(std::tstring const& predicate, unsigned int sortColumnIndex, bool sortAscending)
+    ItemListDataModel::ItemListDataModel(sqlite::IDBPtr db, IContainerManagerPtr containerManager, 
+        std::tstring const& predicate, unsigned int sortColumnIndex, bool sortAscending)
+        : m_db(db)
+        , m_containerManager(containerManager)
     {
         runQuery(predicate, sortColumnIndex, sortAscending);
     }
 
 
-    ItemListDataModel::ItemListDataModel(std::set<unsigned int> const& aoids, unsigned int sortColumnIndex, bool sortAscending)
+    ItemListDataModel::ItemListDataModel(sqlite::IDBPtr db, IContainerManagerPtr containerManager, 
+        std::set<unsigned int> const& aoids, unsigned int sortColumnIndex, bool sortAscending)
+        : m_db(db)
+        , m_containerManager(containerManager)
     {
         std::tstringstream aoid_array;
         for (std::set<unsigned int>::const_iterator it = aoids.begin(); it != aoids.end(); ++it)
@@ -86,7 +93,7 @@ namespace aoia {
             sql += sort_predicate;
         }
 
-        m_result = g_DBManager.ExecTable(sql);
+        m_result = m_db->ExecTable(sql);
         m_lastPredicate = predicate;
     }
 
@@ -156,7 +163,7 @@ namespace aoia {
                     return _T("");
                 }
                 unsigned int charid = boost::lexical_cast<unsigned int>(m_result->Data(index, COL_COUNT));
-                return ServicesSingleton::Instance()->GetContainerName(charid, id);
+                return m_containerManager->GetContainerName(charid, id);
             }
             catch (boost::bad_lexical_cast &/*e*/)
             {

@@ -5,17 +5,13 @@
 
 
 SqlTreeViewItemBase::SqlTreeViewItemBase(InventoryView* pOwner)
-    : m_pOwner(pOwner)
-{
-}
+    : m_pOwner(pOwner) {}
 
 
-SqlTreeViewItemBase::~SqlTreeViewItemBase()
-{
-}
+SqlTreeViewItemBase::~SqlTreeViewItemBase() {}
 
 
-void SqlTreeViewItemBase::SetOwner(InventoryView* pOwner) 
+void SqlTreeViewItemBase::SetOwner(InventoryView* pOwner)
 {
     m_pOwner = pOwner;
 }
@@ -33,8 +29,12 @@ bool SqlTreeViewItemBase::HandleMenuCmd(unsigned int commandID, WTL::CTreeItem i
 }
 
 
-void SqlTreeViewItemBase::SetLabel(std::tstring const& newLabel)
+void SqlTreeViewItemBase::SetLabel(std::tstring const& newLabel) {}
+
+
+bool SqlTreeViewItemBase::SortChildren() const
 {
+    return false;
 }
 
 
@@ -42,10 +42,10 @@ void SqlTreeViewItemBase::SetLabel(std::tstring const& newLabel)
 /** Container Tree View Item                                              **/
 /***************************************************************************/
 
-ContainerTreeViewItem::ContainerTreeViewItem(
-    InventoryView* pOwner, unsigned int charid, unsigned int containerid, 
-    std::tstring const& constraints, std::tstring const& label)
-    : m_charid(charid)
+ContainerTreeViewItem::ContainerTreeViewItem(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, InventoryView* pOwner, unsigned int charid, unsigned int containerid, std::tstring const& constraints, std::tstring const& label)
+    : m_db(db)
+    , m_containerManager(containerManager)
+    , m_charid(charid)
     , m_containerid(containerid)
     , m_constraints(constraints)
     , SqlTreeViewItemBase(pOwner)
@@ -53,7 +53,7 @@ ContainerTreeViewItem::ContainerTreeViewItem(
     if (label.empty())
     {
         std::tstringstream str;
-        std::tstring containerName = ServicesSingleton::Instance()->GetContainerName(m_charid, m_containerid);
+        std::tstring containerName = m_containerManager->GetContainerName(m_charid, m_containerid);
 
         if (containerName.empty())
         {
@@ -73,12 +73,10 @@ ContainerTreeViewItem::ContainerTreeViewItem(
 }
 
 
-ContainerTreeViewItem::~ContainerTreeViewItem()
-{
-}
+ContainerTreeViewItem::~ContainerTreeViewItem() {}
 
 
-void ContainerTreeViewItem::OnSelected() 
+void ContainerTreeViewItem::OnSelected()
 {
     std::tstringstream sql;
     sql << _T("owner = ") << m_charid << _T(" AND parent ");
@@ -121,15 +119,16 @@ bool ContainerTreeViewItem::HasChildren() const
     {
         // Init contents from DB
         std::tstringstream sql;
-        sql << _T("SELECT DISTINCT children FROM tItems WHERE children > 0 AND parent = ") << m_containerid << _T(" AND owner = ") << m_charid;
+        sql << _T("SELECT DISTINCT children FROM tItems WHERE children > 0 AND parent = ") << m_containerid <<
+            _T(" AND owner = ") << m_charid;
         if (!m_constraints.empty())
         {
             sql << _T(" AND ") << m_constraints;
         }
 
-        g_DBManager.lock();
-        SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());
-        g_DBManager.unLock();
+        g_DBManager.Lock();
+        sqlite::ITablePtr pT = m_db->ExecTable(sql.str());
+        g_DBManager.UnLock();
 
         if (pT != NULL)
         {
@@ -149,22 +148,23 @@ std::vector<MFTreeViewItem*> ContainerTreeViewItem::GetChildren() const
     {
         // Init contents from DB
         std::tstringstream sql;
-        sql << _T("SELECT children FROM tItems WHERE children > 0 AND parent = ") << m_containerid << _T(" AND owner = ") << m_charid;
+        sql << _T("SELECT children FROM tItems WHERE children > 0 AND parent = ") << m_containerid <<
+            _T(" AND owner = ") << m_charid;
         if (!m_constraints.empty())
         {
             sql << _T(" AND ") << m_constraints;
         }
 
-        g_DBManager.lock();
-        SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());
-        g_DBManager.unLock();
+        g_DBManager.Lock();
+        sqlite::ITablePtr pT = m_db->ExecTable(sql.str());
+        g_DBManager.UnLock();
 
         if (pT != NULL)
         {
             for (size_t i = 0; i < pT->Rows(); ++i)
             {
-                unsigned int contid = boost::lexical_cast<unsigned int>(pT->Data(i,0));
-                result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, contid));
+                unsigned int contid = boost::lexical_cast<unsigned int>(pT->Data(i, 0));
+                result.push_back(new ContainerTreeViewItem(m_db, m_containerManager, m_pOwner, m_charid, contid));
             }
         }
     }
@@ -188,23 +188,24 @@ bool ContainerTreeViewItem::HandleMenuCmd(unsigned int commandID, WTL::CTreeItem
 {
     if (m_commands.find(commandID) != m_commands.end())
     {
-        switch(m_commands[commandID])
+        switch (m_commands[commandID])
         {
         case SqlTreeViewItemBase::CMD_DELETE:
             {
-                g_DBManager.lock();
-                g_DBManager.Begin();
+                g_DBManager.Lock();
+                m_db->Begin();
                 std::tstringstream sql;
-                sql << _T("DELETE FROM tItems WHERE parent = ") << m_containerid << _T("; DELETE FROM tItems WHERE children = ") << m_containerid;
-                if (g_DBManager.Exec(sql.str()))
+                sql << _T("DELETE FROM tItems WHERE parent = ") << m_containerid <<
+                    _T("; DELETE FROM tItems WHERE children = ") << m_containerid;
+                if (m_db->Exec(sql.str()))
                 {
-                    g_DBManager.Commit();
+                    m_db->Commit();
                 }
                 else
                 {
-                    g_DBManager.Rollback();
+                    m_db->Rollback();
                 }
-                g_DBManager.unLock();
+                g_DBManager.UnLock();
             }
             break;
         default:
@@ -219,17 +220,31 @@ bool ContainerTreeViewItem::HandleMenuCmd(unsigned int commandID, WTL::CTreeItem
 }
 
 
+bool ContainerTreeViewItem::CanDelete() const
+{
+    return true;
+}
+
+
+bool ContainerTreeViewItem::SortChildren() const
+{
+    return true;
+}
+
+
 /***************************************************************************/
 /** Character Tree View Item                                              **/
 /***************************************************************************/
 
-CharacterTreeViewItem::CharacterTreeViewItem(InventoryView* pOwner, unsigned int charid)
-    : m_charid(charid)
+CharacterTreeViewItem::CharacterTreeViewItem(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, InventoryView* pOwner, unsigned int charid)
+    : m_db(db)
+    , m_containerManager(containerManager)
+    , m_charid(charid)
     , SqlTreeViewItemBase(pOwner)
 {
-    g_DBManager.lock();
-    m_label = g_DBManager.getToonName(charid);
-    g_DBManager.unLock();
+    g_DBManager.Lock();
+    m_label = g_DBManager.GetToonName(charid);
+    g_DBManager.UnLock();
 
     if (m_label.empty())
     {
@@ -240,13 +255,11 @@ CharacterTreeViewItem::CharacterTreeViewItem(InventoryView* pOwner, unsigned int
 }
 
 
-CharacterTreeViewItem::~CharacterTreeViewItem()
+CharacterTreeViewItem::~CharacterTreeViewItem() {}
+
+
+void CharacterTreeViewItem::OnSelected()
 {
-}
-
-
-void CharacterTreeViewItem::OnSelected() 
-{ 
     std::tstringstream str;
     str << _T("owner = ") << m_charid;
     m_pOwner->UpdateListView(str.str());
@@ -261,9 +274,9 @@ bool CharacterTreeViewItem::CanEdit() const
 
 std::tstring CharacterTreeViewItem::GetLabel() const
 {
-    g_DBManager.lock();
-    std::tstring result = g_DBManager.getToonName(m_charid);
-    g_DBManager.unLock();
+    g_DBManager.Lock();
+    std::tstring result = g_DBManager.GetToonName(m_charid);
+    g_DBManager.UnLock();
 
     if (result.empty())
     {
@@ -278,9 +291,9 @@ std::tstring CharacterTreeViewItem::GetLabel() const
 
 void CharacterTreeViewItem::SetLabel(std::tstring const& newLabel)
 {
-    g_DBManager.lock();
-    g_DBManager.setToonName(m_charid, newLabel);
-    g_DBManager.unLock();
+    g_DBManager.Lock();
+    g_DBManager.SetToonName(m_charid, newLabel);
+    g_DBManager.UnLock();
 }
 
 
@@ -294,15 +307,15 @@ std::vector<MFTreeViewItem*> CharacterTreeViewItem::GetChildren() const
 {
     std::vector<MFTreeViewItem*> result;
 
-    result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 1, _T(""), _T("Bank"))); // bank
-    result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 2, _T("slot > 63"), _T("Inventory"))); // inventory
-    result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 2, _T("slot < 16"), _T("Weapons"))); // Weapons tab
-    result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 2, _T("slot >= 16 AND slot < 32"), _T("Cloth"))); // Armor tab
-    result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 2, _T("slot >= 32 AND slot < 47"), _T("Implants"))); // Implants tab
-    result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 2, _T("slot >= 47 AND slot < 64"), _T("Social"))); // Social tab
-    result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 3, _T(""), _T("Shop"))); // Player shop
+    result.push_back(new ContainerTreeViewItem(m_db, m_containerManager, m_pOwner, m_charid, 1, _T(""), _T("Bank"))); // bank
+    result.push_back(new ContainerTreeViewItem(m_db, m_containerManager, m_pOwner, m_charid, 2, _T("slot > 63"), _T("Inventory"))); // inventory
+    result.push_back(new ContainerTreeViewItem(m_db, m_containerManager, m_pOwner, m_charid, 2, _T("slot < 16"), _T("Weapons"))); // Weapons tab
+    result.push_back(new ContainerTreeViewItem(m_db, m_containerManager, m_pOwner, m_charid, 2, _T("slot >= 16 AND slot < 32"), _T("Cloth"))); // Armor tab
+    result.push_back(new ContainerTreeViewItem(m_db, m_containerManager, m_pOwner, m_charid, 2, _T("slot >= 32 AND slot < 47"), _T("Implants"))); // Implants tab
+    result.push_back(new ContainerTreeViewItem(m_db, m_containerManager, m_pOwner, m_charid, 2, _T("slot >= 47 AND slot < 64"), _T("Social"))); // Social tab
+    result.push_back(new ContainerTreeViewItem(m_db, m_containerManager, m_pOwner, m_charid, 3, _T(""), _T("Shop"))); // Player shop
 #ifdef DEBUG
-    result.push_back(new ContainerTreeViewItem(m_pOwner, m_charid, 0, _T(""), _T("Unknown"))); // Unknown
+    result.push_back(new ContainerTreeViewItem(m_db, m_containerManager, m_pOwner, m_charid, 0, _T(""), _T("Unknown"))); // Unknown
 #endif
 
     return result;
@@ -323,33 +336,33 @@ bool CharacterTreeViewItem::HandleMenuCmd(unsigned int commandID, WTL::CTreeItem
 {
     if (m_commands.find(commandID) != m_commands.end())
     {
-        switch(m_commands[commandID])
+        switch (m_commands[commandID])
         {
         case SqlTreeViewItemBase::CMD_DELETE:
             {
                 bool ok = true;
-                g_DBManager.lock();
-                g_DBManager.Begin();
+                g_DBManager.Lock();
+                m_db->Begin();
                 {
                     std::tstringstream sql;
                     sql << _T("DELETE FROM tItems WHERE owner = ") << m_charid;
-                    ok = g_DBManager.Exec(sql.str());
+                    ok = m_db->Exec(sql.str());
                 }
                 if (ok)
                 {
                     std::tstringstream sql;
                     sql << _T("DELETE FROM tToons WHERE charid = ") << m_charid;
-                    ok = g_DBManager.Exec(sql.str());
+                    ok = m_db->Exec(sql.str());
                 }
                 if (ok)
                 {
-                    g_DBManager.Commit();
+                    m_db->Commit();
                 }
                 else
                 {
-                    g_DBManager.Rollback();
+                    m_db->Rollback();
                 }
-                g_DBManager.unLock();
+                g_DBManager.UnLock();
             }
             break;
 
@@ -373,26 +386,28 @@ bool CharacterTreeViewItem::HandleMenuCmd(unsigned int commandID, WTL::CTreeItem
 }
 
 
+bool CharacterTreeViewItem::CanDelete() const
+{
+    return true;
+}
+
+
 /***************************************************************************/
 /** Dimension Node                                                        **/
 /***************************************************************************/
 
-DimensionNode::DimensionNode(std::tstring const& label, unsigned int dimensionid, InventoryView* pOwner)
-    : SqlTreeViewItemBase(pOwner)
+DimensionNode::DimensionNode(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, std::tstring const& label, unsigned int dimensionid, InventoryView* pOwner)
+    : m_db(db)
+    , m_containerManager(containerManager)
+    , SqlTreeViewItemBase(pOwner)
     , m_label(label)
-    , m_dimensionid(dimensionid)
-{
-}
+    , m_dimensionid(dimensionid) {}
 
 
-DimensionNode::~DimensionNode()
-{
-}
+DimensionNode::~DimensionNode() {}
 
 
-void DimensionNode::OnSelected()
-{
-}
+void DimensionNode::OnSelected() {}
 
 
 std::vector<MFTreeViewItem*> DimensionNode::GetChildren() const
@@ -400,16 +415,16 @@ std::vector<MFTreeViewItem*> DimensionNode::GetChildren() const
     std::vector<MFTreeViewItem*> result;
 
     // Get list of toons for this dimension from the DB
-    g_DBManager.lock();
-    SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR("SELECT charid FROM tToons WHERE dimensionid=" << m_dimensionid));
-    g_DBManager.unLock();
+    g_DBManager.Lock();
+    sqlite::ITablePtr pT = m_db->ExecTable(STREAM2STR("SELECT charid FROM tToons WHERE dimensionid=" << m_dimensionid));
+    g_DBManager.UnLock();
 
     if (pT != NULL)
     {
         for (size_t i = 0; i < pT->Rows(); ++i)
         {
-            unsigned int charId = boost::lexical_cast<unsigned int>(pT->Data(i,0));
-            result.push_back(new CharacterTreeViewItem(m_pOwner, charId));
+            unsigned int charId = boost::lexical_cast<unsigned int>(pT->Data(i, 0));
+            result.push_back(new CharacterTreeViewItem(m_db, m_containerManager, m_pOwner, charId));
         }
     }
 
@@ -419,14 +434,38 @@ std::vector<MFTreeViewItem*> DimensionNode::GetChildren() const
 
 bool DimensionNode::HasChildren() const
 {
-    g_DBManager.lock();
-    SQLite::TablePtr pT = g_DBManager.ExecTable(STREAM2STR("SELECT COUNT(charid) FROM tToons WHERE dimensionid=" << m_dimensionid));
-    g_DBManager.unLock();
+    g_DBManager.Lock();
+    sqlite::ITablePtr pT = m_db->ExecTable(STREAM2STR("SELECT COUNT(charid) FROM tToons WHERE dimensionid=" << m_dimensionid));
+    g_DBManager.UnLock();
 
     if (pT != NULL && pT->Rows() > 0)
     {
-        return boost::lexical_cast<unsigned int>(pT->Data(0,0)) > 0 ? true : false;
+        return boost::lexical_cast<unsigned int>(pT->Data(0, 0)) > 0 ? true : false;
     }
 
     return false;
+}
+
+
+bool DimensionNode::CanEdit() const
+{
+    return false;
+}
+
+
+bool DimensionNode::CanDelete() const
+{
+    return false;
+}
+
+
+std::tstring DimensionNode::GetLabel() const
+{
+    return m_label;
+}
+
+
+bool DimensionNode::SortChildren() const
+{
+    return true;
 }

@@ -6,7 +6,7 @@
 #include "DBManager.h"
 #include <shlobj.h>
 #include "Application.h"
-
+#include "mdump.h"
 
 #define MAX_LOADSTRING 100
 
@@ -14,6 +14,7 @@
 // Global Variables:
 CAppModule _Module;
 DBManager g_DBManager;
+MiniDumper _crashdumper(_T("AOIA"));
 
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,

@@ -25,7 +25,7 @@ protected:
     void writeEffect(unsigned int aoid, ao_item_effect const& eff);
 
 private:
-    SQLite::Db m_db;
+    sqlite::Db m_db;
 	std::ostream &m_log;
 };
 

@@ -1,17 +1,23 @@
 #ifndef INVENTORYVIEW_H
 #define INVENTORYVIEW_H
 
-#include <boost/signal.hpp>
-#include "shared/aopackets.h"
-#include <PluginSDK/ItemAssistView.h>
-#include <atlsplit.h>
 #include <vector>
-#include "MFTreeView.h"
-#include "InvTreeItems.h"
-#include "DataGridControl.h"
-#include "InfoPanel.h"
-#include "FindPanel.h"
+#include <atlsplit.h>
+#include <boost/signal.hpp>
+
+#include <PluginSDK/IGuiServices.h>
+#include <PluginSDK/ItemAssistView.h>
+#include <datagrid/DataGridControl.h>
+#include <PluginSDK/IContainerManager.h>
+#include <shared/aopackets.h>
+#include <settings/ISettings.h>
+
 #include "CharacterParserDumper.h"
+#include "FindPanel.h"
+#include "InfoPanel.h"
+#include "InvTreeItems.h"
+#include "MFTreeView.h"
+#include "TempContainerCache.h"
 
 
 class InventoryView
@@ -21,7 +27,7 @@ class InventoryView
 public:
     DECLARE_WND_CLASS(NULL)
 
-    InventoryView();
+    InventoryView(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui, aoia::ISettingsPtr settings);
     virtual ~InventoryView();
 
     enum
@@ -87,9 +93,10 @@ public:
     LRESULT OnCopyItemName(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
     LRESULT OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
 
+    std::tstring GetContainerNameForItem( OwnedItemInfoPtr pItemInfo ) const;
+
     LRESULT OnShowItemRef(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
     LRESULT OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
-
     LRESULT OnRecordStatsToggle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	virtual void OnAOClientMessage(AOClientMessageBase &msg);
@@ -133,8 +140,15 @@ protected:
     void onAllItemsRemoved();
 
     bool SetClipboardText(std::tstring const& text);
+    void GetSelectedItemIds( std::set<unsigned int> &ids );
 
 private:
+    sqlite::IDBPtr m_db;
+    aoia::IContainerManagerPtr m_containerManager;
+    aoia::IGuiServicesPtr m_gui;
+    aoia::ISettingsPtr m_settings;
+    aoia::inv::TempContainerCachePtr m_tempContainers;
+
     CharacterParserDumper m_characterParserDumper;
     bool m_enableCharacterParserDumper;
 

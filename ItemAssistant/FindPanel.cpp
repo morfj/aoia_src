@@ -1,20 +1,19 @@
 #include "StdAfx.h"
 #include "FindPanel.h"
 #include "InventoryView.h"
-#include <ItemAssistantCore/SettingsManager.h>
 #include <boost/algorithm/string.hpp>
 
 namespace ba = boost::algorithm;
 using namespace aoia;
 
-FindView::FindView()
-    : m_lastQueryChar(-1)
+FindView::FindView(sqlite::IDBPtr db, aoia::ISettingsPtr settings)
+    : m_db(db)
+    , m_settings(settings)
+    , m_lastQueryChar(-1)
     , m_lastQueryQlMin(-1)
     , m_lastQueryQlMax(-1)
     , m_lastQueryDimension(0)
-    , m_pParent(NULL)
-{
-}
+    , m_pParent(NULL) {}
 
 
 void FindView::SetParent(InventoryView* parent)
@@ -23,7 +22,7 @@ void FindView::SetParent(InventoryView* parent)
 }
 
 
-LRESULT FindView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+LRESULT FindView::OnInitDialog(UINT/*uMsg*/, WPARAM/*wParam*/, LPARAM/*lParam*/, BOOL&/*bHandled*/)
 {
     this->SetWindowText(_T("Find View"));
 
@@ -34,9 +33,9 @@ LRESULT FindView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
     if (cb.GetCount() > 0)
     {
         int index = CB_ERR;
-        if (!SettingsManager::instance().getValue(_T("DefaultDimension")).empty())
+        if (!m_settings->getValue(_T("DefaultDimension")).empty())
         {
-            index = cb.FindStringExact(-1, SettingsManager::instance().getValue(_T("DefaultDimension")).c_str());
+            index = cb.FindStringExact(-1, m_settings->getValue(_T("DefaultDimension")).c_str());
         }
         if (index == CB_ERR)
         {
@@ -58,7 +57,7 @@ LRESULT FindView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 }
 
 
-LRESULT FindView::OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
+LRESULT FindView::OnForwardMsg(UINT/*uMsg*/, WPARAM/*wParam*/, LPARAM lParam, BOOL&/*bHandled*/)
 {
     LPMSG pMsg = (LPMSG)lParam;
     return this->PreTranslateMsg(pMsg);
@@ -71,7 +70,7 @@ BOOL FindView::PreTranslateMsg(MSG* pMsg)
 }
 
 
-LRESULT FindView::onDimensionFocus(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT FindView::onDimensionFocus(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
 {
     KillTimer(1);
 
@@ -93,7 +92,7 @@ LRESULT FindView::onDimensionFocus(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 }
 
 
-LRESULT FindView::onDimensionSelection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT FindView::onDimensionSelection(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
 {
     CComboBox cb = GetDlgItem(IDC_DIMENSION_COMBO);
     unsigned int dimension_id = 0;
@@ -103,7 +102,7 @@ LRESULT FindView::onDimensionSelection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
         dimension_id = (unsigned int)cb.GetItemData(item);
         TCHAR buffer[256];
         cb.GetLBText(item, buffer);
-        SettingsManager::instance().setValue(_T("DefaultDimension"), buffer);
+        m_settings->setValue(_T("DefaultDimension"), buffer);
     }
 
     updateCharList(dimension_id);
@@ -122,21 +121,21 @@ LRESULT FindView::onDimensionSelection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 }
 
 
-LRESULT FindView::OnEnChangeItemtext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT FindView::OnEnChangeItemtext(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
 {
     SetTimer(1, 1500);
     return 0;
 }
 
 
-LRESULT FindView::OnCbnSelChangeCharcombo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT FindView::OnCbnSelChangeCharcombo(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
 {
     UpdateFindQuery();
     return 0;
 }
 
 
-LRESULT FindView::OnCbnDropdown(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT FindView::OnCbnDropdown(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
 {
     CComboBox cb = GetDlgItem(IDC_DIMENSION_COMBO);
     int item;
@@ -216,30 +215,40 @@ void FindView::UpdateFindQuery()
     ZeroMemory(buffer, MAX_PATH);
     qlmin.GetWindowText(buffer, MAX_PATH);
     std::tstring qlminText(buffer);
-    try {
-        minql = boost::lexical_cast<int>(qlminText);
-    }
-    catch(boost::bad_lexical_cast &/*e*/) {
-        // Go with the default value
+    if (!qlminText.empty())
+    {
+        try
+        {
+            minql = boost::lexical_cast<int>(qlminText);
+        }
+        catch (boost::bad_lexical_cast&/*e*/)
+        {
+            // Go with the default value
+        }
     }
 
     int maxql = -1;
     ZeroMemory(buffer, MAX_PATH);
     qlmax.GetWindowText(buffer, MAX_PATH);
     std::tstring qlmaxText(buffer);
-    try {
-        maxql = boost::lexical_cast<int>(qlmaxText);
-    }
-    catch(boost::bad_lexical_cast &/*e*/) {
-        // Go with the default value
+    if (!qlmaxText.empty())
+    {
+        try
+        {
+            maxql = boost::lexical_cast<int>(qlmaxText);
+        }
+        catch (boost::bad_lexical_cast&/*e*/)
+        {
+            // Go with the default value
+        }
     }
 
     if (text.size() > 2
-        && ( m_lastQueryText != text
-            || m_lastQueryChar != charid 
-            || m_lastQueryQlMin != minql 
-            || m_lastQueryQlMax != maxql 
-            || m_lastQueryDimension != dimension_id))
+        && (m_lastQueryText != text
+        || m_lastQueryChar != charid
+        || m_lastQueryQlMin != minql
+        || m_lastQueryQlMax != maxql
+        || m_lastQueryDimension != dimension_id))
     {
         m_lastQueryText = text;
         m_lastQueryChar = charid;
@@ -248,17 +257,20 @@ void FindView::UpdateFindQuery()
         m_lastQueryDimension = dimension_id;
         std::tstringstream sql;
 
-        if (charid > 0) {
+        if (charid > 0)
+        {
             sql << _T("I.owner = ") << charid << _T(" AND ");
         }
         else
         {
             sql << _T("T.dimensionid = ") << dimension_id << _T(" AND ");
         }
-        if (minql > -1) {
+        if (minql > -1)
+        {
             sql << _T("I.ql >= ") << minql << _T(" AND ");
         }
-        if (maxql > -1) {
+        if (maxql > -1)
+        {
             sql << _T("I.ql <= ") << maxql << _T(" AND ");
         }
 
@@ -280,9 +292,9 @@ void FindView::updateCharList(unsigned int dimension_id)
     boost::format sql("SELECT DISTINCT owner FROM tItems I JOIN tToons T ON I.owner = T.charid WHERE dimensionid = %1% ORDER BY T.charname");
     sql % dimension_id;
 
-    g_DBManager.lock();
-    SQLite::TablePtr pT = g_DBManager.ExecTable(sql.str());
-    g_DBManager.unLock();
+    g_DBManager.Lock();
+    sqlite::ITablePtr pT = m_db->ExecTable(sql.str());
+    g_DBManager.UnLock();
 
     if (pT != NULL)
     {
@@ -290,15 +302,15 @@ void FindView::updateCharList(unsigned int dimension_id)
         {
             try
             {
-                unsigned int id = boost::lexical_cast<unsigned int>(pT->Data(i,0));
+                unsigned int id = boost::lexical_cast<unsigned int>(pT->Data(i, 0));
 
-                g_DBManager.lock();
-                std::tstring name = g_DBManager.getToonName(id);
-                g_DBManager.unLock();
+                g_DBManager.Lock();
+                std::tstring name = g_DBManager.GetToonName(id);
+                g_DBManager.UnLock();
 
                 if (name.empty())
                 {
-                    name = from_ascii_copy(pT->Data()[pT->Columns()*i]);
+                    name = from_ascii_copy(pT->Data(i, 0));
                 }
 
                 if ((item = cb.AddString(name.c_str())) != CB_ERR)
@@ -306,7 +318,7 @@ void FindView::updateCharList(unsigned int dimension_id)
                     cb.SetItemData(item, id);
                 }
             }
-            catch (boost::bad_lexical_cast &/*e*/)
+            catch (boost::bad_lexical_cast&/*e*/)
             {
                 // This is here because of a wierd but that appears to be SQLite's fault.
                 LOG("Error in updateCharList(). Bad lexical cast at row " << i << ".");
@@ -325,10 +337,10 @@ void FindView::updateDimensionList()
     cb.ResetContent();
 
     std::map<unsigned int, std::tstring> dimensionNames;
-    g_DBManager.lock();
-    g_DBManager.getDimensions(dimensionNames);
-    SQLite::TablePtr pT = g_DBManager.ExecTable(_T("SELECT DISTINCT dimensionid FROM tToons"));
-    g_DBManager.unLock();
+    g_DBManager.Lock();
+    g_DBManager.GetDimensions(dimensionNames);
+    sqlite::ITablePtr pT = m_db->ExecTable(_T("SELECT DISTINCT dimensionid FROM tToons"));
+    g_DBManager.UnLock();
 
     // Add named dimensions.
     for (std::map<unsigned int, std::tstring>::iterator it = dimensionNames.begin(); it != dimensionNames.end(); ++it)
@@ -348,7 +360,7 @@ void FindView::updateDimensionList()
         {
             continue;   // Skip named ones.
         }
-        else 
+        else
         {
             dimName = _T("Unknown Dimension");
             if (dimId > 0)

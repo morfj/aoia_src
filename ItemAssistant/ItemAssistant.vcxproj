@@ -54,22 +54,20 @@
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" />
-    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" />
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(BOOSTDIR);$(SolutionDir);$(SolutionDir)..\deps;$(SolutionDir)..\deps\WTL\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;BOOST_ALL_DYN_LINK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAsManaged>false</CompileAsManaged>
     </ClCompile>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)Externals\WTL\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -78,7 +76,7 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
     <Link>
-      <AdditionalDependencies>shared.lib;tinyxmlstl.lib;sqlite.lib;ItemAssistantCore.lib;Parsers.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>datagrid.lib;shared.lib;tinyxmlstl.lib;sqlite.lib;ItemAssistantCore.lib;Parsers.lib;csvexport.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)ItemAssistant.exe</OutputFile>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Configuration);$(BOOSTDIR)lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <EnableUAC>true</EnableUAC>
@@ -105,9 +103,12 @@
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAsManaged>false</CompileAsManaged>
+      <BrowseInformation>true</BrowseInformation>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)Externals\WTL\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -116,9 +117,9 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
     <Link>
-      <AdditionalDependencies>shared.lib;tinyxml.lib;sqlite3.lib;ItemAssistantCore.lib;Parsers.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>datagrid.lib;shared.lib;tinyxmlstl.lib;sqlite.lib;ItemAssistantCore.lib;Parsers.lib;csvexport.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)ItemAssistant.exe</OutputFile>
-      <AdditionalLibraryDirectories>$(SolutionDir)$(Configuration);$(SolutionDir)Externals\SQLite\;$(SolutionDir)Externals\boost_bin\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)$(Configuration);$(BOOSTDIR)lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <EnableUAC>true</EnableUAC>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -132,10 +133,7 @@
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(SolutionDir)\Externals\SQLite\sqlite3.dll" "$(OutDir)"
-xcopy /Y README.txt "$(OutDir)"
-xcopy /Y "$(SolutionDir)\Externals\Microsoft.VC90.CRT\*" "$(OutDir)"
-</Command>
+      <Command>xcopy /Y README.txt "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -143,14 +141,15 @@ xcopy /Y "$(SolutionDir)\Externals\Microsoft.VC90.CRT\*" "$(OutDir)"
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="CharacterParserDumper.cpp" />
     <ClCompile Include="DBManager.cpp" />
+    <ClCompile Include="GuiServices.cpp" />
     <ClCompile Include="InjectionSupport.cpp" />
     <ClCompile Include="ItemAssistant.cpp" />
     <ClCompile Include="MainFrm.cpp" />
+    <ClCompile Include="mdump.cpp" />
     <ClCompile Include="MFTreeView.cpp" />
     <ClCompile Include="NTRAY.CPP" />
     <ClCompile Include="ProgressDialog.cpp" />
-    <ClCompile Include="QueryDataGridModel.cpp" />
-    <ClCompile Include="SharedServices.cpp" />
+    <ClCompile Include="ContainerManager.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -176,8 +175,7 @@ xcopy /Y "$(SolutionDir)\Externals\Microsoft.VC90.CRT\*" "$(OutDir)"
     <ClCompile Include="AoMsgView.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="DataGridControl.cpp" />
-    <ClCompile Include="DataGridModel.cpp" />
+    <ClCompile Include="TempContainerCache.cpp" />
     <ClCompile Include="WebView.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -185,18 +183,20 @@ xcopy /Y "$(SolutionDir)\Externals\Microsoft.VC90.CRT\*" "$(OutDir)"
     <ClInclude Include="Application.h" />
     <ClInclude Include="CharacterParserDumper.h" />
     <ClInclude Include="DBManager.h" />
+    <ClInclude Include="GuiServices.h" />
     <ClInclude Include="InjectionSupport.h" />
     <ClInclude Include="InventoryIDs.h" />
     <ClInclude Include="ItemAssistant.h" />
     <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="mdump.h" />
     <ClInclude Include="MFTreeView.h" />
     <ClInclude Include="NTRAY.H" />
     <ClInclude Include="ProgressDialog.h" />
-    <ClInclude Include="QueryDataGridModel.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="SharedServices.h" />
+    <ClInclude Include="ContainerManager.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TabFrame.h" />
+    <ClInclude Include="TempContainerCache.h" />
     <ClInclude Include="Version.h" />
     <ClInclude Include="IdentifyListDataModel.h" />
     <ClInclude Include="IdentifyView.h" />
@@ -216,8 +216,6 @@ xcopy /Y "$(SolutionDir)\Externals\Microsoft.VC90.CRT\*" "$(OutDir)"
     <ClInclude Include="PatternMatchView.h" />
     <ClInclude Include="PatternReport.h" />
     <ClInclude Include="AoMsgView.h" />
-    <ClInclude Include="DataGridControl.h" />
-    <ClInclude Include="DataGridModel.h" />
     <ClInclude Include="WebView.h" />
     <ClInclude Include="AOCharacterActionIDs.h" />
     <ClInclude Include="AOMessageIDs.h" />
@@ -250,6 +248,22 @@ xcopy /Y "$(SolutionDir)\Externals\Microsoft.VC90.CRT\*" "$(OutDir)"
     <ResourceCompile Include="ItemAssistant.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\csvexport\csvexport.vcxproj">
+      <Project>{29e7696b-2ce6-40e9-b732-dc54b368470c}</Project>
+      <Private>true</Private>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
+    <ProjectReference Include="..\datagrid\datagrid.vcxproj">
+      <Project>{6096d08e-50bf-444c-b40e-dc1a8be4166c}</Project>
+      <Private>true</Private>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
     <ProjectReference Include="..\ItemAssistantCore\ItemAssistantCore.vcxproj">
       <Project>{d9effcc4-4544-4e8f-9920-2f7cd55d814b}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
@@ -265,6 +279,14 @@ xcopy /Y "$(SolutionDir)\Externals\Microsoft.VC90.CRT\*" "$(OutDir)"
     <ProjectReference Include="..\PluginSDK\PluginSDK.vcxproj">
       <Project>{27846e26-fa81-4b43-997d-62b0338f1a37}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\settings\settings.vcxproj">
+      <Project>{49a0704e-0eb7-4df3-884e-29bcba7ec86c}</Project>
+      <Private>true</Private>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
     <ProjectReference Include="..\Shared\shared.vcxproj">
       <Project>{370e1e96-79a9-4c9d-83b2-6e8298a90655}</Project>
