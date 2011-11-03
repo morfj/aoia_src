@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="Parsers"
 	ProjectGUID="{85CB52A8-5C89-459C-9175-2D55E93A5375}"
 	RootNamespace="Parsers"
@@ -177,6 +177,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\AOOrgContractMessage.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\AOPlayerShopContent.cpp"
 				>
 			</File>
@@ -212,6 +216,10 @@
 			</File>
 			<File
 				RelativePath=".\AOObjectID.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AOOrgContractMessage.h"
 				>
 			</File>
 			<File

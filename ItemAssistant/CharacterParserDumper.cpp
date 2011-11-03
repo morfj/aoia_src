@@ -3,6 +3,7 @@
 #include "DBManager.h"
 #include "AOMessageParsers.h"
 #include "AOMessageIDs.h"
+#include "Parsers/AOOrgContractMessage.h"
 
 namespace bfs = boost::filesystem;
 using namespace Parsers;
@@ -50,8 +51,12 @@ void CharacterParserDumper::OnAOServerMessage(AOMessageBase &msg)
         {
 			// 59 byte versions of this packet are sent on zoning, ignore these
 			if (msg.size()>59) {
-				std::tstring toon_name = g_DBManager.getToonName(msg.characterId());
-				DumpMessageToFile(STREAM2STR(_T("org_contracts_") << toon_name << _T(".dat")), msg);
+				// check the check short value? need to create an AOOrgContractMessage from msg so we can see this
+				AOOrgContractMessage oc_msg(msg.start(), msg.end() - msg.start());
+				if (oc_msg.check_value() == 1) {
+				    std::tstring toon_name = g_DBManager.getToonName(msg.characterId());
+				    DumpMessageToFile(STREAM2STR(_T("org_contracts_") << toon_name << _T(".dat")), msg);
+				}
 			}
         }
         break;
