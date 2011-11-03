@@ -35,6 +35,9 @@
     <ClCompile Include="AOPlayerShopInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AOOrgContractMessage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AOClientMessageBase.h">
@@ -59,6 +62,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AOPlayerShopInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aoorgcontractmessage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
