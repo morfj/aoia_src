@@ -51,8 +51,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gtest-md", "..\deps\gtest-1
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Detours", "..\deps\Detours\Detours.vcxproj", "{A91EC33D-AC2C-4833-BA5C-5124CEA3B83B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QItemAssistant", "QItemAssistant\QItemAssistant.vcxproj", "{4ABD1503-B48B-4093-B95B-848CA04C2DDA}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "csvexport", "csvexport\csvexport.vcxproj", "{29E7696B-2CE6-40E9-B732-DC54B368470C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "datagrid", "datagrid\datagrid.vcxproj", "{6096D08E-50BF-444C-B40E-DC1A8BE4166C}"
@@ -120,8 +118,6 @@ Global
 		{A91EC33D-AC2C-4833-BA5C-5124CEA3B83B}.Debug|Win32.Build.0 = Debug|Win32
 		{A91EC33D-AC2C-4833-BA5C-5124CEA3B83B}.Release|Win32.ActiveCfg = Release|Win32
 		{A91EC33D-AC2C-4833-BA5C-5124CEA3B83B}.Release|Win32.Build.0 = Release|Win32
-		{4ABD1503-B48B-4093-B95B-848CA04C2DDA}.Debug|Win32.ActiveCfg = Debug|Win32
-		{4ABD1503-B48B-4093-B95B-848CA04C2DDA}.Release|Win32.ActiveCfg = Release|Win32
 		{29E7696B-2CE6-40E9-B732-DC54B368470C}.Debug|Win32.ActiveCfg = Debug|Win32
 		{29E7696B-2CE6-40E9-B732-DC54B368470C}.Debug|Win32.Build.0 = Debug|Win32
 		{29E7696B-2CE6-40E9-B732-DC54B368470C}.Release|Win32.ActiveCfg = Release|Win32
