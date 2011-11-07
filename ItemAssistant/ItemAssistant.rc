@@ -190,7 +190,6 @@ BEGIN
             MENUITEM "Xyphos",                      ID_EXPORTTOCSV_XYPHOS
         END
         MENUITEM SEPARATOR
-        MENUITEM "Sell Item at AO Market",      ID_SELL_ITEM_AOMARKET
         MENUITEM "Delete Item",                 ID_DELETE
     END
 END

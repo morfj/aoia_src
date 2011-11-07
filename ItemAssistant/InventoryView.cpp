@@ -192,31 +192,6 @@ LRESULT InventoryView::OnItemContextMenu(LPNMHDR lParam)
 }
 
 
-LRESULT InventoryView::OnSellItemAoMarket(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled)
-{
-    if (m_datagrid->getSelectedCount() != 1)
-    {
-        return 0;
-    }
-
-    int activeItemIdx = *(m_datagrid->getSelectedItems().begin());
-    ItemListDataModelPtr model = boost::shared_static_cast<ItemListDataModel>(m_datagrid->getModel());
-    unsigned int ownedItemIndex = model->getItemIndex(activeItemIdx);
-
-    g_DBManager.Lock();
-    OwnedItemInfoPtr pItemInfo = g_DBManager.GetOwnedItemInfo(ownedItemIndex);
-    g_DBManager.UnLock();
-
-    std::tstring url = _T("http://www.aomarket.com/bots/additem?id=%lowid%&ql=%ql%");
-    boost::replace_all(url, _T("%lowid%"), pItemInfo->itemloid);
-    boost::replace_all(url, _T("%ql%"), pItemInfo->itemql);
-
-    ShellExecute(NULL, _T("open"), url.c_str(), NULL, NULL, SW_SHOWDEFAULT);
-
-    return 0;
-}
-
-
 LRESULT InventoryView::OnCopyItemName(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled)
 {
     if (m_datagrid->getSelectedCount() < 1)
@@ -596,7 +571,7 @@ LRESULT InventoryView::OnCreate(LPCREATESTRUCT createStruct)
 
     m_accelerators.LoadAccelerators(IDR_INV_ACCEL);
 
-    TBBUTTON buttons[6];
+    TBBUTTON buttons[5];
     buttons[0].iBitmap = 0;
     buttons[0].idCommand = ID_INV_FIND_TOGGLE;
     buttons[0].fsState = TBSTATE_ENABLED;
@@ -611,7 +586,7 @@ LRESULT InventoryView::OnCreate(LPCREATESTRUCT createStruct)
     buttons[1].dwData = NULL;
     buttons[1].iString = (INT_PTR)_T("Item Info");
 
-    buttons[2].iBitmap = 3;
+    buttons[2].iBitmap = 0;
     buttons[2].idCommand = 0;
     buttons[2].fsState = 0;
     buttons[2].fsStyle = BTNS_SEP;
@@ -619,25 +594,18 @@ LRESULT InventoryView::OnCreate(LPCREATESTRUCT createStruct)
     buttons[2].iString = NULL;
 
     buttons[3].iBitmap = 3;
-    buttons[3].idCommand = ID_SELL_ITEM_AOMARKET;
-    buttons[3].fsState = 0;
-    buttons[3].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_AUTOSIZE;
+    buttons[3].idCommand = ID_RECORD_STATS_TOGGLE;
+    buttons[3].fsState = TBSTATE_ENABLED;
+    buttons[3].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_CHECK | BTNS_AUTOSIZE;
     buttons[3].dwData = NULL;
-    buttons[3].iString = (INT_PTR)_T("Sell Item");
+    buttons[3].iString = (INT_PTR)_T("Record Stats");
 
-    buttons[4].iBitmap = 4;
-    buttons[4].idCommand = ID_RECORD_STATS_TOGGLE;
+    buttons[4].iBitmap = 2;
+    buttons[4].idCommand = ID_HELP;
     buttons[4].fsState = TBSTATE_ENABLED;
-    buttons[4].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_CHECK | BTNS_AUTOSIZE;
+    buttons[4].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_AUTOSIZE;
     buttons[4].dwData = NULL;
-    buttons[4].iString = (INT_PTR)_T("Record Stats");
-
-    buttons[5].iBitmap = 2;
-    buttons[5].idCommand = ID_HELP;
-    buttons[5].fsState = TBSTATE_ENABLED;
-    buttons[5].fsStyle = TBSTYLE_BUTTON | BTNS_SHOWTEXT | BTNS_AUTOSIZE;
-    buttons[5].dwData = NULL;
-    buttons[5].iString = (INT_PTR)_T("Help");
+    buttons[4].iString = (INT_PTR)_T("Help");
 
     CImageList imageList;
     imageList.CreateFromImage(IDB_INVENTORY_VIEW, 16, 2, CLR_DEFAULT, IMAGE_BITMAP,
@@ -2706,13 +2674,11 @@ void InventoryView::OnSelectionChanged()
 
     if (items.size() == 1)
     {
-        m_toolbar.EnableButton(ID_SELL_ITEM_AOMARKET, TRUE);
         ItemListDataModelPtr model = boost::shared_static_cast<ItemListDataModel>(m_datagrid->getModel());
         m_infoview.SetCurrentItem(model->getItemIndex(*items.begin()));
     }
     else
     {
-        m_toolbar.EnableButton(ID_SELL_ITEM_AOMARKET, FALSE);
         m_infoview.SetCurrentItem(0);
     }
 

@@ -54,7 +54,6 @@ public:
         COMMAND_ID_HANDLER(ID_INV_FIND_HIDE, OnFindHide)
         COMMAND_ID_HANDLER(ID_INFO, OnInfo)
         COMMAND_ID_HANDLER(ID_HELP, OnHelp)
-        COMMAND_ID_HANDLER(ID_SELL_ITEM_AOMARKET, OnSellItemAoMarket)
         COMMAND_ID_HANDLER(ID_COPY_ITEMNAME, OnCopyItemName)
         COMMAND_ID_HANDLER(ID_COPY_AUNO_ITEMREF, OnCopyItemRef)
         COMMAND_ID_HANDLER(ID_COPY_AUNO_ITEMREF_VBB, OnCopyItemRef)
@@ -91,7 +90,6 @@ public:
     LRESULT OnColumnClick(LPNMHDR lParam);
     LRESULT OnItemChanged(LPNMHDR lParam);
     LRESULT OnItemContextMenu(LPNMHDR lParam);
-    LRESULT OnSellItemAoMarket(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
     LRESULT OnCopyItemName(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
     LRESULT OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
     LRESULT OnShowItemRef(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
