@@ -94,6 +94,7 @@ namespace aoia
         }
 
         m_result = m_db->ExecTable(sql);
+        m_lastQuery = sql;
         m_lastPredicate = predicate;
     }
 
@@ -204,6 +205,29 @@ namespace aoia
         // TODO: Add support for sorting the backpack column properly.
         runQuery(m_lastPredicate, columnIndex, ascending);
         signalCollectionUpdated();
+    }
+
+
+    void ItemListDataModel::DeleteItems( std::set<unsigned int> const& ids )
+    {
+        g_DBManager.Lock();
+        g_DBManager.DeleteItems(ids);
+        g_DBManager.UnLock();
+
+        runQueryAgain();
+        signalCollectionUpdated();
+    }
+
+
+    void ItemListDataModel::runQueryAgain()
+    {
+        if (m_lastQuery.empty())
+        {
+            m_result.reset();
+            return;
+        }
+
+        m_result = m_db->ExecTable(m_lastQuery);
     }
 
 }

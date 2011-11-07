@@ -18,6 +18,7 @@
 #include "InvTreeItems.h"
 #include "MFTreeView.h"
 #include "TempContainerCache.h"
+#include "ItemListDataModel.h"
 
 
 class InventoryView
@@ -69,6 +70,7 @@ public:
         COMMAND_ID_HANDLER(ID_VIEW_ITEMSTATS_XYPHOS, OnShowItemRef)
         COMMAND_ID_HANDLER(ID_EXPORTTOCSV_XYPHOS, OnExportToCSV)
         COMMAND_ID_HANDLER(ID_RECORD_STATS_TOGGLE, OnRecordStatsToggle)
+        COMMAND_ID_HANDLER(ID_DELETE, OnDelete)
         NOTIFY_CODE_HANDLER_EX(LVN_COLUMNCLICK, OnColumnClick)
         //NOTIFY_CODE_HANDLER_EX(LVN_ITEMACTIVATE, OnItemActivate)
         NOTIFY_CODE_HANDLER_EX(LVN_ITEMCHANGED, OnItemChanged)
@@ -92,12 +94,10 @@ public:
     LRESULT OnSellItemAoMarket(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
     LRESULT OnCopyItemName(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
     LRESULT OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
-
-    std::tstring GetContainerNameForItem( OwnedItemInfoPtr pItemInfo ) const;
-
     LRESULT OnShowItemRef(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
     LRESULT OnExportToCSV(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
     LRESULT OnRecordStatsToggle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+    LRESULT OnDelete(WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled);
 
 	virtual void OnAOClientMessage(Parsers::AOClientMessageBase &msg);
     virtual void OnAOServerMessage(Parsers::AOMessageBase &msg);
@@ -125,6 +125,7 @@ protected:
         FORMAT_CSV,
     };
 
+    std::tstring GetContainerNameForItem( OwnedItemInfoPtr pItemInfo ) const;
     //void AddItemToView(Native::DbKey const& key, Native::DbItem const& item);
     void AddToTreeView(unsigned int charId, unsigned int contId);
     void CleanupDB(unsigned int charid);
@@ -175,6 +176,8 @@ private:
     boost::signals::connection m_removeSignalConnection;
     boost::signals::connection m_clearSignalConnection;
     boost::signals::connection m_updateSignalConnection;
+
+    aoia::ItemListDataModelPtr m_datagridmodel;
 };
 
 

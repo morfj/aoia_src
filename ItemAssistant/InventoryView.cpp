@@ -2616,13 +2616,14 @@ void InventoryView::UpdateListView(std::tstring const& where)
         m_datagrid->getModel()->disconnect(m_updateSignalConnection);
     }
 
-    ItemListDataModelPtr data(new ItemListDataModel(m_db, m_containerManager, where, m_sortColumn, !m_sortDesc));
-    m_addSignalConnection = data->connectItemAdded(boost::bind(&InventoryView::onItemAdded, this, _1));
-    m_removeSignalConnection = data->connectItemRemoved(boost::bind(&InventoryView::onItemRemoved, this, _1));
-    m_clearSignalConnection = data->connectAllRemoved(boost::bind(&InventoryView::onAllItemsRemoved, this));
-    m_updateSignalConnection = data->connectCollectionUpdated(boost::bind(&InventoryView::onAllItemsUpdated, this));
+    m_datagridmodel.reset(new ItemListDataModel(m_db, m_containerManager, where, m_sortColumn, !m_sortDesc));
 
-    m_datagrid->setModel(data);
+    m_addSignalConnection = m_datagridmodel->connectItemAdded(boost::bind(&InventoryView::onItemAdded, this, _1));
+    m_removeSignalConnection = m_datagridmodel->connectItemRemoved(boost::bind(&InventoryView::onItemRemoved, this, _1));
+    m_clearSignalConnection = m_datagridmodel->connectAllRemoved(boost::bind(&InventoryView::onAllItemsRemoved, this));
+    m_updateSignalConnection = m_datagridmodel->connectCollectionUpdated(boost::bind(&InventoryView::onAllItemsUpdated, this));
+
+    m_datagrid->setModel(m_datagridmodel);
     m_datagrid->autosizeColumnsUseData();
 
     OnSelectionChanged();
@@ -2840,9 +2841,36 @@ std::tstring InventoryView::GetContainerNameForItem( OwnedItemInfoPtr pItemInfo 
 void InventoryView::GetSelectedItemIds( std::set<unsigned int> &ids )
 {
     std::set<unsigned int> selectedIndexes = m_datagrid->getSelectedItems();
-    ItemListDataModelPtr model = boost::shared_static_cast<ItemListDataModel>(m_datagrid->getModel());
     for (std::set<unsigned int>::const_iterator it = selectedIndexes.begin(); it != selectedIndexes.end(); ++it)
     {
-        ids.insert(model->getItemIndex(*it));
+        ids.insert(m_datagridmodel->getItemIndex(*it));
     }
+}
+
+
+LRESULT InventoryView::OnDelete( WORD FromAccelerator, WORD CommandId, HWND hWndCtrl, BOOL& bHandled )
+{
+    if (m_datagrid->getSelectedCount() < 1)
+    {
+        return 0;
+    }
+
+    std::tstring message = _T("Are you sure you want to delete these items?");
+    if (m_datagrid->getSelectedCount() == 1)
+    {
+        message = _T("Are you sure you want to delete this item?");
+    }
+
+    if (IDYES != MessageBox(message.c_str(), _T("Verify Operation"), MB_YESNO | MB_ICONQUESTION))
+    {
+        m_datagrid->SetFocus();
+        return 0;
+    }
+
+    std::set<unsigned int> ids;
+    GetSelectedItemIds(ids);
+    m_datagrid->ClearSelection();
+    m_datagridmodel->DeleteItems(ids);
+
+    return 0;
 }

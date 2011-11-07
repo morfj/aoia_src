@@ -58,6 +58,9 @@ namespace aoia
         /// Tell the datamodel to resort based on a particular column and direction.
         void sortData(unsigned int columnIndex, bool ascending = true);
 
+        /// Delete the specified items from the database, and signal changes to observers.
+        void DeleteItems( std::set<unsigned int> const& ids );
+
     protected:
         // Enumeration of publicly visible columns.
         enum ColumnID
@@ -71,12 +74,14 @@ namespace aoia
         };
 
         void runQuery(std::tstring const& predicate, int sortColumn = -1, bool sortAscending = true);
+        void runQueryAgain();
 
     private:
         sqlite::IDBPtr m_db;
         IContainerManagerPtr m_containerManager;
         sqlite::ITablePtr m_result;
         std::tstring m_lastPredicate;
+        std::tstring m_lastQuery;
     };
 
     typedef boost::shared_ptr<ItemListDataModel> ItemListDataModelPtr;

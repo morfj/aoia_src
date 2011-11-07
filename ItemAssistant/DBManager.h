@@ -59,7 +59,9 @@ public:
 	
 	//searches for items in containerIdToSearchIn with the same keylow and ql as the item specified
 	unsigned int FindFirstItemOfSameType(unsigned int charId, unsigned int containerId, unsigned int slot, unsigned int containerIdToSearchIn);
-	
+
+    virtual void DeleteItems( std::set<unsigned int> const& ids ) const;
+
     /// Lock database for access.
     void Lock() { m_mutex.MutexOn(); }
 

@@ -573,6 +573,27 @@ unsigned int DBManager::FindFirstItemOfSameType(unsigned int charId, unsigned in
 }
 
 
+void DBManager::DeleteItems( std::set<unsigned int> const& ids ) const
+{
+    if (ids.empty())
+    {
+        return;
+    }
+
+    std::list<std::tstring> idStrings;
+    for (std::set<unsigned int>::const_iterator it = ids.begin(); it != ids.end(); ++it)
+    {
+        idStrings.push_back(STREAM2STR(*it));
+    }
+    std::tstring idList = boost::join(idStrings, _T(","));
+
+    std::tstringstream sql;
+    sql << _T("DELETE FROM tItems WHERE itemidx IN(") << idList << _T(")");
+
+    m_db->Exec(sql.str());
+}
+
+
 unsigned int DBManager::GetShopOwner(unsigned int shopid)
 {
     assert(shopid != 0);

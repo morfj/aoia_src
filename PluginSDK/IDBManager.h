@@ -1,8 +1,9 @@
 #ifndef IDBMANAGER_H
 #define IDBMANAGER_H
 
-#include <Shared/IDB.h>
 #include <map>
+#include <set>
+#include <Shared/IDB.h>
 
 
 struct OwnedItemInfo
@@ -61,11 +62,14 @@ struct IDBManager
     /// Determines the first available container slot ID for a specified character and container.
     virtual unsigned int FindNextAvailableContainerSlot(unsigned int charId, unsigned int containerId) = 0;
 
-    //returns the properties value in the AO db for an item in a particular slot in a container.
+    /// returns the properties value in the AO db for an item in a particular slot in a container.
     virtual unsigned int GetItemProperties(unsigned int charId, unsigned int containerId, unsigned int slot) = 0;
 
-    //searches for items in containerIdToSearchIn with the same keylow and ql as the item specified
+    /// searches for items in containerIdToSearchIn with the same keylow and ql as the item specified
     virtual unsigned int FindFirstItemOfSameType(unsigned int charId, unsigned int containerId, unsigned int slot, unsigned int containerIdToSearchIn) = 0;
+
+    /// Deletes the specific set of item IDs from the database.
+    virtual void DeleteItems(std::set<unsigned int> const& ids) const = 0;
 };
 
 typedef boost::shared_ptr<IDBManager> IDBManagerPtr;

@@ -18,10 +18,8 @@
 // Neutral resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
-#ifdef _WIN32
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -78,7 +76,7 @@ IDB_PLAYERSHOP_VIEW     BITMAP                  "res\\PlayerShopMonitor.bmp"
 // Menu
 //
 
-IDR_ITEM_POPUP_MULTISEL MENU 
+IDR_ITEM_POPUP_MULTISEL MENU
 BEGIN
     POPUP "Item Context Menu"
     BEGIN
@@ -103,6 +101,8 @@ BEGIN
             MENUITEM "AO Mainframe",                ID_EXPORTTOCSV_JAYDEE
             MENUITEM "Xyphos",                      ID_EXPORTTOCSV_XYPHOS
         END
+        MENUITEM SEPARATOR
+        MENUITEM "Delete Items",                ID_DELETE
     END
 END
 
@@ -111,13 +111,11 @@ END
 
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -131,7 +129,7 @@ IDR_MAINFRAME           BITMAP                  "res\\mainfram.bmp"
 // Menu
 //
 
-IDR_MAINFRAME MENU 
+IDR_MAINFRAME MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -159,7 +157,7 @@ BEGIN
     END
 END
 
-IDR_ITEM_POPUP MENU 
+IDR_ITEM_POPUP MENU
 BEGIN
     POPUP "Item Context Menu"
     BEGIN
@@ -193,10 +191,11 @@ BEGIN
         END
         MENUITEM SEPARATOR
         MENUITEM "Sell Item at AO Market",      ID_SELL_ITEM_AOMARKET
+        MENUITEM "Delete Item",                 ID_DELETE
     END
 END
 
-IDR_TRAY_POPUP MENU 
+IDR_TRAY_POPUP MENU
 BEGIN
     POPUP "Show / Hide"
     BEGIN
@@ -221,7 +220,7 @@ IDR_HTML2               HTML                    "res\\html2.htm"
 // Toolbar
 //
 
-IDR_MAINFRAME TOOLBAR  16, 16
+IDR_MAINFRAME TOOLBAR 16, 16
 BEGIN
     BUTTON      ID_FILE_NEW
     BUTTON      ID_FILE_OPEN
@@ -243,7 +242,7 @@ END
 // Accelerator
 //
 
-IDR_MAINFRAME ACCELERATORS 
+IDR_MAINFRAME ACCELERATORS
 BEGIN
     VK_DELETE,      ID_EDIT_CLEAR,          VIRTKEY, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
@@ -254,14 +253,14 @@ BEGIN
     VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
 END
 
-IDR_INV_ACCEL ACCELERATORS 
+IDR_INV_ACCEL ACCELERATORS
 BEGIN
     "F",            ID_INV_FIND,            VIRTKEY, CONTROL, NOINVERT
     VK_ESCAPE,      ID_INV_FIND_HIDE,       VIRTKEY, NOINVERT
     "I",            ID_INFO,                VIRTKEY, CONTROL, NOINVERT
 END
 
-IDR_PB_ACCEL ACCELERATORS 
+IDR_PB_ACCEL ACCELERATORS
 BEGIN
     "F",            ID_PB_FILTER,           VIRTKEY, CONTROL, NOINVERT
     VK_ESCAPE,      ID_PB_FILTER_HIDE,      VIRTKEY, NOINVERT
@@ -391,7 +390,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_PLAYERSHOP, DIALOG
     BEGIN
@@ -469,7 +468,7 @@ END
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDR_MAINFRAME           "AO Item Assistant"
     IDR_INVENTORY_VIEW      "Inventory"
@@ -479,12 +478,12 @@ BEGIN
     IDS_AO_ITEMREF_URL      "itemref://%lowid%/%hiid%/%ql%"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_XYPHOS_ITEMREF_URL  "http://www.xyphos.com/aodb.php?id=%lowid%&ql=%ql%"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_NEW             "Create a new document\nNew"
     ID_FILE_OPEN            "Open an existing document\nOpen"
@@ -497,26 +496,26 @@ BEGIN
     ID_FILE_PRINT_PREVIEW   "Display full pages\nPrint Preview"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
     ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
     ID_HELP_INDEX           "Go to the on-line documentation\nGo To On-Line Help"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
     ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_HELP_SUPPORTFORUM    "Go to the on-line support forum\nGo To Support Forum"
     ID_HELP_CHECKFORUPDATES "Check for a newer version of this application\nPerform Update Check On-Line"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_WINDOW_NEW           "Open another window for the active document\nNew Window"
     ID_WINDOW_ARRANGE       "Arrange icons at the bottom of the window\nArrange Icons"
@@ -526,7 +525,7 @@ BEGIN
     ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_EDIT_CLEAR           "Erase the selection\nErase"
     ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
@@ -541,18 +540,18 @@ BEGIN
     ID_EDIT_REDO            "Redo the previously undone action\nRedo"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_INV_FIND             "Find matching items\nFind Items"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
     ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ATL_IDS_SCSIZE          "Change the window size"
     ATL_IDS_SCMOVE          "Change the window position"
@@ -563,35 +562,33 @@ BEGIN
     ATL_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ATL_IDS_SCRESTORE       "Restore the window to normal size"
     ATL_IDS_SCTASKLIST      "Activate Task List"
     ATL_IDS_MDICHILD        "Activate this window"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ATL_IDS_IDLEMESSAGE     "Ready"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Norwegian (Bokmal) resources
+// Norwegian, Bokmål (Norway) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NOR)
-#ifdef _WIN32
 LANGUAGE LANG_NORWEGIAN, SUBLANG_NORWEGIAN_BOKMAL
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -634,7 +631,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_SERVER_SELECTOR, DIALOG
     BEGIN
@@ -646,7 +643,7 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Norwegian (Bokmal) resources
+#endif    // Norwegian, Bokmål (Norway) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

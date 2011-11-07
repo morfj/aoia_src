@@ -44,6 +44,12 @@ namespace aoia {
     }
 
 
+    aoia::IDataGridModelPtr DataGridControl::getModel() const
+    {
+        return m_model;
+    }
+
+
     LRESULT DataGridControl::onCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled)
     {
         DefWindowProc(uMsg, wParam, lParam);
@@ -174,6 +180,12 @@ namespace aoia {
         while(lastId > -1);
 
         return result;
+    }
+
+
+    void DataGridControl::ClearSelection()
+    {
+        m_listView.SetItemState(-1, 0, LVIS_SELECTED);
     }
 
 }   // namespace

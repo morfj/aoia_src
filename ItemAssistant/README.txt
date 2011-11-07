@@ -63,7 +63,9 @@ Version 1.1.0                                       Release Date: ??/??/2011
     * Added a new column called ContainerID to the CSV export.
     * Unified all CSV exports to have the same format.
     * Numbers shown on the summary page should be a bit more readable.
-    * Added crashdump generation to help with resolving issues.
+    * Added crashdump generation to help with troubleshooting issues.
+    * Added command on the item context menu in the inventory page for deleting
+      the selected item(s).
 
 Version 1.0.1										Release Date: 16/9/2011
     * Added DB index to fix issue with speed and CPU usage while searching for

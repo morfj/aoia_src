@@ -132,6 +132,9 @@
 #define ID_VIEW_ITEMSTATS_XYPHOS        32834
 #define ID_COPY_ITEMNAME                32836
 #define ID_REFRESH                      32837
+#define ID_ITEMCONTEXTMENU_DELETEITEM   32838
+#define ID_DELETE                       32839
+#define ID_ITEMCONTEXTMENU_DELETEITEMS  32840
 #define ATL_IDS_IDLEMESSAGE             0xE001
 #define ID_FILE_NEW                     0xE100
 #define ID_FILE_OPEN                    0xE101
@@ -236,7 +239,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        156
-#define _APS_NEXT_COMMAND_VALUE         32838
+#define _APS_NEXT_COMMAND_VALUE         32841
 #define _APS_NEXT_CONTROL_VALUE         1047
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
