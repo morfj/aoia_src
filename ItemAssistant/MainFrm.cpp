@@ -34,9 +34,9 @@ CMainFrame::CMainFrame(aoia::ISettingsPtr settings)
         m_windowRect.bottom = m_windowRect.top + boost::lexical_cast<unsigned int>(m_settings->getValue(_T("Window.Height")));
 
         Desktop desktop;
-        if (!desktop.ContainsPoint(m_windowRect.left, m_windowRect.top))
+        if (!desktop.IntersectsRect(m_windowRect))
         {
-            LOG("Previous window position outside current desktop. Using default.");
+            LOG("Previous window not inside current desktop. Using default.");
             m_windowRect.SetRectEmpty();
         }
     }

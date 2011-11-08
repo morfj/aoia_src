@@ -10,6 +10,7 @@ namespace aoia
         virtual ~Desktop(void);
 
         bool ContainsPoint(int x, int y) const;
+        bool IntersectsRect(RECT rect) const;
     };
 }
 

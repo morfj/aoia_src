@@ -19,4 +19,11 @@ namespace aoia
 
         return MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL;
     }
+
+
+    bool Desktop::IntersectsRect( RECT rect ) const
+    {
+        return MonitorFromRect(&rect, MONITOR_DEFAULTTONULL) != NULL;
+    }
+
 }
