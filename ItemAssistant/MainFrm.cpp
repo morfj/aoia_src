@@ -8,6 +8,7 @@
 #include "Version.h"
 #include "GuiServices.h"
 #include "ContainerManager.h"
+#include "Desktop.h"
 
 
 using namespace aoia;
@@ -31,6 +32,13 @@ CMainFrame::CMainFrame(aoia::ISettingsPtr settings)
         m_windowRect.top = boost::lexical_cast<int>(m_settings->getValue(_T("Window.Top")));
         m_windowRect.right = m_windowRect.left + boost::lexical_cast<unsigned int>(m_settings->getValue(_T("Window.Width")));
         m_windowRect.bottom = m_windowRect.top + boost::lexical_cast<unsigned int>(m_settings->getValue(_T("Window.Height")));
+
+        Desktop desktop;
+        if (!desktop.ContainsPoint(m_windowRect.left, m_windowRect.top))
+        {
+            LOG("Previous window position outside current desktop. Using default.");
+            m_windowRect.SetRectEmpty();
+        }
     }
     catch(boost::bad_lexical_cast &/*e*/)
     {

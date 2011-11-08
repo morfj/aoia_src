@@ -141,6 +141,7 @@
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="CharacterParserDumper.cpp" />
     <ClCompile Include="DBManager.cpp" />
+    <ClCompile Include="Desktop.cpp" />
     <ClCompile Include="GuiServices.cpp" />
     <ClCompile Include="InjectionSupport.cpp" />
     <ClCompile Include="ItemAssistant.cpp" />
@@ -183,6 +184,7 @@
     <ClInclude Include="Application.h" />
     <ClInclude Include="CharacterParserDumper.h" />
     <ClInclude Include="DBManager.h" />
+    <ClInclude Include="Desktop.h" />
     <ClInclude Include="GuiServices.h" />
     <ClInclude Include="InjectionSupport.h" />
     <ClInclude Include="InventoryIDs.h" />
