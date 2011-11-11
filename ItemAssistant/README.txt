@@ -59,7 +59,7 @@ have contributed either directly or indirectly include:
 
 Change Log:
 ===========
-Version 1.1.0                                       Release Date: ??/11/2011
+Version 1.1.0                                       Release Date: 11/11/2011
     * Added a new column called ContainerID to the CSV export.
     * Unified all CSV exports to have the same format.
     * Numbers shown on the summary page should be a bit more readable.
@@ -68,6 +68,7 @@ Version 1.1.0                                       Release Date: ??/11/2011
       the selected item(s).
     * Fixed bug when restoring window position. Now resets to default if the 
       entire window is outside the current desktop.
+    * Fixed performance issue with some more disappearing database indexes.
 
 Version 1.0.1										Release Date: 16/9/2011
     * Added DB index to fix issue with speed and CPU usage while searching for

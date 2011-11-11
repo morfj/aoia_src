@@ -13,7 +13,7 @@
 
 namespace bfs = boost::filesystem;
 
-#define CURRENT_DB_VERSION 6
+#define CURRENT_DB_VERSION 7
 
 
 DBManager::DBManager()
@@ -786,6 +786,17 @@ void DBManager::updateDBVersion(unsigned int fromVersion) const
         }
         // Dropthrough
 
+    case 6: // Updates from v6: Redid missing indexes from previous updates.
+        {
+            m_db->Begin();
+            m_db->Exec("DROP INDEX IF EXISTS iOwner");
+            m_db->Exec("DROP INDEX IF EXISTS iParent");
+            m_db->Exec("CREATE INDEX idx_titems_owner ON tItems (owner)");
+            m_db->Exec("CREATE INDEX idx_titems_parent ON tItems (parent)");
+            m_db->Commit();
+        }
+        // Dropthrough
+
     default:
         break;
     }
@@ -795,21 +806,21 @@ void DBManager::updateDBVersion(unsigned int fromVersion) const
 void DBManager::createDBScheme() const
 {
     m_db->Begin();
-    m_db->Exec(_T("CREATE TABLE tItems (itemidx INTEGER NOT NULL PRIMARY KEY ON CONFLICT REPLACE AUTOINCREMENT UNIQUE DEFAULT '1', keylow INTEGER, keyhigh INTEGER, ql INTEGER, flags INTEGER DEFAULT '0', stack INTEGER DEFAULT '1', parent INTEGER NOT NULL DEFAULT '2', slot INTEGER, children INTEGER, owner INTEGER NOT NULL)"));
+    m_db->Exec("CREATE TABLE tItems (itemidx INTEGER NOT NULL PRIMARY KEY ON CONFLICT REPLACE AUTOINCREMENT UNIQUE DEFAULT '1', keylow INTEGER, keyhigh INTEGER, ql INTEGER, flags INTEGER DEFAULT '0', stack INTEGER DEFAULT '1', parent INTEGER NOT NULL DEFAULT '2', slot INTEGER, children INTEGER, owner INTEGER NOT NULL)");
     m_db->Exec("CREATE INDEX idx_titems_keylow ON tItems (keylow ASC)");
-    m_db->Exec(_T("CREATE VIEW vBankItems AS SELECT * FROM tItems WHERE parent=1"));
-    m_db->Exec(_T("CREATE VIEW vContainers AS SELECT * FROM tItems WHERE children > 0"));
-    m_db->Exec(_T("CREATE VIEW vInvItems AS SELECT * FROM tItems WHERE parent=2"));
-    m_db->Exec(_T("CREATE INDEX iOwner ON tItems (owner)"));
-    m_db->Exec(_T("CREATE INDEX iParent ON tItems (parent)"));
-    m_db->Exec(_T("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0', dimensionid INTEGER DEFAULT '0')"));
-    m_db->Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));
-    m_db->Exec(_T("CREATE TABLE tDimensions (dimensionid INTEGER NOT NULL PRIMARY KEY UNIQUE, dimensionname VARCHAR)"));
-    m_db->Exec(_T("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (11, 'Atlantean (Rubi-Ka 1)')"));
-    m_db->Exec(_T("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (12, 'Rimor (Rubi-Ka 2)')"));
-    m_db->Exec(_T("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (13, 'Die Neue Welt (German Server)')"));
-    m_db->Exec(_T("CREATE TABLE tToonStats (charid INTEGER NOT NULL, statid INTEGER NOT NULL, statvalue INTEGER NOT NULL, FOREIGN KEY (charid) REFERENCES tToons (charid))"));
-    m_db->Exec(_T("CREATE UNIQUE INDEX charstatindex ON tToonStats (charid ASC, statid ASC)"));
+    m_db->Exec("CREATE INDEX idx_titems_owner ON tItems (owner)");
+    m_db->Exec("CREATE INDEX idx_titems_parent ON tItems (parent)");
+    m_db->Exec("CREATE VIEW vBankItems AS SELECT * FROM tItems WHERE parent=1");
+    m_db->Exec("CREATE VIEW vContainers AS SELECT * FROM tItems WHERE children > 0");
+    m_db->Exec("CREATE VIEW vInvItems AS SELECT * FROM tItems WHERE parent=2");
+    m_db->Exec("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0', dimensionid INTEGER DEFAULT '0')");
+    m_db->Exec("CREATE UNIQUE INDEX iCharId ON tToons (charid)");
+    m_db->Exec("CREATE TABLE tDimensions (dimensionid INTEGER NOT NULL PRIMARY KEY UNIQUE, dimensionname VARCHAR)");
+    m_db->Exec("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (11, 'Atlantean (Rubi-Ka 1)')");
+    m_db->Exec("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (12, 'Rimor (Rubi-Ka 2)')");
+    m_db->Exec("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (13, 'Die Neue Welt (German Server)')");
+    m_db->Exec("CREATE TABLE tToonStats (charid INTEGER NOT NULL, statid INTEGER NOT NULL, statvalue INTEGER NOT NULL, FOREIGN KEY (charid) REFERENCES tToons (charid))");
+    m_db->Exec("CREATE UNIQUE INDEX charstatindex ON tToonStats (charid ASC, statid ASC)");
     m_db->Exec(STREAM2STR(_T("CREATE VIEW vSchemeVersion AS SELECT '") << CURRENT_DB_VERSION << _T("' AS Version")));
     m_db->Commit();
 }
