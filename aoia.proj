@@ -20,7 +20,7 @@
 	<Target Name="prepare_build">
 		<Message Text="Preparing" />
 		<ItemGroup>
-			<OldOutputFiles Include="Release/ItemAssistant*.zip" />
+			<OldOutputFiles Include="Release/*.zip" />
 			<OldOutputFiles Include="ItemAssistantInstaller/*.exe" />
 		</ItemGroup>
 		<Delete Files="@(OldOutputFiles)" />
@@ -83,7 +83,19 @@
         <RunGoogleTests TestExePath="Release/csvexporttests.exe" />
     </Target>
 
-	<Target Name="package" DependsOnTargets="prepare_build;update_version;update_version_resource;build">
+    <Target Name="package_pdb">
+        <ItemGroup>
+            <PdbFiles Include="**/*.pdb" />
+        </ItemGroup>
+        <Zip
+			Files="@(PdbFiles)"
+			WorkingDirectory="Release"
+			ZipFileName="Release/ItemAssistant-PDB-$(Version).zip"
+			Flatten="true"
+        />
+    </Target>
+
+    <Target Name="package" DependsOnTargets="prepare_build;update_version;update_version_resource;build;package_pdb">
 		<Message Text="Packaging" />
 		<ItemGroup>
 			<Files Include="Release/ItemAssistant.exe" />
@@ -96,7 +108,8 @@
 			Files="@(Files)" 
 			WorkingDirectory="Release"
 			ZipFileName="Release/ItemAssistant-$(Version).zip" 
-			Flatten="true" />
+			Flatten="true" 
+        />
 	</Target>
 
 	<Target Name="installer">
