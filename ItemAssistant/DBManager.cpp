@@ -702,7 +702,6 @@ void DBManager::updateDBVersion(unsigned int fromVersion) const
             m_db->Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));
             m_db->Exec(_T("INSERT INTO tToons (charid, charname) SELECT charid, charname FROM tToons2"));
             m_db->Exec(_T("DROP TABLE tToons2"));
-            m_db->Exec(_T("CREATE VIEW vSchemeVersion AS SELECT '1' AS Version"));
             m_db->Commit();
         }
         // Dropthrough
@@ -717,8 +716,6 @@ void DBManager::updateDBVersion(unsigned int fromVersion) const
             m_db->Exec(_T("INSERT INTO tToons (charid, charname) SELECT charid, charname FROM tToons2"));
             m_db->Exec(_T("DROP TABLE tToons2"));
             m_db->Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));
-            m_db->Exec(_T("DROP VIEW vSchemeVersion"));
-            m_db->Exec(_T("CREATE VIEW vSchemeVersion AS SELECT '2' AS Version"));
             m_db->Commit();
         }
         // Dropthrough
@@ -733,8 +730,6 @@ void DBManager::updateDBVersion(unsigned int fromVersion) const
             m_db->Exec(_T("INSERT INTO tToons (charid, charname) SELECT charid, charname FROM tToons2"));
             m_db->Exec(_T("DROP TABLE tToons2"));
             m_db->Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));
-            m_db->Exec(_T("DROP VIEW vSchemeVersion"));
-            m_db->Exec(_T("CREATE VIEW vSchemeVersion AS SELECT '3' AS Version"));
             m_db->Commit();
         }
         // Dropthrough
@@ -759,8 +754,6 @@ void DBManager::updateDBVersion(unsigned int fromVersion) const
             m_db->Exec(_T("INSERT INTO tToons (charid, charname, shopid) SELECT charid, charname, shopid FROM tToons2"));
             m_db->Exec(_T("DROP TABLE tToons2"));
             m_db->Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));
-            m_db->Exec(_T("DROP VIEW vSchemeVersion"));
-            m_db->Exec(_T("CREATE VIEW vSchemeVersion AS SELECT '4' AS Version"));
             m_db->Commit();
         }
         // Dropthrough
@@ -770,8 +763,6 @@ void DBManager::updateDBVersion(unsigned int fromVersion) const
             m_db->Begin();
             m_db->Exec(_T("CREATE TABLE tToonStats (charid INTEGER NOT NULL, statid INTEGER NOT NULL, statvalue INTEGER NOT NULL, FOREIGN KEY (charid) REFERENCES tToons (charid))"));
             m_db->Exec(_T("CREATE UNIQUE INDEX charstatindex ON tToonStats (charid ASC, statid ASC)"));
-            m_db->Exec(_T("DROP VIEW vSchemeVersion"));
-            m_db->Exec(_T("CREATE VIEW vSchemeVersion AS SELECT '5' AS Version"));
             m_db->Commit();
         }
         // Dropthrough
@@ -780,8 +771,6 @@ void DBManager::updateDBVersion(unsigned int fromVersion) const
         {
             m_db->Begin();
             m_db->Exec("CREATE INDEX idx_titems_keylow ON tItems (keylow ASC)");
-            m_db->Exec("DROP VIEW vSchemeVersion");
-            m_db->Exec("CREATE VIEW vSchemeVersion AS SELECT '6' AS Version");
             m_db->Commit();
         }
         // Dropthrough
@@ -798,6 +787,8 @@ void DBManager::updateDBVersion(unsigned int fromVersion) const
         // Dropthrough
 
     default:
+        m_db->Exec("DROP VIEW IF EXISTS vSchemeVersion");
+        m_db->Exec(STREAM2STR(_T("CREATE VIEW vSchemeVersion AS SELECT '") << CURRENT_DB_VERSION << _T("' AS Version")));
         break;
     }
 }
