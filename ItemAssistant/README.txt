@@ -59,6 +59,9 @@ have contributed either directly or indirectly include:
 
 Change Log:
 ===========
+Version 1.1.1                                       Release Date: 14/11/2011
+    * Fixed issue with dialog popping up on each restart.
+
 Version 1.1.0                                       Release Date: 11/11/2011
     * Added a new column called ContainerID to the CSV export.
     * Unified all CSV exports to have the same format.
