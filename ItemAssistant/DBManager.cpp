@@ -332,7 +332,7 @@ void DBManager::SetToonName(unsigned int charid, std::tstring const& newName)
 {
     m_db->Begin();
 
-    boost::format sql("INSERT INTO tToons (charid, charname) VALUES (%1%, '%2%')");
+    boost::format sql("INSERT OR REPLACE INTO tToons (charid, charname) VALUES (%1%, '%2%')");
     sql % charid % to_ascii_copy(newName);
 
     if (!m_db->Exec(sql.str()))
