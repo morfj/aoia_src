@@ -9,6 +9,22 @@
 #include <boost/thread.hpp>
 #include "DataQueue.h"
 
+// Logging for the hook is only available in debug code.
+#ifdef DEBUG
+#include "HookLog.h"
+HookLog g_log;
+#define LOG(streamdef) \
+{ \
+    std::string msg = (((std::ostringstream&)(std::ostringstream().flush() << streamdef)).str()); \
+    g_log.out(msg); \
+    msg += _T("\n"); \
+    OutputDebugString(msg.c_str()); \
+}
+#else
+#define LOG(streamdef) \
+    __noop;
+#endif
+
 enum MessageType {
     TYPE_INCOMING = 1,
     TYPE_OUTGOIING = 2,
@@ -55,6 +71,7 @@ void WorkerThreadMethod(void*)
             // We either don't have a valid window target OR it has been more than 10 sec since we last update the target.
             g_targetWnd  = FindWindow ( "ItemAssistantWindowClass", NULL ); // TODO: make the class name a list in registry
             g_lastThreadTick = GetTickCount();
+            LOG("FindWindow returned: " << g_targetWnd);
         }
 
         while (!g_dataQueue.empty())
@@ -73,6 +90,7 @@ void WorkerThreadMethod(void*)
 
             // To avoid blocking the main thread, we should not have a lock on the queue while we process the message.
 			SendMessage( g_targetWnd, WM_COPYDATA, 0, ( LPARAM ) &data );
+            LOG("After SendMessage error code is " << GetLastError());
         }
     }
 }
@@ -152,6 +170,10 @@ void LoadMessageFilter(HKEY hKeyParent, LPCTSTR lpszKeyName)
             }
         }
     }
+    else
+    {
+        LOG("Unable to open key: " << lpszKeyName)
+    }
 }
 
 
@@ -181,14 +203,7 @@ void OnConnectionSend(void * connection, unsigned char * _msgData, unsigned int 
 	{
 		return;
 	}
-
-#ifdef DEBUG
-
-    std::ostringstream s;
-    s << "OnConnectionSend( len: " << len << ", msgId: 0x" << std::hex << msgId << std::endl;
-
-    OutputDebugString(s.str().c_str());
-#endif
+    LOG("OnConnectionSend( len: " << len << ", msgId: 0x" << std::hex << msgId);
 
     DataItemPtr item(new DataItem(TYPE_OUTGOIING, len, (char*)_msgData));
     g_dataQueue.push(item);
@@ -264,9 +279,6 @@ int ProcessDetach( HINSTANCE _hModule )
     LONG res2 = DetourUpdateThread(GetCurrentThread());
     LONG res3 = DetourDetach((PVOID*)&pOriginalDataBlockToMessage, DataBlockToMessageHook);
     LONG res4 = DetourTransactionCommit();
-	
-	
-
     LONG res5 = DetourTransactionBegin();
     LONG res6 = DetourDetach(&Func, SendConnectionHook);
 
@@ -277,12 +289,7 @@ int ProcessDetach( HINSTANCE _hModule )
 	//#endif
 
     LONG res7 = DetourTransactionCommit();
-
-	#ifdef DEBUG
-		std::ostringstream s2;
-		s2 << "ProcessDetach r7: " << res7 << std::endl;
-		OutputDebugString(s2.str().c_str());
-	#endif
+    LOG("ProcessDetach r7: " << res7);
 
     EndWorkerThread();
 
