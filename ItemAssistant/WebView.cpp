@@ -80,19 +80,30 @@ namespace aoia {
         }
 
         LPDISPATCH pDisp = NULL;
-        m_pWB2->get_Document(&pDisp);
+        if (m_pWB2->get_Document(&pDisp) != S_OK)
+        {
+            LOG("Unable to retrieve document. Are IE security features interfering?");
+            return;
+        }
+        if (!pDisp)
+        {
+            LOG("IE document unavailable.");
+            return;
+        }
 
         IHTMLDocument2* pIDoc = NULL;
         pDisp->QueryInterface(IID_IHTMLDocument2, (void**)&pIDoc);
-
+        if (!pIDoc)
+        {
+            LOG("IE document doesn't implement IHTMLDocument2.");
+            return;
+        }
         pIDoc->clear();
 
         SAFEARRAY *sfArray = SafeArrayCreateVector(VT_VARIANT, 0, 1);
-
-        CComBSTR bstr( html.c_str() );
-
         if (sfArray)
         {
+            CComBSTR bstr( html.c_str() );
             VARIANT *param;
             SafeArrayAccessData(sfArray,(LPVOID*) & param);
             param->vt = VT_BSTR;
@@ -102,9 +113,7 @@ namespace aoia {
         }
 
         SafeArrayDestroy(sfArray);
-
         pIDoc->close();
-
         pIDoc->Release();
         pDisp->Release();
     }
