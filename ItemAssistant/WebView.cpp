@@ -34,9 +34,11 @@ namespace aoia {
 
         // Get an IWebBrowser2 interface on the control and navigate to a page.
         m_pWB2 = punkCtrl;
-        if (m_pWB2 && !m_initialURL.empty()) {
+        if (m_pWB2 && !m_initialURL.empty())
+        {
             m_pWB2->Navigate(CComBSTR(m_initialURL.c_str()), &v, &v, &v, &v);
         }
+        m_pWB2->put_Visible(VARIANT_TRUE);
 
         return 0;
     }
@@ -80,14 +82,15 @@ namespace aoia {
         }
 
         LPDISPATCH pDisp = NULL;
-        if (m_pWB2->get_Document(&pDisp) != S_OK)
+        HRESULT hr = m_pWB2->get_Document(&pDisp);
+        if (hr != S_OK)
         {
-            LOG("Unable to retrieve document. Are IE security features interfering?");
+            LOG("Unable to retrieve document. Error code: " << std::hex << hr);
             return;
         }
         if (!pDisp)
         {
-            LOG("IE document unavailable.");
+            LOG("Unable to retrieve document.");
             return;
         }
 
