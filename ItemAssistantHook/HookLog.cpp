@@ -9,7 +9,7 @@ HookLog::HookLog()
     GetTempPath(MAX_PATH, tmpfolder);
 
     std::string tmpfile(tmpfolder);
-    tmpfile += "aoia_hook_debug.log";
+    tmpfile += "aoia_hook.log";
 
     m_out.open(tmpfile);
 
