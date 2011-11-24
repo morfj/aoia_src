@@ -9,8 +9,8 @@
 #include <boost/thread.hpp>
 #include "DataQueue.h"
 
-// Logging for the hook is only available in debug code.
-#ifdef DEBUG
+// Switches hook logging on/off
+#if 1
 #include "HookLog.h"
 HookLog g_log;
 #define LOG(streamdef) \
