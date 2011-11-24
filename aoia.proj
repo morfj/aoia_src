@@ -4,7 +4,6 @@
     <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
     <Import Project="$(MSBuildExtensionsPath)\MSBuildTeamCityTasks\MSBuild.TeamCity.Tasks.Targets"/>
 
-
     <Target Name="clean">
         <Message Text="Cleaning" />
         <MSBuild
@@ -22,7 +21,7 @@
         <Delete Files="@(OldOutputFiles)" />
     </Target>
 
-    <Target Name="get_official_repo_version" Condition=" '$(OFFICIAL)'!='' ">
+    <Target Name="get_official_repo_version" Condition=" '$(OFFICIAL)' != '' ">
         <Exec Command="hg log -r tip --template {latesttag}.0 > $(Temp)\version.txt"/>
         <ReadLinesFromFile File="$(Temp)\version.txt">
             <Output TaskParameter="Lines" PropertyName="Version"/>
@@ -31,7 +30,7 @@
         <BuildNumber Number="$(Version)-{build.number}" />
     </Target>
 
-    <Target Name="get_repo_version" Condition=" '$(OFFICIAL)'=='' ">
+    <Target Name="get_repo_version" Condition=" '$(OFFICIAL)' == '' ">
         <Exec Command="hg log -r tip --template {latesttag}.{latesttagdistance} > $(Temp)\version.txt"/>
         <ReadLinesFromFile File="$(Temp)\version.txt">
             <Output TaskParameter="Lines" PropertyName="Version"/>
@@ -41,6 +40,7 @@
     </Target>
 
     <Target Name="get_version" DependsOnTargets="get_official_repo_version;get_repo_version">
+        <Message Text="Official switch: $(OFFICIAL)" />
     </Target>
     
     <Target Name="update_version_resource" DependsOnTargets="get_version">
