@@ -59,9 +59,8 @@ have contributed either directly or indirectly include:
 
 Change Log:
 ===========
-Version 1.1.2                                       Release Date: ??/11/2011
-    * Fixed a crash in the web-browser plugin. Might not behave 100% as 
-      expected, but should avoid some crashes.
+Version 1.1.2                                       Release Date: 01/12/2011
+    * Fixed a crash during startup.
     * Fixed an SQL bug when updating toon names.
     * Added logging to the AO hook. Now logs to <temp>/aoia_hook.log.
     * Logging is now enabled by default and logs to <temp>/aoia.log.
