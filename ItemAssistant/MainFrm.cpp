@@ -278,7 +278,7 @@ LRESULT CMainFrame::OnTimer(UINT wParam)
         bool injected = Inject();
         if (injected && first_injection_try) {
             // Show warning about AO being started before AOIA
-            m_guiServices->ShowTrayIconBalloon(_T("Anarchy Online was started before AO Item Assistant was started.\nItem database might be out of sync."));
+            m_guiServices->ShowTrayIconBalloon(_T("Anarchy Online was started before Item Assistant.\nThe database might be out of sync for the current toon."));
         }
         first_injection_try = false;
         SetTimer(1, 10000);
