@@ -10,10 +10,13 @@ bool InjectDLL(DWORD ProcessID, std::tstring const& dllName)
     }
     LOG("Attempting to inject '" << dllName << "' into process " << ProcessID);
 
+    // Clear error status.
+    SetLastError(0);
+
     HANDLE Proc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, ProcessID);
     if (!Proc)
     {
-        LOG("Could not open process. Error code: " << GetLastError());
+        LOG("Failed to open AO client process. Error: " << GetLastError());
         return false;
     }
 
@@ -21,7 +24,7 @@ bool InjectDLL(DWORD ProcessID, std::tstring const& dllName)
     LPVOID RemoteString = (LPVOID)VirtualAllocEx(Proc, NULL, dllNameA.length(), MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
     if (!RemoteString)
     {
-        LOG("Could not allocate memory in remote process. Error code: " << GetLastError());
+        LOG("Failed to allocate memory in AO client. Error: " << GetLastError());
         CloseHandle(Proc);
         return false;
     }
@@ -36,7 +39,7 @@ bool InjectDLL(DWORD ProcessID, std::tstring const& dllName)
     LPVOID LoadLibAddy = (LPVOID)GetProcAddress(GetModuleHandle(_T("kernel32.dll")), "LoadLibraryA");
     if (!CreateRemoteThread(Proc, NULL, NULL, (LPTHREAD_START_ROUTINE)LoadLibAddy, (LPVOID)RemoteString, NULL, NULL))
     {
-        LOG("Injection failed with error code: " << GetLastError());
+        LOG("Failed to start hook in AO client. Error: " << GetLastError());
         CloseHandle(Proc);
         return false;
     }
