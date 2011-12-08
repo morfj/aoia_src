@@ -59,6 +59,10 @@ have contributed either directly or indirectly include:
 
 Change Log:
 ===========
+Version 1.1.3                                       Release Date: 09/12/2011
+    * Fixed an SQL error while ripping the AO database.
+    * Fixed the isse with the application not being able to hook the AO client.
+
 Version 1.1.2                                       Release Date: 01/12/2011
     * Fixed a crash during startup.
     * Fixed an SQL bug when updating toon names.

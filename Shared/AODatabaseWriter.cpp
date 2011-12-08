@@ -243,7 +243,7 @@ void AODatabaseWriter::writeEffect(unsigned int aoid, ao_item_effect const& eff)
         << eff.target << ", "
         << value1 << ", "
         << value2 << ", "
-        << "'" << eff.text << "')";
+        << "'" << text << "')";
     m_db.Exec(from_ascii_copy(sql.str()));
 }
 
