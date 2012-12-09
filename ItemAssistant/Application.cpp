@@ -29,7 +29,7 @@ bool Application::init(std::tstring const& cmdLine)
     m_settings->readSettings(_T("ItemAssistant.conf"));
 
     // Check to see if logging should be enabled
-	Logger::instance().init(logfile, g_versionNumber);
+    Logger::instance().init(logfile, g_versionNumber);
 
     LOG(_T("Using AO Folder at: ") << AOManager::instance().getAOFolder());
 
