@@ -154,7 +154,7 @@ bool DBManager::syncLocalItemsDB(std::tstring const& localfile, std::tstring con
         unsigned int itemCount = item_offsets.size();
         unsigned int nanoCount = nano_offsets.size();
 
-        std::vector<std::string> original_files = boost::assign::list_of(original.string())(original.string()+".001");
+        std::vector<std::string> original_files = boost::assign::list_of(original.string())(original.string()+".001")(original.string()+".002");
         AODatabaseParser aodb(original_files);
         AODatabaseWriter writer(tmpfile.string(), Logger::instance().stream());
 
