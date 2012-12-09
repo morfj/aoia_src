@@ -317,7 +317,7 @@ void CMainFrame::OnSysCommand(UINT wParam, CPoint mousePos)
 
 bool CMainFrame::Inject()
 {
-    HWND AOWnd = FindWindow( _T("Anarchy client"), _T("Anarchy Online") );
+    HWND AOWnd = FindWindow(_T("Anarchy client"), NULL);
 
     if(!AOWnd)
     {
