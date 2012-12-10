@@ -54,11 +54,15 @@ have contributed either directly or indirectly include:
                       message hooking as well as all the item-transfer message 
                       decoding.
     * Gremlin       - For being a guinea pig.
-    * Mordwin		- Integration with CharacterParser and bugfixes.
+    * Mordwin       - Integration with CharacterParser and bugfixes.
     * Everyone else that has provided feedback and done testing.
 
 Change Log:
 ===========
+Version 1.1.4										Release Date: ??/12/2012
+	* Fixed issue with connecting to the AO client after the 18.5 patch.
+	* Fixed parsing of the AO DB to handle the updates of the 18.5 patch.
+
 Version 1.1.3                                       Release Date: 09/12/2011
     * Fixed an SQL error while ripping the AO database.
     * Fixed the isse with the application not being able to hook the AO client.
@@ -83,10 +87,10 @@ Version 1.1.0                                       Release Date: 11/11/2011
       entire window is outside the current desktop.
     * Fixed performance issue with some more disappearing database indexes.
 
-Version 1.0.1										Release Date: 16/9/2011
+Version 1.0.1                                       Release Date: 16/9/2011
     * Added DB index to fix issue with speed and CPU usage while searching for
-	  items.
-	
+      items.
+    
 Version 1.0.0                                       Release Date: 10/9/2011
     * Fixed bug 2947010. Generating the script with items for ingame display
       now use the correct linebreak tag.
@@ -96,9 +100,9 @@ Version 1.0.0                                       Release Date: 10/9/2011
       to/from the conf file. 
     * Opening an item using Xyphos.com will now also supply the QL of the item
       so the stats are shown correctly.
-	* Improved ripping of items database so it supports newer version of AO.
-	* New summary view shows levels and amount of credits for all registered 
-	  toons.
+    * Improved ripping of items database so it supports newer version of AO.
+    * New summary view shows levels and amount of credits for all registered 
+      toons.
     * Created a basic installer.
 
 Version 0.9.7                                       Release Date: 26/1/2010
@@ -107,13 +111,13 @@ Version 0.9.7                                       Release Date: 26/1/2010
     * Includes UAC manifest in EXE file. Hopefully this should make some 
       compatibility problems with Vista and 7 go away.
 
-Version 0.9.6										Release Date: 16/1/2010
+Version 0.9.6                                       Release Date: 16/1/2010
     * Changed link to AO Mainframe.
-	* Updated SQLite to version 3.6.22 to resolve some issues.
-	* Fixed database parser bugs. The symptom was that the application was 
-	  unable to track certain items.
-	* Application now outputs files that can be opened with the CharacterParser
-	  application.
+    * Updated SQLite to version 3.6.22 to resolve some issues.
+    * Fixed database parser bugs. The symptom was that the application was 
+      unable to track certain items.
+    * Application now outputs files that can be opened with the CharacterParser
+      application.
 
 Version 0.9.5                                       Release Date: 3/7/2009
     * Fixed database parser so the app will run on Windows XP again.
