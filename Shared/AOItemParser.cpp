@@ -94,10 +94,12 @@ static std::map<unsigned short, unsigned char> s_effectkeys = map_list_of
 (0xc0,   2) // SL: Modify attribute by percentage
 (0xc1,   5) // SL: "Drain hit", attribute, minimum, maximum, armor-attribute, recover %
 (0xc3,   3) // SL: Lock perk
+(0xc5,   2) // 18.5.3: Set Faction - AOID 297262
 (0xc7,   1) // ??: "Monster Sit useitem" - AOID 283566
 (0xc8,  11) // 
 (0xc9,   2) // ??: SL: unknown
 (0xcc,   4) // SL: "Special hit", attribute, minimum, maximum, armor-attribute
+(0xce,   2) // 18.5.0 : ?? - AOID 287559 
 (0xd4,  13) // ??: SL: unknown
 (0xd6,   1) // ??: SL: unknown
 (0xd8,   0) // SL: Set anchor
@@ -121,9 +123,13 @@ static std::map<unsigned short, unsigned char> s_effectkeys = map_list_of
 (0xf2,   0) // 18.0.1 : ?? 
 (0xf3,   3) // 18.1.0 : ?? Instanced City Guest Key Generator
 (0xf4,   1) // 18.0.0 : ?? AOID = 280162
-(0xf8,	 0) // 18.3.x : ?? AOID = 202260
+(0xf5,   2) // 18.5.0 : ?? AOID = 287559
+(0xf6,   2) // 18.5.0 : ?? AOID = 296265
+(0xf7,   1) // 18.5.x : Change Gender - AOID = 296265
+(0xf8,	 1) // 18.3.x : ?? AOID = 202260
 (0xfa,   1) // 18.4.6 : CastNano? AOID = 290265
 (0xfc,   0) // Text string
+(0xff,   0) // 18.5.0 : string + number - AOID = 292479
 ;
 
 AOItemParser::AOItemParser(char* pBuffer, unsigned int bufSize)
@@ -601,6 +607,12 @@ char* AOItemParser::ParseFunctions(char* pBuffer, unsigned int bufSize, unsigned
     case 0xfc:  // Textstring. Looks like something related to the 10th anniversary? 
         // "The Desert Rider has arrived! Hurry to coordinates..."
         p = ParseString(p, REMAINING, eff.text);
+        break;
+
+    case 0xff:  // Textstring followed by number
+        p = ParseString(p, REMAINING, eff.text);
+        NEXT(v);
+        eff.values.push_back(v);
         break;
     }
 
