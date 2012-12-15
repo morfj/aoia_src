@@ -59,9 +59,9 @@ have contributed either directly or indirectly include:
 
 Change Log:
 ===========
-Version 1.1.4										Release Date: ??/12/2012
-	* Fixed issue with connecting to the AO client after the 18.5 patch.
-	* Fixed parsing of the AO DB to handle the updates of the 18.5 patch.
+Version 1.1.4                                       Release Date: 15/12/2012
+    * Fixed issue with connecting to the AO client after the 18.5 patch.
+    * Fixed parsing of the AO DB to handle the updates of the 18.5 patch.
 
 Version 1.1.3                                       Release Date: 09/12/2011
     * Fixed an SQL error while ripping the AO database.
@@ -141,7 +141,7 @@ Version 0.9.4                                       Release Date: 30/6/2009
       around the backpack names any more.
     * Bug Fix: Fixed buffer overflow with long backpack names.
 
-Version 0.9.3                                        Release Date: 4/5/2009
+Version 0.9.3                                       Release Date: 4/5/2009
     * Added support for NPC trade-in quest rewards in the item tracking.
     * Now parsing the 18.0.1 database correctly.
     * Find panel now filters on dimension as well.
