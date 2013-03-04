@@ -796,6 +796,8 @@ void DBManager::updateDBVersion(unsigned int fromVersion) const
 
 void DBManager::createDBScheme() const
 {
+    LOG("DBManager::createDBScheme: Creating a new database scheme from scratch.");
+
     m_db->Begin();
     m_db->Exec("CREATE TABLE tItems (itemidx INTEGER NOT NULL PRIMARY KEY ON CONFLICT REPLACE AUTOINCREMENT UNIQUE DEFAULT '1', keylow INTEGER, keyhigh INTEGER, ql INTEGER, flags INTEGER DEFAULT '0', stack INTEGER DEFAULT '1', parent INTEGER NOT NULL DEFAULT '2', slot INTEGER, children INTEGER, owner INTEGER NOT NULL)");
     m_db->Exec("CREATE INDEX idx_titems_keylow ON tItems (keylow ASC)");
