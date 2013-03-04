@@ -139,7 +139,7 @@ std::tstring ContainerManager::MakeContainerName(unsigned int charid, unsigned i
     if (pT2 != NULL && pT2->Rows())
     {
         try {
-            int keylow = boost::lexical_cast<int>(pT2->Data(0,0));
+            unsigned int keylow = boost::lexical_cast<unsigned int>(pT2->Data(0,0));
             std::map<std::tstring, std::tstring> item = GetAOItemInfo(keylow);
             result = item[_T("name")];
         }
