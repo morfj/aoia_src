@@ -20,7 +20,6 @@ namespace PatternMatcher
     {
         SetWindowText(_T("Filter View"));
 
-        updateDimensionList();
         updateCharList();
 
         CheckDlgButton(IDC_SHOW_ALL, 1);
@@ -39,74 +38,6 @@ namespace PatternMatcher
     {
         LPMSG pMsg = (LPMSG)lParam;
         return this->PreTranslateMsg(pMsg);
-    }
-
-
-    void FilterPanel::updateDimensionList()
-    {
-        WTL::CComboBox cb = GetDlgItem(IDC_DIMENSION_COMBO);
-
-        int oldselection = cb.GetCurSel();
-        int item = 0;
-
-        cb.ResetContent();
-
-        std::map<unsigned int, std::tstring> dimensionNames;
-        g_DBManager.Lock();
-        g_DBManager.GetDimensions(dimensionNames);
-        sqlite::ITablePtr pT = m_db->ExecTable(_T("SELECT DISTINCT dimensionid FROM tToons"));
-        g_DBManager.UnLock();
-
-        // Add named dimensions.
-        for (std::map<unsigned int, std::tstring>::iterator it = dimensionNames.begin();
-            it != dimensionNames.end(); ++it)
-        {
-            if ((item = cb.AddString(it->second.c_str())) != CB_ERR)
-            {
-                cb.SetItemData(item, it->first);
-            }
-        }
-
-        // Add un-named dimensions.
-        for (unsigned int i = 0; i < pT->Rows(); ++i)
-        {
-            unsigned int dimId = boost::lexical_cast<unsigned int>(pT->Data(i, 0));
-            std::tstring dimName;
-            if (dimensionNames.find(dimId) != dimensionNames.end())
-            {
-                continue;   // Skip named ones.
-            }
-            else
-            {
-                dimName = _T("Unknown Dimension");
-                if (dimId > 0)
-                {
-                    dimName += STREAM2STR(" (0x" << std::hex << dimId << ")");
-                }
-            }
-
-            if ((item = cb.AddString(dimName.c_str())) != CB_ERR)
-            {
-                cb.SetItemData(item, dimId);
-            }
-        }
-
-        if (oldselection >= 0)
-        {
-            cb.SetCurSel(oldselection);
-        }
-        else if (oldselection == -1)
-        {
-            if (!m_settings->getValue(_T("DefaultDimension")).empty())
-            {
-                oldselection = cb.FindStringExact(-1, m_settings->getValue(_T("DefaultDimension")).c_str());
-            }
-            if (oldselection == CB_ERR)
-            {
-                oldselection = 0;
-            }
-            cb.SetCurSel(oldselection);
-        }
     }
 
 
@@ -130,11 +61,8 @@ namespace PatternMatcher
         cb.SetItemData(item, 0);
         cb.SetCurSel(0);
 
-        boost::format sql("SELECT DISTINCT owner FROM tItems I JOIN tToons T ON I.owner = T.charid WHERE dimensionid = %1% ORDER BY T.charname");
-        sql % getDimensionId();
-
         g_DBManager.Lock();
-        sqlite::ITablePtr pT = m_db->ExecTable(sql.str());
+        sqlite::ITablePtr pT = m_db->ExecTable("SELECT DISTINCT charid FROM tToons ORDER BY charname");
 
         if (pT != NULL)
         {
@@ -182,13 +110,6 @@ namespace PatternMatcher
     }
 
 
-    unsigned int FilterPanel::getDimensionId() const
-    {
-        WTL::CComboBox dimCb = GetDlgItem(IDC_DIMENSION_COMBO);
-        return (unsigned int)dimCb.GetItemData(dimCb.GetCurSel());
-    }
-
-
     unsigned int FilterPanel::getCharId() const
     {
         unsigned int toonid = 0;
@@ -233,19 +154,6 @@ namespace PatternMatcher
     BOOL FilterPanel::PreTranslateMsg(MSG* pMsg)
     {
         return IsDialogMessage(pMsg);
-    }
-
-
-    LRESULT FilterPanel::onDimensionComboSelection(WORD/*wNotifyCode*/, WORD/*wID*/, HWND/*hWndCtl*/, BOOL&/*bHandled*/)
-    {
-        CComboBox cb = GetDlgItem(IDC_DIMENSION_COMBO);
-        TCHAR buffer[256];
-        cb.GetLBText(cb.GetCurSel(), buffer);
-        m_settings->setValue(_T("DefaultDimension"), buffer);
-
-        updateCharList();
-        signalSettingsChanged();
-        return 0;
     }
 
 

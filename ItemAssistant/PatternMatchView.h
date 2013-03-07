@@ -17,8 +17,8 @@ class PatternMatchView;
 
 /**
  * \brief
- * This class spawns a new thread that will search for pocketboss patterns 
- * given the current search criterias.
+ * This class spawns a new thread that will search for pocket-boss patterns 
+ * given the current search criteria.
  * 
  * To trigger a search, set the appropriate filters and call Begin().
  * To cancel a search call StopPlease() followed by End().
@@ -27,13 +27,11 @@ class PatternMatchView;
 class AvailCalcThread : public Thread
 {
 public:
-    AvailCalcThread(sqlite::IDBPtr db) : m_db(db), m_index(0), m_term(false), m_dimensionid(0), m_toon(0), m_excludeAssembled(false) { }
+    AvailCalcThread(sqlite::IDBPtr db) : m_db(db), m_index(0), m_term(false), m_toon(0), m_excludeAssembled(false) { }
     virtual ~AvailCalcThread() { }
 
     void SetOwner(PatternMatchView* owner) { m_pOwner = owner; }
-    void setDimensionId(unsigned int dimensionid) { m_dimensionid = dimensionid; }
     void SetToon(unsigned int toon = 0) { m_toon = toon; }
-    unsigned int getDimensionId() const { return m_dimensionid; }
     unsigned int Toon() const { return m_toon; }
     void SetExcludeAssembled(bool newVal) { m_excludeAssembled = newVal; }
     bool ExcludeAssembled() const { return m_excludeAssembled; }
@@ -41,12 +39,11 @@ public:
 
     virtual DWORD ThreadProc();
 
-    static float CalcPbAvailability(sqlite::IDBPtr db, unsigned int dimensionid, unsigned int pbid, unsigned int toonid, bool excludeassembled);
+    static float CalcPbAvailability(sqlite::IDBPtr db, unsigned int pbid, unsigned int toonid, bool excludeassembled);
 
 private:
     PatternMatchView* m_pOwner;
     int m_index;
-    unsigned int m_dimensionid;
     unsigned int m_toon;
     bool m_term;
     bool m_excludeAssembled;

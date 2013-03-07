@@ -10,9 +10,8 @@
 #include "boost/tuple/tuple.hpp"
 
 
-PatternReport::PatternReport(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, unsigned int dimensionid, unsigned int pbid, unsigned int toonid, bool excludeassembled)
-    : m_dimensionid(dimensionid)
-    , m_pbid(pbid)
+PatternReport::PatternReport(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, unsigned int pbid, unsigned int toonid, bool excludeassembled)
+    : m_pbid(pbid)
     , m_toonid(toonid)
     , m_excludeassembled(excludeassembled)
     , m_db(db)
@@ -45,7 +44,7 @@ PatternReport::PatternReport(sqlite::IDBPtr db, aoia::IContainerManagerPtr conta
         m_toonname = _T("all toons");
     }
 
-    float avail = AvailCalcThread::CalcPbAvailability(db, dimensionid, pbid, toonid, excludeassembled);
+    float avail = AvailCalcThread::CalcPbAvailability(db, pbid, toonid, excludeassembled);
     m_avail = STREAM2STR((int)avail);
 
     {  // Determine PB name

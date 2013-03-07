@@ -15,13 +15,12 @@
 class PatternReport
 {
 public:
-    PatternReport(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, unsigned int dimensionid, unsigned int pbid, unsigned int toonid, bool excludeassembled);
+    PatternReport(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, unsigned int pbid, unsigned int toonid, bool excludeassembled);
     virtual ~PatternReport();
 
     std::tstring toString() const;
 
 private:
-    unsigned int m_dimensionid;
     unsigned int m_pbid;
     unsigned int m_toonid;
     bool m_excludeassembled;

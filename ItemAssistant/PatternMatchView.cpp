@@ -15,7 +15,6 @@ PatternMatchView::PatternMatchView(sqlite::IDBPtr db, aoia::IContainerManagerPtr
     , m_gui(gui)
     , m_availCalc(db)
     , m_availfilter(-1.0f)
-    , m_dimensionid(0)
     , m_toonid(0)
     , m_sortDesc(true)
     , m_sortColumn(1)
@@ -136,12 +135,10 @@ void PatternMatchView::SetBossAvail(unsigned int pbid, float avail)
 
 void PatternMatchView::onFilterSettingsChanged()
 {
-    unsigned int dimensionid = m_filterPanel.getDimensionId();
     unsigned int charid = m_filterPanel.getCharId();
     bool excludeAssembled = m_filterPanel.getExcludeAssembled();
 
-    if (dimensionid != m_availCalc.getDimensionId() ||
-        charid != m_availCalc.Toon() ||
+    if (charid != m_availCalc.Toon() ||
         excludeAssembled != m_availCalc.ExcludeAssembled())
     {
         SetBossAvail(0, -1.0f);
@@ -158,13 +155,11 @@ void PatternMatchView::onFilterSettingsChanged()
         }
 
         // Restart thread
-        m_availCalc.setDimensionId(dimensionid);
         m_availCalc.SetToon(charid);
         m_availCalc.SetExcludeAssembled(excludeAssembled);
         m_availCalc.Begin();
     }
 
-    m_dimensionid = dimensionid;
     m_toonid = charid;
     m_availfilter = m_filterPanel.getAvailFilter();
 
@@ -356,7 +351,7 @@ LRESULT PatternMatchView::OnItemChanging(LPNMHDR lParam)
     if (!(pItem->uOldState & LVIS_SELECTED) && (pItem->uNewState & LVIS_SELECTED))
     {
         unsigned int data = m_listview.GetItemData(pItem->iItem);
-        PatternReport report(m_db, m_containerManager, m_dimensionid, data, m_toonid, m_availCalc.ExcludeAssembled());
+        PatternReport report(m_db, m_containerManager, data, m_toonid, m_availCalc.ExcludeAssembled());
         m_webview.SetHTML(report.toString());
     }
 
@@ -494,7 +489,7 @@ DWORD AvailCalcThread::ThreadProc()
             {
                 unsigned int pbid = list[m_index]->pbid;
                 m_pOwner->PbListMutex().MutexOff();
-                float avail = CalcPbAvailability(m_db, m_dimensionid, pbid, m_toon, m_excludeAssembled);
+                float avail = CalcPbAvailability(m_db, pbid, m_toon, m_excludeAssembled);
                 m_pOwner->PbListMutex().MutexOn();
                 m_pOwner->SetBossAvail(pbid, avail);
                 unsigned short percent = (unsigned int)(((m_index + 1) * 100) / list.size());
@@ -525,7 +520,7 @@ DWORD AvailCalcThread::ThreadProc()
 }
 
 
-float AvailCalcThread::CalcPbAvailability(sqlite::IDBPtr db, unsigned int dimensionid, unsigned int pbid, unsigned int toonid, bool excludeassembled)
+float AvailCalcThread::CalcPbAvailability(sqlite::IDBPtr db, unsigned int pbid, unsigned int toonid, bool excludeassembled)
 {
     std::map<std::tstring, unsigned int> vals;
 
@@ -555,12 +550,10 @@ float AvailCalcThread::CalcPbAvailability(sqlite::IDBPtr db, unsigned int dimens
         std::tstring pattern = from_ascii_copy(pIDs->Data(idIdx, 1));
         std::tstring id = from_ascii_copy(pIDs->Data(idIdx, 0));
 
-        std::tstring sql =
-            STREAM2STR("SELECT COUNT(itemidx) FROM tItems I JOIN tToons T ON I.owner = T.charid WHERE I.keylow = " <<
-            id << " AND T.dimensionid = " << dimensionid);
+        std::tstring sql = STREAM2STR("SELECT COUNT(itemidx) FROM tItems WHERE keylow = " << id);
         if (toonid > 0)
         {
-            sql += STREAM2STR(" AND I.owner = " << toonid);
+            sql += STREAM2STR(" AND owner = " << toonid);
         }
 
         g_DBManager.Lock();
