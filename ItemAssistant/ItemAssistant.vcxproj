@@ -149,6 +149,7 @@
     <ClCompile Include="mdump.cpp" />
     <ClCompile Include="MFTreeView.cpp" />
     <ClCompile Include="NTRAY.CPP" />
+    <ClCompile Include="PatternAvailabilityCalculator.cpp" />
     <ClCompile Include="ProgressDialog.cpp" />
     <ClCompile Include="ContainerManager.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -190,6 +191,7 @@
     <ClInclude Include="mdump.h" />
     <ClInclude Include="MFTreeView.h" />
     <ClInclude Include="NTRAY.H" />
+    <ClInclude Include="PatternAvailabilityCalculator.h" />
     <ClInclude Include="ProgressDialog.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ContainerManager.h" />

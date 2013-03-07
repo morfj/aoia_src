@@ -44,7 +44,7 @@ PatternReport::PatternReport(sqlite::IDBPtr db, aoia::IContainerManagerPtr conta
         m_toonname = _T("all toons");
     }
 
-    float avail = AvailCalcThread::CalcPbAvailability(db, pbid, toonid, excludeassembled);
+    float avail = PatternAvailabilityCalculator::CalcPbAvailability(db, pbid, toonid, excludeassembled);
     m_avail = STREAM2STR((int)avail);
 
     {  // Determine PB name

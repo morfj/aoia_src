@@ -144,6 +144,9 @@
     <ClCompile Include="CharacterSummaryFormatter.cpp">
       <Filter>Plugins\SummaryView</Filter>
     </ClCompile>
+    <ClCompile Include="PatternAvailabilityCalculator.cpp">
+      <Filter>Plugins\PatternMatcher</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AboutDlg.h">
@@ -262,6 +265,9 @@
     </ClInclude>
     <ClInclude Include="CharacterSummaryFormatter.h">
       <Filter>Plugins\SummaryView</Filter>
+    </ClInclude>
+    <ClInclude Include="PatternAvailabilityCalculator.h">
+      <Filter>Plugins\PatternMatcher</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
