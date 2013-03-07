@@ -59,6 +59,12 @@ have contributed either directly or indirectly include:
 
 Change Log:
 ===========
+Version 1.1.5										Release Date: ??/03/2013
+    * Fixed issue with recursive bank content after server merge (v18.6).
+	* Removed obsolete "player shop monitor" view.
+	* Removed dimension support from "summary view", "inventory view" and
+	  "pattern matcher view".
+
 Version 1.1.4                                       Release Date: 15/12/2012
     * Fixed issue with connecting to the AO client after the 18.5 patch.
     * Fixed parsing of the AO DB to handle the updates of the 18.5 patch.
