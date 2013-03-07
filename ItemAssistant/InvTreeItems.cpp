@@ -392,31 +392,39 @@ bool CharacterTreeViewItem::CanDelete() const
 }
 
 
-/***************************************************************************/
-/** Dimension Node                                                        **/
-/***************************************************************************/
-
-DimensionNode::DimensionNode(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, std::tstring const& label, unsigned int dimensionid, InventoryView* pOwner)
+CharacterCollectionTreeViewItem::CharacterCollectionTreeViewItem(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, InventoryView* pOwner)
     : m_db(db)
     , m_containerManager(containerManager)
     , SqlTreeViewItemBase(pOwner)
-    , m_label(label)
-    , m_dimensionid(dimensionid) {}
+{
+}
 
+void CharacterCollectionTreeViewItem::OnSelected()
+{
+}
 
-DimensionNode::~DimensionNode() {}
+bool CharacterCollectionTreeViewItem::CanEdit() const
+{
+    return false;
+}
 
+bool CharacterCollectionTreeViewItem::CanDelete() const
+{
+    return false;
+}
 
-void DimensionNode::OnSelected() {}
+std::tstring CharacterCollectionTreeViewItem::GetLabel() const
+{
+    return _T("Characters");
+}
 
-
-std::vector<MFTreeViewItem*> DimensionNode::GetChildren() const
+std::vector<MFTreeViewItem*> CharacterCollectionTreeViewItem::GetChildren() const
 {
     std::vector<MFTreeViewItem*> result;
 
-    // Get list of toons for this dimension from the DB
+    // Get list of toons from the DB
     g_DBManager.Lock();
-    sqlite::ITablePtr pT = m_db->ExecTable(STREAM2STR("SELECT charid FROM tToons WHERE dimensionid=" << m_dimensionid));
+    sqlite::ITablePtr pT = m_db->ExecTable(_T("SELECT DISTINCT charid FROM tToons"));
     g_DBManager.UnLock();
 
     if (pT != NULL)
@@ -431,11 +439,15 @@ std::vector<MFTreeViewItem*> DimensionNode::GetChildren() const
     return result;
 }
 
+bool CharacterCollectionTreeViewItem::SortChildren() const
+{
+    return true;
+}
 
-bool DimensionNode::HasChildren() const
+bool CharacterCollectionTreeViewItem::HasChildren() const
 {
     g_DBManager.Lock();
-    sqlite::ITablePtr pT = m_db->ExecTable(STREAM2STR("SELECT COUNT(charid) FROM tToons WHERE dimensionid=" << m_dimensionid));
+    sqlite::ITablePtr pT = m_db->ExecTable(_T("SELECT COUNT(charid) FROM tToons"));
     g_DBManager.UnLock();
 
     if (pT != NULL && pT->Rows() > 0)
@@ -444,28 +456,4 @@ bool DimensionNode::HasChildren() const
     }
 
     return false;
-}
-
-
-bool DimensionNode::CanEdit() const
-{
-    return false;
-}
-
-
-bool DimensionNode::CanDelete() const
-{
-    return false;
-}
-
-
-std::tstring DimensionNode::GetLabel() const
-{
-    return m_label;
-}
-
-
-bool DimensionNode::SortChildren() const
-{
-    return true;
 }

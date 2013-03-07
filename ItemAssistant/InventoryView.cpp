@@ -516,55 +516,8 @@ LRESULT InventoryView::OnCreate(LPCREATESTRUCT createStruct)
                        style | LVS_REPORT /*| LVS_SINGLESEL*/ | LVS_SHOWSELALWAYS | LVS_OWNERDATA, WS_EX_CLIENTEDGE);
     m_datagrid->SetDlgCtrlID(IDW_LISTVIEW);
 
-    // Populate the tree-view
-    {
-        std::map<unsigned int, std::tstring> dimensionNames;
-        g_DBManager.Lock();
-        g_DBManager.GetDimensions(dimensionNames);
-        sqlite::ITablePtr pT = m_db->ExecTable("SELECT DISTINCT dimensionid FROM tToons");
-        g_DBManager.UnLock();
-
-        // Add named dimensions.
-        for (std::map<unsigned int, std::tstring>::iterator it = dimensionNames.begin();
-            it != dimensionNames.end(); ++it)
-        {
-            boost::shared_ptr<DimensionNode> node(new DimensionNode(m_db, m_containerManager, it->second, it->first, this));
-            m_dimensionNodes[it->second] = node;
-        }
-
-        // Add un-named dimensions.
-        for (unsigned int i = 0; i < pT->Rows(); ++i)
-        {
-            unsigned int dimId = boost::lexical_cast<unsigned int>(pT->Data(i, 0));
-            std::tstring dimName;
-            if (dimensionNames.find(dimId) != dimensionNames.end())
-            {
-                continue;   // Skip named ones.
-            }
-            else
-            {
-                dimName = _T("Unknown Dimension");
-                if (dimId > 0)
-                {
-                    dimName += STREAM2STR(" (0x" << std::hex << dimId << ")");
-                }
-            }
-
-            boost::shared_ptr<DimensionNode> node(new DimensionNode(m_db, m_containerManager, dimName, dimId, this));
-            m_dimensionNodes[dimName] = node;
-        }
-
-        // Add the tree-nodes.
-        for (std::map<std::tstring, boost::shared_ptr<DimensionNode> >::iterator it = m_dimensionNodes.begin();
-            it != m_dimensionNodes.end(); ++it)
-        {
-            m_treeview.addRootItem(it->second.get());
-        }
-    }
-
-    //m_treeview.SetUnicodeFormat();
-    //m_treeRoot.SetOwner(this);
-    //m_treeview.addRootItem(&m_treeRoot);
+    m_rootNode.reset(new CharacterCollectionTreeViewItem(m_db, m_containerManager, this));
+    m_treeview.addRootItem(m_rootNode.get());
 
     m_splitter.SetSplitterPanes(m_treeview, m_datagrid->m_hWnd);
     m_splitter.SetActivePane(SPLIT_PANE_LEFT);

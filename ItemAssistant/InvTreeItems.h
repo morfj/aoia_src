@@ -88,12 +88,11 @@ private:
 };
 
 
-class DimensionNode
+class CharacterCollectionTreeViewItem
     : public SqlTreeViewItemBase
 {
 public:
-    DimensionNode(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, std::tstring const& label, unsigned int dimensionid, InventoryView* pOwner = NULL);
-    virtual ~DimensionNode();
+    CharacterCollectionTreeViewItem(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, InventoryView* pOwner);
 
     virtual void OnSelected();
     virtual bool CanEdit() const;
@@ -106,6 +105,5 @@ public:
 private:
     sqlite::IDBPtr m_db;
     aoia::IContainerManagerPtr m_containerManager;
-    std::tstring m_label;
-    unsigned int m_dimensionid;
 };
+

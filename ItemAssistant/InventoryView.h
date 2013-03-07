@@ -163,7 +163,7 @@ private:
 
     CAccelerator m_accelerators;
 
-    std::map<std::tstring, boost::shared_ptr<DimensionNode> > m_dimensionNodes;
+    boost::shared_ptr<CharacterCollectionTreeViewItem> m_rootNode;
 
     bool  m_sortDesc;
     int   m_sortColumn;
