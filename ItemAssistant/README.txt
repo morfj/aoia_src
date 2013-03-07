@@ -54,6 +54,7 @@ have contributed either directly or indirectly include:
                       decoding.
     * Gremlin       - For being a guinea pig.
     * Mordwin       - Integration with CharacterParser and bugfixes.
+	* Ken Leang		- For fixing the Alappa Gems part of the identify view.
     * Everyone else that has provided feedback and done testing.
 
 Change Log:

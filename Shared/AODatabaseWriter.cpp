@@ -16,7 +16,7 @@ const std::string c_scheme_sql =
     "   [flags] INTEGER NULL,"
     "   [properties] INTEGER NULL,"
     "   [icon] INTEGER NULL,"
-	"   [islot] INTEGER NULL"
+    "   [islot] INTEGER NULL"
     "   );"
 
     "CREATE TABLE tblItemReqs ("
@@ -60,17 +60,17 @@ const std::string c_scheme_sql =
     "   [purpose] TEXT"
     "   );"
 
-	"CREATE INDEX tblItemEffects_aoid_idx ON tblItemEffects (aoid);"
+    "CREATE INDEX tblItemEffects_aoid_idx ON tblItemEffects (aoid);"
 
-	"CREATE INDEX tblItemReqs_aoid_idx ON tblItemReqs (aoid);"
+    "CREATE INDEX tblItemReqs_aoid_idx ON tblItemReqs (aoid);"
 
-	"CREATE INDEX tblAO_aoid_idx ON tblAO (aoid);"
+    "CREATE INDEX tblAO_aoid_idx ON tblAO (aoid);"
 
-	"CREATE INDEX tblAO_islot_idx ON tblAO (islot);"
+    "CREATE INDEX tblAO_islot_idx ON tblAO (islot);"
 
-	"CREATE INDEX tblAO_type_idx ON tblAO (type);"
+    "CREATE INDEX tblAO_type_idx ON tblAO (type);"
 
-	"CREATE INDEX tblAO_name_idx ON tblAO (name);"
+    "CREATE INDEX tblAO_name_idx ON tblAO (name);"
     ;
 
 
@@ -102,24 +102,25 @@ const std::vector<std::string> c_datatransformation_sql = list_of
     ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (254804, 247765, 254805, '(Org City) High QL Buildings')")
     // tblIdentify - Alappa
     ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269800, 168432, 168432, '(Bracer Gem) HP/ NR/ Nano')")
-    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269811, 168473, 168473, '(Bracer Gem) HP/ add Melee Dmg/ %-Reflect/Reflect-Dmg')")
-    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269812, 168553, 168553, '(Bracer Gem) HP/ add Fire Dmg/ %-Reflect/Reflect-Dmg')")
-    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269813, 168620, 168620, '(Bracer Gem) HP/ add Cold Dmg/ %-Reflect/Reflect-Dmg')")
-    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269814, 168717, 168717, '(Bracer Gem) HP/ add Projectile Dmg/ %-Reflect/Reflect-Dmg')")
-    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269815, 168843, 168843, '(Bracer Gem) HP/ add Poison Dmg/ %-Reflect/Reflect-Dmg')")
-    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269816, 229984, 229984, '')")
-    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269817, 230176, 230176, '')")
-    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269818, 230216, 230216, '')")
-    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269819, 230256, 230256, '')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269811, 168473, 168473, '(Bracer Gem) HP/ add Melee damage/ %-Reflect/Reflect-Dmg')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269812, 168553, 168553, '(Bracer Gem) HP/ add Fire damage/ %-Reflect/Reflect-Dmg')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269813, 168620, 168620, '(Bracer Gem) HP/ add Cold damage/ %-Reflect/Reflect-Dmg')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269814, 168717, 168717, '(Bracer Gem) HP/ add Projectile damage/ %-Reflect/Reflect-Dmg')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269815, 168843, 168843, '(Bracer Gem) HP/ add Poison damage/ %-Reflect/Reflect-Dmg')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269816, 165389, 165389, '(Bracer Gem) HP/ Max Health')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269817, 168513, 168513, '(Bracer Gem) HP/ add Energy damage/ %-Reflect/Reflect-Dmg')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269818, 168797, 168797, '(Bracer Gem) HP/ add Chemical damage/ %-Reflect/Reflect-Dmg')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269819, 168757, 168757, '(Bracer Gem) HP/ add Radiation damage/ %-Reflect/Reflect-Dmg')")
     ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (270000, 269999, 269999, '(Armor) Agent, Bureaucrat, Nano-Technician, or Meta-Physicist Robe')")
+
 
     //("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (, , , '')")
     ;
 
 
 AODatabaseWriter::AODatabaseWriter(std::string const& filename, std::ostream &log)
-:   m_log(log)
-,   m_db(log)
+    :   m_log(log)
+    ,   m_db(log)
 {
     m_db.Init(from_ascii_copy(filename));
     m_db.Exec("PRAGMA journal_mode=MEMORY");
@@ -175,7 +176,7 @@ void AODatabaseWriter::WriteItem(boost::shared_ptr<ao_item> item)
         << "'" << name << "', "
         << item->ql << ", "
         << "'" << s_ItemTypeMap[item->type] << "', "
-		<< item->slot << ", "
+        << item->slot << ", "
         << "'" << desc << "', "
         << item->flags << ", "
         << item->props << ", "
@@ -215,17 +216,17 @@ void AODatabaseWriter::writeRequirement(unsigned int aoid, ao_item_req const& re
 void AODatabaseWriter::writeEffect(unsigned int aoid, ao_item_effect const& eff)
 {
     // HACK 1 [SUPERSEDED]: Only dump the first value from the vector for now.
-	// HACK 1A: Dump first or first two values from the vector
+    // HACK 1A: Dump first or first two values from the vector
     unsigned int value1 = 0;
     unsigned int value2 = 0;
     if (!eff.values.empty())
     {
-		if (eff.values.size() == 1) {
+        if (eff.values.size() == 1) {
             value1 = eff.values.at(0);
-	    } else {
+        } else {
             value1 = eff.values.at(0);
             value2 = eff.values.at(1);
-	    }
+        }
     }
 
     // Escape ' symbols in the text.
