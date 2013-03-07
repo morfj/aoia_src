@@ -54,16 +54,18 @@ have contributed either directly or indirectly include:
                       decoding.
     * Gremlin       - For being a guinea pig.
     * Mordwin       - Integration with CharacterParser and bugfixes.
-	* Ken Leang		- For fixing the Alappa Gems part of the identify view.
+    * Ken Leang     - For fixing the Alappa Gems part of the identify view.
+    * Jellyfunk     - For adding support for new AO prefs folder.
     * Everyone else that has provided feedback and done testing.
 
 Change Log:
 ===========
-Version 1.1.5										Release Date: ??/03/2013
+Version 1.1.5                                        Release Date: ??/03/2013
     * Fixed issue with recursive bank content after server merge (v18.6).
-	* Removed obsolete "player shop monitor" view.
-	* Removed dimension support from "summary view", "inventory view" and
-	  "pattern matcher view".
+    * Removed obsolete "player shop monitor" view.
+    * Removed dimension support from "summary view", "inventory view" and
+      "pattern matcher view".
+    * Added support for the new preference folder location of AO.
 
 Version 1.1.4                                       Release Date: 15/12/2012
     * Fixed issue with connecting to the AO client after the 18.5 patch.

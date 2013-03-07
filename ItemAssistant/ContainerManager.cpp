@@ -49,7 +49,7 @@ std::tstring ContainerManager::GetContainerName(unsigned int charid, unsigned in
     std::tstring filename;
     for (unsigned int i = 0; i < m_accounts.size(); i++)
     {
-        filename = STREAM2STR( AOManager::instance().getAOFolder() << _T("\\Prefs\\") << m_accounts[i] << _T("\\Char") << charid << _T("\\Containers\\Container_51017x") << containerid << _T(".xml") );
+        filename = STREAM2STR( AOManager::instance().getAOPrefsFolder() << _T("\\") << m_accounts[i] << _T("\\Char") << charid << _T("\\Containers\\Container_51017x") << containerid << _T(".xml") );
         if (PathFileExists(filename.c_str()))
         {
             WIN32_FILE_ATTRIBUTE_DATA atribs; 
@@ -275,15 +275,12 @@ std::map<std::tstring, std::tstring> ContainerManager::GetAOItemInfo(unsigned in
 
 std::vector<std::tstring> ContainerManager::GetAccountNames() const
 {
-    std::vector<std::tstring> result;
-
-    std::tstring path = AOManager::instance().getAOFolder();
-    path += _T("\\Prefs\\*");
+    std::tstring path = AOManager::instance().getAOPrefsFolder();
 
     WIN32_FIND_DATA findData;
-
     HANDLE hFind = FindFirstFileEx(path.c_str(), FindExInfoStandard, &findData, FindExSearchLimitToDirectories, NULL, 0);
 
+    std::vector<std::tstring> result;
     if (hFind != INVALID_HANDLE_VALUE)
     {
         do

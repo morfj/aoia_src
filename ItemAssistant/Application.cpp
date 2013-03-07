@@ -31,7 +31,8 @@ bool Application::init(std::tstring const& cmdLine)
     // Check to see if logging should be enabled
     Logger::instance().init(logfile, g_versionNumber);
 
-    LOG(_T("Using AO Folder at: ") << AOManager::instance().getAOFolder());
+    LOG(_T("Using AO folder at: ") << AOManager::instance().getAOFolder());
+    LOG(_T("Using AO preference folder at: ") << AOManager::instance().getAOPrefsFolder());
 
     std::tstring dbfile;
     std::tstring::size_type argPos = cmdLine.find(_T("-db"));
