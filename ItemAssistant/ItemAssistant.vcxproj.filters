@@ -22,9 +22,6 @@
     <Filter Include="Plugins\IdentifyView\Resources">
       <UniqueIdentifier>{88c95849-0848-4ef8-958e-630d5fbf5235}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Plugins\PlayerShopMonitor">
-      <UniqueIdentifier>{f11a9974-6a5b-4b0d-bfb4-688401be09ee}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Plugins\SummaryView">
       <UniqueIdentifier>{121bd699-9941-4aee-92f0-0b476feb36d7}</UniqueIdentifier>
     </Filter>
@@ -86,15 +83,6 @@
     </ClCompile>
     <ClCompile Include="IdentifyView.cpp">
       <Filter>Plugins\IdentifyView</Filter>
-    </ClCompile>
-    <ClCompile Include="PlayershopView.cpp">
-      <Filter>Plugins\PlayerShopMonitor</Filter>
-    </ClCompile>
-    <ClCompile Include="PsmTreeItems.cpp">
-      <Filter>Plugins\PlayerShopMonitor</Filter>
-    </ClCompile>
-    <ClCompile Include="PsmTreeView.cpp">
-      <Filter>Plugins\PlayerShopMonitor</Filter>
     </ClCompile>
     <ClCompile Include="DataModel.cpp">
       <Filter>Plugins\SummaryView</Filter>
@@ -202,15 +190,6 @@
     </ClInclude>
     <ClInclude Include="IdentifyView.h">
       <Filter>Plugins\IdentifyView</Filter>
-    </ClInclude>
-    <ClInclude Include="PlayershopView.h">
-      <Filter>Plugins\PlayerShopMonitor</Filter>
-    </ClInclude>
-    <ClInclude Include="PsmTreeItems.h">
-      <Filter>Plugins\PlayerShopMonitor</Filter>
-    </ClInclude>
-    <ClInclude Include="PsmTreeView.h">
-      <Filter>Plugins\PlayerShopMonitor</Filter>
     </ClInclude>
     <ClInclude Include="DataModel.h">
       <Filter>Plugins\SummaryView</Filter>

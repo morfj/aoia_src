@@ -4,7 +4,6 @@
 #include <PluginSDK/IPluginView.h>
 #include "InventoryView.h"
 #include "PatternMatchView.h"
-#include "PlayershopView.h"
 #include "IdentifyView.h"
 #include "SummaryView.h"
 
@@ -50,7 +49,6 @@ private:
     AoMsgView           m_msgView;
 #endif
     PatternMatchView    m_patternView;
-    PlayershopView      m_playershopView;
     IdentifyView        m_identifyView;
     aoia::sv::SummaryView m_summaryView;
 

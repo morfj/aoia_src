@@ -158,9 +158,6 @@
     <ClCompile Include="TabFrame.cpp" />
     <ClCompile Include="IdentifyListDataModel.cpp" />
     <ClCompile Include="IdentifyView.cpp" />
-    <ClCompile Include="PlayershopView.cpp" />
-    <ClCompile Include="PsmTreeItems.cpp" />
-    <ClCompile Include="PsmTreeView.cpp" />
     <ClCompile Include="DataModel.cpp" />
     <ClCompile Include="DimensionSummaryFormatter.cpp" />
     <ClCompile Include="SummaryView.cpp" />
@@ -202,9 +199,6 @@
     <ClInclude Include="Version.h" />
     <ClInclude Include="IdentifyListDataModel.h" />
     <ClInclude Include="IdentifyView.h" />
-    <ClInclude Include="PlayershopView.h" />
-    <ClInclude Include="PsmTreeItems.h" />
-    <ClInclude Include="PsmTreeView.h" />
     <ClInclude Include="DataModel.h" />
     <ClInclude Include="DimensionSummaryFormatter.h" />
     <ClInclude Include="SummaryView.h" />
