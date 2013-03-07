@@ -159,7 +159,7 @@
     <ClCompile Include="IdentifyListDataModel.cpp" />
     <ClCompile Include="IdentifyView.cpp" />
     <ClCompile Include="DataModel.cpp" />
-    <ClCompile Include="DimensionSummaryFormatter.cpp" />
+    <ClCompile Include="CharacterSummaryFormatter.cpp" />
     <ClCompile Include="SummaryView.cpp" />
     <ClCompile Include="FindPanel.cpp" />
     <ClCompile Include="InfoPanel.cpp" />
@@ -200,7 +200,7 @@
     <ClInclude Include="IdentifyListDataModel.h" />
     <ClInclude Include="IdentifyView.h" />
     <ClInclude Include="DataModel.h" />
-    <ClInclude Include="DimensionSummaryFormatter.h" />
+    <ClInclude Include="CharacterSummaryFormatter.h" />
     <ClInclude Include="SummaryView.h" />
     <ClInclude Include="FindPanel.h" />
     <ClInclude Include="InfoPanel.h" />

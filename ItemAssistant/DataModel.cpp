@@ -6,9 +6,8 @@
 
 namespace aoia { namespace sv {
 
-    DataModel::DataModel(sqlite::IDBPtr db, unsigned int dimensionid)
+    DataModel::DataModel(sqlite::IDBPtr db)
         : m_db(db)
-        , m_dimensionid(dimensionid)
     {
         // Sets up the map between column-index and title.
         m_columnTitles = boost::assign::map_list_of
@@ -18,7 +17,7 @@ namespace aoia { namespace sv {
             (3, _T("Credits"))
             ;
 
-        // Set ut a list of the statids each column should be bound to. (Hardcoded to skip "toon name" column further down.)
+        // List of the statids each column should be bound to. (Hardcoded to skip "toon name" column further down.)
         m_statids = boost::assign::list_of(54)(169)(61);
 
         std::tostringstream statids;
@@ -29,7 +28,7 @@ namespace aoia { namespace sv {
             statids << m_statids.at(i);
         }
 
-        sqlite::ITablePtr toons = m_db->ExecTable(STREAM2STR("SELECT charid, charname FROM tToons WHERE dimensionid = " << m_dimensionid));
+        sqlite::ITablePtr toons = m_db->ExecTable("SELECT charid, charname FROM tToons");
         for (unsigned int i = 0; i < toons->Rows(); ++i)
         {
             DataModelItem item;

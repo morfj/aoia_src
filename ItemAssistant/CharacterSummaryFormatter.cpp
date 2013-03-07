@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "DimensionSummaryFormatter.h"
+#include "CharacterSummaryFormatter.h"
 #include <boost/format.hpp>
 
 
@@ -7,12 +7,14 @@ namespace aoia
 {
     namespace sv
     {
-        DimensionSummaryFormatter::DimensionSummaryFormatter(DataModelPtr model, std::tstring const& dimensionName)
+        CharacterSummaryFormatter::CharacterSummaryFormatter(DataModelPtr model, std::tstring const& summaryHeading)
             : m_model(model)
-            , m_dimensionName(dimensionName) {}
+            , m_summaryHeading(summaryHeading)
+        {
+        }
 
 
-        std::tstring DimensionSummaryFormatter::toString() const
+        std::tstring CharacterSummaryFormatter::toString() const
         {
             std::tostringstream out;
             __int64 totalCredits = 0;
@@ -20,7 +22,11 @@ namespace aoia
             int totalAiLevels = 0;
 
             out.imbue(std::locale(""));
-            out << "<h2>" << m_dimensionName << "</h2>";
+
+            if (!m_summaryHeading.empty())
+            {
+                out << "<h2>" << m_summaryHeading << "</h2>";
+            }
             out << "<table id=\"summarytbl\"><tr>";
 
             for (unsigned int j = 0; j < m_model->getColumnCount(); ++j)

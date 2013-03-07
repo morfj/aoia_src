@@ -2,7 +2,7 @@
 #include "SummaryView.h"
 #include "DBManager.h"
 #include "DataModel.h"
-#include "DimensionSummaryFormatter.h"
+#include "CharacterSummaryFormatter.h"
 #include <boost\algorithm\string\replace.hpp>
 
 
@@ -87,26 +87,13 @@ namespace aoia { namespace sv {
 
     void SummaryView::UpdateSummary()
     {
-        std::map<unsigned int, std::tstring> dimensions;
-        if (!g_DBManager.GetDimensions(dimensions)) {
-            LOG("SummaryView::UpdateSummary() : Unable to get dimensional info.");
-            return;
-        }
-
-        std::vector<DataModelPtr> models;
-        for (std::map<unsigned int, std::tstring>::const_iterator it = dimensions.begin(); it != dimensions.end(); ++it)
-        {
-            models.push_back(DataModelPtr(new DataModel(m_db, it->first)));
-        }
+        DataModelPtr model(DataModelPtr(new DataModel(m_db)));
 
         std::tstringstream contentHtml;
-        for (std::vector<DataModelPtr>::const_iterator it = models.begin(); it != models.end(); ++it)
-        {
-            if ((*it)->getItemCount() == 0) {
-                continue;   // skip empty dimensions
-            }
 
-            DimensionSummaryFormatter formatter(*it, dimensions[(*it)->getDimensionId()]);
+        if (model->getItemCount() != 0)
+        {
+            CharacterSummaryFormatter formatter(model);
             contentHtml << formatter.toString();
         }
 

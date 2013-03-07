@@ -24,7 +24,7 @@ namespace aoia
             : public DataGridModel
         {
         public:
-            DataModel(sqlite::IDBPtr db, unsigned int dimensionid);
+            DataModel(sqlite::IDBPtr db);
             virtual ~DataModel();
 
             // 'DataGridModel' implementation
@@ -33,15 +33,9 @@ namespace aoia
             virtual unsigned int getItemCount() const;
             virtual std::tstring getItemProperty(unsigned int index, unsigned int column) const;
 
-            unsigned int getDimensionId() const
-            {
-                return m_dimensionid;
-            }
-
         private:
             sqlite::IDBPtr m_db;
             sqlite::ITablePtr m_result;
-            unsigned int m_dimensionid;
             std::map<unsigned int, std::tstring> m_columnTitles;
             std::vector<unsigned int> m_statids;
             std::vector<DataModelItem> m_items;
