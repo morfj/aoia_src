@@ -85,7 +85,6 @@ protected:
 private:
     PbList m_pblist;
 
-    unsigned int m_dimensionid;
     float m_availfilter;
     unsigned int m_toonid;
 

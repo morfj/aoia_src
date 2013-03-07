@@ -2403,12 +2403,8 @@ void InventoryView::OnAOServerMessage(AOMessageBase& msg)
                 AO::MobInfo* pMobInfo = (AO::MobInfo*)msg.start();
                 std::string name(&(pMobInfo->characterName.str), pMobInfo->characterName.strLen - 1);
 
-                // Assuming server ID contains dimension ID in highbyte.
-                unsigned int dimensionid = (_byteswap_ulong(pMobInfo->header.serverid) & 0x0000FF00) >> 8;
-
                 g_DBManager.Lock();
                 g_DBManager.SetToonName(msg.characterId(), from_ascii_copy(name));
-                g_DBManager.SetToonDimension(msg.characterId(), dimensionid);
                 g_DBManager.UnLock();
             }
         }

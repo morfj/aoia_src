@@ -13,7 +13,7 @@
 
 namespace bfs = boost::filesystem;
 
-#define CURRENT_DB_VERSION 7
+#define CURRENT_DB_VERSION 8
 
 
 DBManager::DBManager()
@@ -386,41 +386,6 @@ unsigned int DBManager::GetToonShopId(unsigned int charid) const
 }
 
 
-void DBManager::SetToonDimension(unsigned int charid, unsigned int dimensionid)
-{
-    assert(charid != 0);
-    assert(dimensionid != 0);
-    m_db->Begin();
-    m_db->Exec(STREAM2STR("UPDATE OR IGNORE tToons SET dimensionid = " << dimensionid << " WHERE charid = " << charid));
-    m_db->Commit();
-}
-
-
-unsigned int DBManager::GetToonDimension(unsigned int charid) const
-{
-    assert(charid != 0);
-
-    unsigned int result = 0;
-
-    sqlite::ITablePtr pT = m_db->ExecTable(STREAM2STR("SELECT dimensionid FROM tToons WHERE charid = " << charid));
-    if (pT != NULL && pT->Rows())
-    {
-        try
-        {
-            result = boost::lexical_cast<unsigned int>(pT->Data(0,0));
-        }
-        catch (boost::bad_lexical_cast &/*e*/)
-        {
-            LOG("Error in getToonDimension(). Bad lexical cast.");
-            // Wierd.. lets debug!
-            assert(false);
-        }
-    }
-
-    return result;
-}
-
-
 void DBManager::SetToonStats(unsigned int charid, StatMap const& stats)
 {
     assert(charid != 0);
@@ -435,32 +400,6 @@ void DBManager::SetToonStats(unsigned int charid, StatMap const& stats)
         m_db->Exec(STREAM2STR("INSERT OR IGNORE INTO tToonStats VALUES (" << charid << ", " << statid << ", " << statvalue << ")"));
     }
     m_db->Commit();
-}
-
-
-bool DBManager::GetDimensions(std::map<unsigned int, std::tstring> &dimensions) const
-{
-    sqlite::ITablePtr pT = m_db->ExecTable(STREAM2STR("SELECT dimensionid, dimensionname FROM tDimensions"));
-
-    if (pT != NULL && pT->Rows())
-    {
-        for (unsigned int i = 0; i < pT->Rows(); ++i)
-        {
-            try
-            {
-                std::tstring name = from_ascii_copy(pT->Data(i, 1));
-                dimensions[boost::lexical_cast<unsigned int>(pT->Data(i, 0))] = name;
-            }
-            catch (boost::bad_lexical_cast &/*e*/)
-            {
-                LOG("Error in getDimensions(). Bad lexical cast.");
-                // Wierd.. lets debug!
-                assert(false);
-            }
-        }
-        return true;
-    }
-    return false;
 }
 
 
@@ -786,6 +725,21 @@ void DBManager::updateDBVersion(unsigned int fromVersion) const
         }
         // Dropthrough
 
+    case 7: // Updates from v7: Removed dimension support.
+        {
+            m_db->Begin();
+            m_db->Exec(_T("DROP TABLE tDimensions"));
+            m_db->Exec(_T("CREATE TABLE tToons2 (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0')"));
+            m_db->Exec(_T("INSERT INTO tToons2 (charid, charname, shopid) SELECT charid, charname, shopid FROM tToons"));
+            m_db->Exec(_T("DROP TABLE tToons"));
+            m_db->Exec(_T("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0')"));
+            m_db->Exec(_T("INSERT INTO tToons (charid, charname, shopid) SELECT charid, charname, shopid FROM tToons2"));
+            m_db->Exec(_T("DROP TABLE tToons2"));
+            m_db->Exec(_T("CREATE UNIQUE INDEX iCharId ON tToons (charid)"));
+            m_db->Commit();
+        }
+        // Dropthrough
+
     default:
         m_db->Exec("DROP VIEW IF EXISTS vSchemeVersion");
         m_db->Exec(STREAM2STR(_T("CREATE VIEW vSchemeVersion AS SELECT '") << CURRENT_DB_VERSION << _T("' AS Version")));
@@ -806,12 +760,8 @@ void DBManager::createDBScheme() const
     m_db->Exec("CREATE VIEW vBankItems AS SELECT * FROM tItems WHERE parent=1");
     m_db->Exec("CREATE VIEW vContainers AS SELECT * FROM tItems WHERE children > 0");
     m_db->Exec("CREATE VIEW vInvItems AS SELECT * FROM tItems WHERE parent=2");
-    m_db->Exec("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0', dimensionid INTEGER DEFAULT '0')");
+    m_db->Exec("CREATE TABLE tToons (charid INTEGER NOT NULL PRIMARY KEY UNIQUE, charname VARCHAR, shopid INTEGER DEFAULT '0')");
     m_db->Exec("CREATE UNIQUE INDEX iCharId ON tToons (charid)");
-    m_db->Exec("CREATE TABLE tDimensions (dimensionid INTEGER NOT NULL PRIMARY KEY UNIQUE, dimensionname VARCHAR)");
-    m_db->Exec("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (11, 'Atlantean (Rubi-Ka 1)')");
-    m_db->Exec("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (12, 'Rimor (Rubi-Ka 2)')");
-    m_db->Exec("INSERT INTO tDimensions (dimensionid, dimensionname) VALUES (13, 'Die Neue Welt (German Server)')");
     m_db->Exec("CREATE TABLE tToonStats (charid INTEGER NOT NULL, statid INTEGER NOT NULL, statvalue INTEGER NOT NULL, FOREIGN KEY (charid) REFERENCES tToons (charid))");
     m_db->Exec("CREATE UNIQUE INDEX charstatindex ON tToonStats (charid ASC, statid ASC)");
     m_db->Exec(STREAM2STR(_T("CREATE VIEW vSchemeVersion AS SELECT '") << CURRENT_DB_VERSION << _T("' AS Version")));

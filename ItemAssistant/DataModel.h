@@ -18,7 +18,7 @@ namespace aoia
         };
 
         /**
-         * Queries all summary data for all toons in the specified dimension.
+         * Queries all summary data for all toons.
          */
         class DataModel
             : public DataGridModel

@@ -33,7 +33,6 @@ Known Issues:
         or,
       - Delete the AOPath setting. Item Assistant will then ask you to specify
         the location on the next startup.
-    * Your toons may show up under incorrect dimension nodes.
     * AOIA needs to run with the same, or higher, level of privileges on your 
       computer as the AO client itself is running with. If you run the AO client
       as administrator, you have to do the same with AOIA.

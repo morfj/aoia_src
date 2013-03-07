@@ -47,17 +47,8 @@ struct IDBManager
     /// Retrieves the recorded (if any) character ID associated with the specified shop ID.
     virtual unsigned int GetShopOwner(unsigned int shopid) = 0;
 
-    /// Assign a dimension ID to a specified character.
-    virtual void SetToonDimension(unsigned int charid, unsigned int dimensionid) = 0;
-
-    /// Retrieves the dimension a character belongs to. 0 means dimension is unknown.
-    virtual unsigned int GetToonDimension(unsigned int charid) const = 0;
-
     /// Record the current stats for a specific toon.
     virtual void SetToonStats(unsigned int charid, StatMap const& stats) = 0;
-
-    /// Retrieves all the dimension IDs and their descriptions. Returns false if query failed.
-    virtual bool GetDimensions(std::map<unsigned int, std::tstring>& dimensions) const = 0;
 
     /// Determines the first available container slot ID for a specified character and container.
     virtual unsigned int FindNextAvailableContainerSlot(unsigned int charId, unsigned int containerId) = 0;

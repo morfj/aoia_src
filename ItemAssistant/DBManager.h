@@ -39,17 +39,8 @@ public:
     /// Retrieves the recorded (if any) character ID associated with the specified shop ID.
     unsigned int GetShopOwner(unsigned int shopid);
 
-    /// Assign a dimension ID to a specified character.
-    void SetToonDimension(unsigned int charid, unsigned int dimensionid);
-
-    /// Retrieves the dimension a character belongs to. 0 means dimension is unknown.
-    unsigned int GetToonDimension(unsigned int charid) const;
-
     /// Record the current stats for a specific toon.
     void SetToonStats(unsigned int charid, StatMap const& stats);
-
-    /// Retrieves all the dimension IDs and their descriptions. Returns false if query failed.
-    bool GetDimensions(std::map<unsigned int, std::tstring> &dimensions) const;
 
     /// Determines the first available container slot ID for a specified character and container.
     unsigned int FindNextAvailableContainerSlot(unsigned int charId, unsigned int containerId);
