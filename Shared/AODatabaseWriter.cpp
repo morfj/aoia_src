@@ -87,18 +87,18 @@ const std::vector<std::string> c_datatransformation_sql = list_of
     // tblIdentify - AI Biomaterial
     ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247103, 247106, 247107, '(Alien Armor) Low tradeskill requirements')")
     ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247105, 247108, 247109, '(Alien Armor) High tradeskill requirements')")
-    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247698, 247673, 247674, '(Weapon Upgrade) Brawl, Fast Attack')")
-    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247700, 247675, 247676, '(Weapon Upgrade) Brawl, Dimach, Fast Attack')")
-    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247702, 247678, 247677, '(Weapon Upgrade) Brawl, Dimach, Fast Attack, Sneak Attack')")
-    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247704, 247680, 247679, '(Weapon Upgrade) Dimach, Fast Attack, Parry, Riposte')")
-    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247706, 247681, 247682, '(Weapon Upgrade) Dimach, Fast Attack, Sneak Attack, Parry, Riposte')")
-    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247708, 247683, 247684, '(Weapon Upgrade) Fling shot')")
-    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247710, 247685, 247686, '(Weapon Upgrade) Aimed Shot')")
-    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247712, 247687, 247688, '(Weapon Upgrade) Burst')")
-    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247714, 247689, 247690, '(Weapon Upgrade) Fling Shot, Burst')")
-    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247716, 247691, 247692, '(Weapon Upgrade) Burst, Full Auto')")
-    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247718, 247693, 247694, '(Weapon Upgrade) Fling Shot, Aimed Shot')")
-    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247720, 247695, 247696, '(Weapon Upgrade) Burst, Fling Shot, Full Auto')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247698, 247673, 247674, '(Weapon Upgrade Type 76) Brawl, Fast Attack')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247700, 247675, 247676, '(Weapon Upgrade Type 112) Brawl, Dimach, Fast Attack')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247702, 247677, 247678, '(Weapon Upgrade Type 240) Brawl, Dimach, Fast Attack, Sneak Attack')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247704, 247679, 247680, '(Weapon Upgrade Type 880) Dimach, Fast Attack, Parry, Riposte')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247706, 247681, 247682, '(Weapon Upgrade Type 992) Dimach, Fast Attack, Sneak Attack, Parry, Riposte')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247708, 247683, 247684, '(Weapon Upgrade Type 1) Fling shot')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247710, 247685, 247686, '(Weapon Upgrade Type 2) Aimed Shot')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247712, 247687, 247688, '(Weapon Upgrade Type 4) Burst')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247714, 247689, 247690, '(Weapon Upgrade Type 5) Fling Shot, Burst')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247716, 247691, 247692, '(Weapon Upgrade Type 12) Burst, Full Auto')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247718, 247693, 247694, '(Weapon Upgrade Type 3) Fling Shot, Aimed Shot')")
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (247720, 247695, 247696, '(Weapon Upgrade Type 13) Burst, Fling Shot, Full Auto')")
     ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (254804, 247765, 254805, '(Org City) High QL Buildings')")
     // tblIdentify - Alappa
     ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269800, 168432, 168432, '(Bracer Gem) HP/ NR/ Nano')")
@@ -113,6 +113,7 @@ const std::vector<std::string> c_datatransformation_sql = list_of
     ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (269819, 168757, 168757, '(Bracer Gem) HP/ add Radiation damage/ %-Reflect/Reflect-Dmg')")
     ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (270000, 269999, 269999, '(Armor) Agent, Bureaucrat, Nano-Technician, or Meta-Physicist Robe')")
 
+    ("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (288700, 288672, 288673, '(Weapon Upgrade Type 48) Brawl, Dimach')")
 
     //("INSERT INTO tblIdentify (aoid, lowid, highid, purpose) VALUES (, , , '')")
     ;
