@@ -136,24 +136,21 @@ std::tstring AOManager::getAOPrefsFolder() const
 {
     assert(m_settings);
 
-    if (m_prefsfolder.empty())
-    {
+    if (m_prefsfolder.empty()) {
         bool requestFolder = true;
         bfs::tpath prefsDir;
 
         // Get prefs folder from settings
         std::tstring dir_setting = m_settings->getValue(_T("PrefsPath"));
-        if (!dir_setting.empty())
-        {
+        if (!dir_setting.empty()) {
             prefsDir = dir_setting;
-            if (bfs::exists(prefsDir / _T("Prefs.xml")))
-            {
+            if (bfs::exists(prefsDir / _T("Prefs.xml"))) {
                 requestFolder = false;
             }
         }
 
-        if (requestFolder)
-        {
+        if (requestFolder) {
+            // Check to see if we can be a smart-ass and find a single prefs folder.
             std::vector<bfs::tpath> prefsLocations = findAllPrefsFolders(getAOFolder());
             if (prefsLocations.size() == 1) {
                 prefsDir = prefsLocations.front();
