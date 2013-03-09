@@ -16,12 +16,14 @@
 #include "InventoryIDs.h"
 #include <csvexport/CSVDataModel.h>
 #include <csvexport/CSVExporter.h>
-
+#include <boost/filesystem.hpp>
 
 using namespace WTL;
 using namespace aoia;
 using namespace boost::algorithm;
 using namespace Parsers;
+
+namespace bfs = boost::filesystem;
 
 
 InventoryView::InventoryView(sqlite::IDBPtr db, aoia::IContainerManagerPtr containerManager, aoia::IGuiServicesPtr gui, aoia::ISettingsPtr settings)
@@ -340,11 +342,11 @@ LRESULT InventoryView::OnCopyItemRef(WORD FromAccelerator, WORD CommandId, HWND 
     {
         if (output.length() <= 4096)
         {
-            std::tstring filename = STREAM2STR(AOManager::instance().getAOFolder() << _T("\\scripts\\aoia"));
+            bfs::tpath scriptFile = bfs::tpath(AOManager::instance().getAOPrefsFolder()).parent_path() / _T("scripts") / _T("aoia");
 #ifdef UNICODE
-            std::wofstream ofs(filename.c_str());
+            std::wofstream ofs(scriptFile.native());
 #else
-            std::ofstream ofs(filename.c_str());
+            std::ofstream ofs(scriptFile.string());
 #endif  // UNICODE
             ofs << output;
 
