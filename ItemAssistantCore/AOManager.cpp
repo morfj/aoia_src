@@ -151,7 +151,9 @@ std::vector<std::tstring> AOManager::getAccountNames() const
         bfs::directory_iterator end_itr; // default construction yields past-the-end
         for (bfs::directory_iterator itr(path); itr != end_itr; ++itr ) {
             if (bfs::is_directory(itr->status())) {
-                result.push_back(itr->path().leaf().c_str());
+                if (itr->path().leaf() != "Browser") {
+                    result.push_back(itr->path().leaf().c_str());
+                }
             }
         }
     }

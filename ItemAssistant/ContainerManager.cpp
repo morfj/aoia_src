@@ -17,7 +17,7 @@ namespace ba = boost::algorithm;
 ContainerManager::ContainerManager(sqlite::IDBPtr db)
     : m_db(db)
 {
-    m_accounts = GetAccountNames();
+    m_accounts = AOManager::instance().getAccountNames();
 }
 
 
@@ -189,111 +189,6 @@ std::map<std::tstring, std::tstring> ContainerManager::GetAOItemInfo(unsigned in
                 result[column] = data;
             }
         }
-    }
-
-    return result;
-}
-
-//
-//void SharedServices::ClearTempContainerIdCache(unsigned int charId)
-//{
-//	//TODO: Clear cache for only 1 char (if duallogged)
-//	if (m_containerIdCache.find(charId) != m_containerIdCache.end())
-//	{
-//		m_containerIdCache[charId].clear();
-//	}
-//}
-//
-//
-//void SharedServices::UpdateTempContainerId(unsigned int charId, unsigned int tempId, unsigned int containerId)
-//{
-//    TRACE("UPDATE Temp Cont Id " << tempId << " / " << containerId);
-//
-//	//__int64 key = ((__int64)charId) << 32;
-//    //key += fromId;
-//	//m_InvSlotIndexCache[key] = slotId;
-//
-//	if (m_containerIdCache.find(charId) == m_containerIdCache.end())
-//	{
-//		std::map< __int32, unsigned int > newCharIdCache;
-//		m_containerIdCache[charId] = newCharIdCache;
-//	}
-//
-//	m_containerIdCache[charId][tempId] = containerId;
-//}
-//
-//
-//unsigned int SharedServices::GetContainerId(unsigned int charId, unsigned int tempId) const
-//{
-//    std::map< __int32, std::map<__int32, unsigned int> >::const_iterator it = m_containerIdCache.find(charId);
-//	if (it != m_containerIdCache.end())
-//	{
-//        std::map<__int32, unsigned int>::const_iterator it2 = it->second.find(tempId);
-//        if (it2 != it->second.end())
-//        {
-//            return it2->second;
-//        }
-//	}
-//
-//	return 0;
-//}
-//
-//
-//unsigned int SharedServices::GetItemSlotId(unsigned int charId, unsigned int itemTempId) const
-//{
-//    std::map< __int32, std::map<__int32, unsigned int> >::const_iterator it = m_invSlotForTempItemCache.find(charId);
-//    if (it != m_invSlotForTempItemCache.end())
-//    {
-//        std::map<__int32, unsigned int>::const_iterator it2 = it->second.find(itemTempId);
-//        if (it2 != it->second.end())
-//        {
-//            return it2->second;
-//        }
-//    }
-//
-//	return 0;
-//}
-//
-//
-//void SharedServices::UpdateTempItemId(unsigned int charId, unsigned int itemTempId, unsigned int slotId)
-//{
-//    TRACE("UPDATE Temp Item id " << itemTempId << " / " << slotId);
-//
-//	//__int64 key = ((__int64)charId) << 32;
-//    //key += fromId;
-//	//m_InvSlotIndexCache[key] = slotId;
-//
-//	if (m_invSlotForTempItemCache.find(charId) == m_invSlotForTempItemCache.end())
-//	{
-//		std::map< __int32, unsigned int > newCharIdCache;
-//		m_invSlotForTempItemCache[charId] = newCharIdCache;
-//	}
-//
-//	m_invSlotForTempItemCache[charId][itemTempId] = slotId;
-//}
-
-
-std::vector<std::tstring> ContainerManager::GetAccountNames() const
-{
-    std::tstring path = AOManager::instance().getAOPrefsFolder();
-
-    WIN32_FIND_DATA findData;
-    HANDLE hFind = FindFirstFileEx(path.c_str(), FindExInfoStandard, &findData, FindExSearchLimitToDirectories, NULL, 0);
-
-    std::vector<std::tstring> result;
-    if (hFind != INVALID_HANDLE_VALUE)
-    {
-        do
-        {
-            if ((findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) 
-                && (findData.cFileName[0] != NULL) 
-                && (findData.cFileName[0] != '.'))
-            {
-                result.push_back(std::tstring(findData.cFileName));
-            }
-        }
-        while (FindNextFile(hFind, &findData));
-        FindClose(hFind);
     }
 
     return result;

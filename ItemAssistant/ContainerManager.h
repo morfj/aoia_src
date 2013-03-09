@@ -21,7 +21,6 @@
     << std::uppercase << std::setfill('0') << std::setw(2) << std::hex \
     << static_cast<unsigned int>(static_cast<unsigned char>(character)))).str()) 
 
-//class CTrayNotifyIcon;
 
 class ContainerManager
     : public aoia::IContainerManager
@@ -35,16 +34,7 @@ public:
 
     std::map<std::tstring, std::tstring> GetAOItemInfo(unsigned int lowkey) const;
 
-
-	//void ClearTempContainerIdCache(unsigned int charId);
-	//void UpdateTempContainerId(unsigned int charId, unsigned int tempId, unsigned int containerId);
-	//unsigned int GetContainerId(unsigned int charId, unsigned int tempId) const;
-
-	//unsigned int GetItemSlotId(unsigned int charId, unsigned int itemTempId) const;
-	//void UpdateTempItemId(unsigned int charId, unsigned int itemTempId, unsigned int slotId);
-
 protected:
-    std::vector<std::tstring> GetAccountNames() const;
     std::tstring MakeContainerName(unsigned int charid, unsigned int containerid) const;
 
 private:
@@ -53,9 +43,6 @@ private:
 
     mutable std::map< __int64, std::pair<std::tstring, FILETIME> > m_containerFileCache;
     mutable std::map< __int64, std::tstring > m_containerDBCache;
-
-	//std::map< __int32, std::map<__int32, unsigned int> > m_containerIdCache; //char id and container Id are keys.
-	//std::map< __int32, std::map<__int32, unsigned int> > m_invSlotForTempItemCache; //char id and container Id are keys.
 };
 
 
