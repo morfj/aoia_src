@@ -1,12 +1,71 @@
 #include "StdAfx.h"
 #include "AOManager.h"
 #include <boost/filesystem.hpp>
+#include <boost/regex.hpp>
+#include <boost/algorithm/string.hpp>
 #include <Shared/UnicodeSupport.h>
 #include <Shared/FileUtils.h>
 #include <Shlobj.h>
 
 namespace bfs = boost::filesystem;
+namespace ba = boost::algorithm;
 using namespace aoia;
+
+namespace {
+    bfs::tpath getAOLocalAppDataFolder()
+    {
+        TCHAR localAppData[MAX_PATH];
+        SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, SHGFP_TYPE_CURRENT, localAppData);
+        bfs::tpath path(localAppData);
+        path /= _T("Funcom");
+        path /= _T("Anarchy Online");
+        return path;
+    }
+
+    std::vector<bfs::tpath> findAllMatchingFilesInFolder(bfs::tpath rootFolder, std::tstring fileName)
+    {
+        std::vector<bfs::tpath> matchingPaths;
+
+        bfs::directory_iterator end_itr; // Default ctor yields past-the-end
+        for (bfs::directory_iterator it(rootFolder); it != end_itr; ++it)
+        {
+            // Skip if not a file
+            if (bfs::is_directory(it->status())) {
+                std::vector<bfs::tpath> paths = findAllMatchingFilesInFolder(*it, fileName);
+                matchingPaths.insert(matchingPaths.end(), paths.begin(), paths.end());
+                continue;
+            }
+
+            if (bfs::is_regular_file(it->status()) && it->path().filename().native() == fileName) {
+                matchingPaths.push_back(*it);
+            }
+        }
+
+        return matchingPaths;
+    }
+
+    std::vector<bfs::tpath> findAllPrefsFolders(std::tstring const& aoInstallationFolder)
+    {
+        std::vector<bfs::tpath> allPrefsFiles = findAllMatchingFilesInFolder(getAOLocalAppDataFolder(), _T("Prefs.xml"));
+
+        bfs::tpath installPath(aoInstallationFolder);
+        std::tstring folder = installPath.filename().native();
+        std::tstring pattern = (getAOLocalAppDataFolder() / _T("[a-zA-Z0-9]{8}") / folder / _T("Prefs") / _T("Prefs.xml")).native();
+        ba::replace_all(pattern, _T("\\"), _T("\\\\"));
+        ba::to_upper(pattern);
+        const boost::basic_regex<TCHAR, boost::regex_traits<TCHAR>> filter(pattern);
+
+        boost::wsmatch what;
+        std::vector<bfs::tpath> matchingPaths;
+        for (std::vector<bfs::tpath>::const_iterator it = allPrefsFiles.begin(); it != allPrefsFiles.end(); ++it) {
+            if (boost::regex_match(ba::to_upper_copy((*it).native()), what, filter)) {
+                matchingPaths.push_back(it->parent_path());
+            }
+        }
+
+        return matchingPaths;
+    }
+}
 
 
 SINGLETON_IMPL(AOManager);
@@ -93,28 +152,13 @@ std::tstring AOManager::getAOPrefsFolder() const
             }
         }
 
-        //try locate it ourselves
-        if (requestFolder) 
+        if (requestFolder)
         {
-            TCHAR localAppData[MAX_PATH];
-            SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, SHGFP_TYPE_CURRENT, localAppData);
-            prefsDir = localAppData;
-            prefsDir /= _T("Funcom");
-            prefsDir /= _T("Anarchy Online");
-
-            if (bfs::exists(prefsDir))
-            {
-                bfs::directory_iterator subdir(prefsDir);
-                if (subdir != bfs::directory_iterator()) {
-                    prefsDir = *subdir / _T("Anarchy Online") / _T("Prefs");
-                    if (bfs::exists(prefsDir / _T("Prefs.xml")))
-                    {
-                        requestFolder = false;
-                    }
-                }
+            std::vector<bfs::tpath> prefsLocations = findAllPrefsFolders(getAOFolder());
+            if (prefsLocations.size() == 1) {
+                prefsDir = prefsLocations.front();
+                m_settings->setValue(_T("PrefsPath"), prefsDir.native());
             }
-            // Store the new AO directory in the settings
-            m_settings->setValue(_T("PrefsPath"), prefsDir.native());
         }
 
         //give up and prompt
