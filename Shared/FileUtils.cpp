@@ -14,7 +14,7 @@ std::tstring BrowseForFolder(HWND hWndOwner, std::tstring const& title)
     udtBI.pidlRoot = NULL;
     udtBI.pszDisplayName = NULL;
     udtBI.lpszTitle = title.c_str();
-    udtBI.ulFlags = BIF_RETURNONLYFSDIRS;
+    udtBI.ulFlags = BIF_RETURNONLYFSDIRS | BIF_EDITBOX;
     udtBI.lpfn = NULL;
     udtBI.lParam = NULL;
     udtBI.iImage = 0;
