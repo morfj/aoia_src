@@ -28,6 +28,8 @@ bool Application::init(std::tstring const& cmdLine)
     // Read stored settings from file.
     m_settings->readSettings(_T("ItemAssistant.conf"));
 
+    m_settings->removeObsoleteSettings();
+
     // Check to see if logging should be enabled
     Logger::instance().init(logfile, g_versionNumber);
 

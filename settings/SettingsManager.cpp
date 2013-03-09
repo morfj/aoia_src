@@ -69,4 +69,12 @@ namespace aoia
             ++it;
         }
     }
+
+    void SettingsManager::removeObsoleteSettings()
+    {
+        if (m_values.find(_T("DefaultDimension")) != m_values.end()) {
+            m_values.erase(m_values.find(_T("DefaultDimension")));
+        }
+    }
+
 }

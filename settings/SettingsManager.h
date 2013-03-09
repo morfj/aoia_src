@@ -23,7 +23,7 @@ namespace aoia {
 
         /// Writes current settings to the specified file.
         void writeSettings(std::tstring const& filename);
-
+        void removeObsoleteSettings();
     private:
         std::map<std::tstring, std::tstring> m_values;
     };
