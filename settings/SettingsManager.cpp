@@ -75,6 +75,9 @@ namespace aoia
         if (m_values.find(_T("DefaultDimension")) != m_values.end()) {
             m_values.erase(m_values.find(_T("DefaultDimension")));
         }
+        if (m_values.find(_T("PrefsPath")) != m_values.end()) {
+            m_values.erase(m_values.find(_T("PrefsPath")));
+        }
     }
 
 }

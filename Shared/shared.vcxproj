@@ -98,6 +98,7 @@
     <ClCompile Include="AODatabaseWriter.cpp" />
     <ClCompile Include="AODB.cpp" />
     <ClCompile Include="AOItemParser.cpp" />
+    <ClCompile Include="AOPathHasher.cpp" />
     <ClCompile Include="FileUtils.cpp" />
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="SQLite.cpp" />
@@ -115,6 +116,7 @@
     <ClInclude Include="AODB.h" />
     <ClInclude Include="AOItemParser.h" />
     <ClInclude Include="aopackets.h" />
+    <ClInclude Include="AOPathHasher.h" />
     <ClInclude Include="FileUtils.h" />
     <ClInclude Include="IDB.h" />
     <ClInclude Include="ITable.h" />
