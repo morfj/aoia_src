@@ -89,6 +89,7 @@
         <Message Text="Testing" />
         <RunGoogleTests TestExePath="Release/ParsersTests.exe" />
         <RunGoogleTests TestExePath="Release/csvexporttests.exe" />
+        <RunGoogleTests TestExePath="Release/SharedTests.exe" />
     </Target>
 
     <Target Name="package_pdb">
